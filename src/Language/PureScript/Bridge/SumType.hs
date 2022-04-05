@@ -13,6 +13,8 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Language.PureScript.Bridge.SumType where
 
@@ -22,6 +24,7 @@ import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
 import qualified Data.Map as Map
+import qualified Data.Map as M
 import Data.Maybe (maybeToList)
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -30,6 +33,7 @@ import qualified Data.Text as T
 import Data.Typeable
 import Generics.Deriving
 import Language.PureScript.Bridge.TypeInfo
+import Data.Kind
 
 data ImportLine = ImportLine
   { importModule :: !Text,
@@ -41,7 +45,7 @@ type ImportLines = Map Text ImportLine
 
 -- | Generic representation of your Haskell types.
 data SumType (lang :: Language)
-  = SumType (TypeInfo lang) [DataConstructor lang] [Instance lang]
+  = SumType (TypeInfo lang) [(Int,DataConstructor lang)] [Instance lang]
   deriving (Show, Eq)
 
 -- | TypeInfo lens for 'SumType'.
@@ -54,28 +58,29 @@ sumTypeInfo inj (SumType info constrs is) =
   (\ti -> SumType ti constrs is) <$> inj info
 
 -- | DataConstructor lens for 'SumType'.
-sumTypeConstructors ::
-  Functor f =>
-  ([DataConstructor lang] -> f [DataConstructor lang]) ->
-  SumType lang ->
-  f (SumType lang)
-sumTypeConstructors inj (SumType info constrs is) =
-  (\cs -> SumType info cs is) <$> inj constrs
+sumTypeConstructors :: Applicative f => ([DataConstructor lang] -> f [DataConstructor lang]) -> SumType lang -> f (SumType lang)
+sumTypeConstructors inj (SumType info constrs is) = (\cs -> SumType info cs is) <$> inj'  constrs
+  where
+    inj' = fmap (uncurry zip) .  traverse inj . unzip
 
 -- | Create a representation of your sum (and product) types,
 --   for doing type translations and writing it out to your PureScript modules.
-mkSumType ::
-  forall t.
-  (Generic t, Typeable t, GDataConstructor (Rep t)) =>
-  SumType 'Haskell
-mkSumType =
-  SumType
-    (mkTypeInfo @t)
-    constructors
-    (Generic : maybeToList (nootype constructors))
+mkSumType :: forall t. (Generic t, Typeable t, GDataConstructor (Rep t))
+          =>  SumType 'Haskell
+mkSumType  = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIndex : maybeToList (nootype . map snd  $  constructors))
   where
-    constructors = gToConstructors (from (undefined :: t))
+    constructors = zip [0..] $  gToConstructors (from (undefined :: t))
 
+mkSumTypeIndexed :: forall (c :: Type -> Constraint) t. (Generic t, Typeable t, c t, GDataConstructor (Rep t))
+                 => (forall x. c x =>  [(Int,String)])
+                 -> SumType 'Haskell
+mkSumTypeIndexed f  = SumType (mkTypeInfo  @t) constructors (Generic : HasConstrIndex : maybeToList (nootype . map snd  $  constructors))
+  where
+    indices      = M.fromList . map (\(i,t) ->  (T.pack t, i)) $ f @t
+    constructors = foldr (\dcon@(DataConstructor name _) acc -> case M.lookup name indices of
+                             -- we want to error here
+                             Nothing -> error . T.unpack $ "Constructor \"" <> name <> "\" does not have a specified index!"
+                             Just i  -> (i,dcon) : acc) [] $ gToConstructors (from (undefined :: t))
 -- | Purescript typeclass instances that can be generated for your Haskell types.
 data Instance (lang :: Language)
   = Generic
@@ -88,6 +93,7 @@ data Instance (lang :: Language)
   | Ord
   | Enum
   | Bounded
+  | HasConstrIndex
   | Custom (CustomInstance lang)
   deriving (Eq, Show)
 
@@ -217,7 +223,7 @@ instance (Selector a, Typeable t) => GDataConstructorArgs (S1 a (K1 R t)) where
 getUsedTypes :: SumType lang -> Set (TypeInfo lang)
 getUsedTypes (SumType _ cs is) =
   Set.fromList . concatMap flattenTypeInfo $
-    concatMap constructorToTypes cs <> concatMap instanceToTypes is
+    concatMap (constructorToTypes . snd) cs <> concatMap instanceToTypes is
 
 constructorToTypes :: DataConstructor lang -> [TypeInfo lang]
 constructorToTypes (DataConstructor _ Nullary) = []

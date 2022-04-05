@@ -4,6 +4,8 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Language.PureScript.Bridge.Printer where
 
@@ -66,34 +68,7 @@ import System.FilePath
     takeDirectory,
     (</>),
   )
-import Text.PrettyPrint.Leijen.Text
-  ( Doc,
-    backslash,
-    char,
-    colon,
-    comma,
-    displayTStrict,
-    dquotes,
-    hang,
-    hsep,
-    indent,
-    lbrace,
-    lbracket,
-    line,
-    linebreak,
-    lparen,
-    nest,
-    parens,
-    punctuate,
-    rbrace,
-    rbracket,
-    renderPretty,
-    rparen,
-    softline,
-    textStrict,
-    vsep,
-    (<+>),
-  )
+import Text.PrettyPrint.Leijen.Text hiding ((</>),(<$>))
 
 renderText :: Doc -> Text
 renderText = T.replace " \n" "\n" . displayTStrict . renderPretty 0.4 200
@@ -269,10 +244,10 @@ sumTypeToTypeDecls st@(SumType t cs _) =
   vsep $ punctuate line $ typeDecl : instances st
   where
     typeDecl
-      | isJust (nootype cs) = mkTypeDecl "newtype"
+      | isJust (nootype . map snd $  cs) = mkTypeDecl "newtype"
       | otherwise = mkTypeDecl "data"
     mkTypeDecl keyword =
-      keyword <+> typeInfoToDecl t <+> encloseVsep "=" mempty "|" (constructorToDoc <$> cs)
+      keyword <+> typeInfoToDecl t <+> encloseVsep "=" mempty "|" (constructorToDoc . snd  <$> cs)
 
 typeInfoToDecl :: PSType -> Doc
 typeInfoToDecl (TypeInfo _ _ name params) =
@@ -293,7 +268,7 @@ constructorToDoc (DataConstructor n args) =
 -- | Given a Purescript type, generate instances for typeclass
 -- instances it claims to have.
 instances :: SumType 'PureScript -> [Doc]
-instances st@(SumType t _ is) = go <$> is
+instances st@(SumType t cs is) = go <$> is
   where
     mkConstraints :: (PSType -> [PSType]) -> [Doc]
     mkConstraints getConstraints = case getConstraints t of
@@ -325,6 +300,22 @@ instances st@(SumType t _ is) = go <$> is
       Derive -> mkDerivedInstance _customHead (const _customConstraints)
       DeriveNewtype -> mkDerivedNewtypeInstance _customHead (const _customConstraints)
       Explicit members -> mkInstance _customHead (const _customConstraints) $ memberToMethod <$> members
+
+    go HasConstrIndex =
+      mkInstance
+        (mkType "HasConstrIndex" [t])
+        (const [])
+        ["constrIndex = " <> prettyIndices cs]
+     where
+        prettyIndices :: [(Int,DataConstructor 'PureScript)] -> Doc
+        prettyIndices [] = error "empty list of indices!"
+        prettyIndices xs = listify (map mkIndex xs)
+          where
+            listify :: [Doc] -> Doc
+            listify txts = text "[" <> foldr (\(x :: Doc) (acc :: Doc) -> if isEmpty acc then x else x <> "," <> acc) "" txts <> "]"
+
+            mkIndex :: forall lang. (Int, DataConstructor lang) -> Doc
+            mkIndex (i,DataConstructor name _) = text "(" <> int i  <> text "," <> textStrict name <> text ")"
     go Bounded =
       mkInstance
         (mkType "Bounded" [t])
@@ -391,9 +382,9 @@ isEnum = all $ (== Nullary) . _sigValues
 
 sumTypeToEncode :: SumType 'PureScript -> Doc
 sumTypeToEncode (SumType _ cs _)
-  | isEnum cs = "E.encode E.enum"
+  | isEnum $ map snd cs = "E.encode E.enum"
   | otherwise =
-    case cs of
+    case map snd cs of
       [dc@(DataConstructor _ args)] ->
         hsep
           [ "E.encode $",
@@ -402,7 +393,7 @@ sumTypeToEncode (SumType _ cs _)
               else parens $ case_of [(constructorPattern dc, constructor args)],
             hang 2 $ ">$<" <+> nest 2 (argsToEncode args)
           ]
-      _ -> case_of (constructorToEncode <$> cs)
+      _ -> case_of (constructorToEncode . snd  <$> cs)
   where
     constructorToEncode c@(DataConstructor name args) =
       ( constructorPattern c,
@@ -472,15 +463,15 @@ typeToEncode _ = "E.value"
 
 sumTypeToDecode :: SumType 'PureScript -> Doc
 sumTypeToDecode (SumType _ cs _)
-  | isEnum cs = "D.enum"
-sumTypeToDecode (SumType _ [c] _) = "$" <+> constructorToDecode False c
+  | isEnum (map snd cs) = "D.enum"
+sumTypeToDecode (SumType _ [(_,c)] _) = "$" <+> constructorToDecode False c
 sumTypeToDecode (SumType t cs _) =
   line
     <> hsep
       [ "$ D.sumType",
         t ^. typeName . to textStrict . to dquotes,
         "$ Map.fromFoldable",
-        encloseVsep lbracket rbracket comma (constructorToTagged <$> cs)
+        encloseVsep lbracket rbracket comma (constructorToTagged . snd  <$> cs)
       ]
   where
     constructorToTagged dc =
@@ -552,12 +543,13 @@ sumTypeToOptics st =
   vsep $ punctuate line $ constructorOptics st <> recordOptics st
 
 constructorOptics :: SumType 'PureScript -> [Doc]
-constructorOptics (SumType t cs _) = constructorToOptic (length cs > 1) t <$> cs
+constructorOptics (SumType t cs _) = constructorToOptic (length cs > 1) t . snd <$> cs
+
 
 recordOptics :: SumType 'PureScript -> [Doc]
-recordOptics st@(SumType _ [DataConstructor _ (Record rs)] _) =
+recordOptics st@(SumType _ [(_,DataConstructor _ (Record rs))] _) =
   recordEntryToLens st <$> filter hasUnderscore (NE.toList rs)
-recordOptics _ = mempty
+recordOptics _ = []
 
 hasUnderscore :: RecordEntry lang -> Bool
 hasUnderscore (RecordEntry name _) = "_" `T.isPrefixOf` name

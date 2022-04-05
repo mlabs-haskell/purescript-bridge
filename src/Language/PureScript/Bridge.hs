@@ -15,6 +15,7 @@ module Language.PureScript.Bridge
   )
 where
 
+import Data.Bifunctor (Bifunctor(second))
 import Control.Applicative
 import Control.Lens (over, traversed)
 import qualified Data.Map as M
@@ -118,8 +119,8 @@ writePSTypesWith switch root bridge sts = do
 -- > bridgeSumType (buildBridge defaultBridge) (mkSumType @Foo)
 bridgeSumType :: FullBridge -> SumType 'Haskell -> SumType 'PureScript
 bridgeSumType br (SumType t cs is) =
-  SumType (br t) (map (bridgeConstructor br) cs) $ bridgeInstance <$> (is <> extraInstances)
-  where
+  SumType (br t) (map (second (bridgeConstructor br)) cs) $ bridgeInstance <$> (is <> extraInstances)
+ where
     bridgeInstance (Custom CustomInstance {..}) =
       Custom $
         CustomInstance
@@ -141,7 +142,7 @@ bridgeSumType br (SumType t cs is) =
     bridgeInstance Newtype = Newtype
     bridgeMember = over (memberDependencies . traversed) br
     extraInstances
-      | not (null cs) && all isNullary cs = [Enum, Bounded]
+      | not (null cs) && all (isNullary . snd)  cs = [Enum, Bounded]
       | otherwise = []
     isNullary (DataConstructor _ args) = args == Nullary
 
