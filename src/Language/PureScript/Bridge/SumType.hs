@@ -33,7 +33,7 @@ import qualified Data.Text as T
 import Data.Typeable
 import Generics.Deriving
 import Language.PureScript.Bridge.TypeInfo
-import Data.Kind
+import Data.Kind ( Type, Constraint )
 
 data ImportLine = ImportLine
   { importModule :: !Text,
@@ -67,10 +67,26 @@ sumTypeConstructors inj (SumType info constrs is) = (\cs -> SumType info cs is) 
 --   for doing type translations and writing it out to your PureScript modules.
 mkSumType :: forall t. (Generic t, Typeable t, GDataConstructor (Rep t))
           =>  SumType 'Haskell
-mkSumType  = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIndex : maybeToList (nootype . map snd  $  constructors))
+mkSumType  = SumType (mkTypeInfo @t) constructors (Generic :  maybeToList (nootype . map snd  $  constructors))
   where
     constructors = zip [0..] $  gToConstructors (from (undefined :: t))
 
+-- | Variant of @mkSumType@ which generates a purescript HasConstrIndex instance using the default ordering of
+--   constructors *without* a corresponding Haskell HasConstrIndices class. This should only be used if:
+--
+--   1) You are certain the constructor order matches the "default" order
+--
+--   2) You are certain the order of constructors will not change
+--
+--   3) You are not able to generate a HasConstrIndices (or equivalent) instance, probably because the type you are
+--   trying to translate to purescript is defined in a plutus-tx library.
+extremelyUnsafeMkSumType :: forall t. (Generic t, Typeable t, GDataConstructor (Rep t))
+                         => SumType 'Haskell
+extremelyUnsafeMkSumType = case mkSumType @t of
+  SumType tInfo constructors instances -> SumType tInfo constructors (instances <> [HasConstrIndex])
+
+-- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
+--   index information.
 mkSumTypeIndexed :: forall (c :: Type -> Constraint) t. (Generic t, Typeable t, c t, GDataConstructor (Rep t))
                  => (forall x. c x =>  [(Int,String)])
                  -> SumType 'Haskell
