@@ -312,7 +312,7 @@ instances st@(SumType t cs is) = go <$> is
         prettyIndices xs = listify (map mkIndex xs)
           where
             quote :: Text -> Doc
-            quote txt = "\"" <> textStrict txt <> "\""
+            quote  = dquotes . textStrict
             listify :: [Doc] -> Doc
             listify txts = text "[" <> foldr (\(x :: Doc) (acc :: Doc) -> if isEmpty acc then x else x <> "," <> acc) "" txts <> "]"
 
