@@ -140,6 +140,7 @@ bridgeSumType br (SumType t cs is) =
     bridgeInstance Ord = Ord
     bridgeInstance Generic = Generic
     bridgeInstance Newtype = Newtype
+    bridgeInstance HasConstrIndex = HasConstrIndex
     bridgeMember = over (memberDependencies . traversed) br
     extraInstances
       | not (null cs) && all (isNullary . snd)  cs = [Enum, Bounded]
