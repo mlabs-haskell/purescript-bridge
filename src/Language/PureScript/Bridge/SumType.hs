@@ -92,8 +92,8 @@ mkSumTypeIndexed :: forall (c :: Type -> Constraint) t. (Generic t, Typeable t, 
                  -> SumType 'Haskell
 mkSumTypeIndexed f  = SumType (mkTypeInfo  @t) constructors (Generic : HasConstrIndex : maybeToList (nootype . map snd  $  constructors))
   where
-    indices      = M.fromList . map (\(i,t) ->  (T.pack t, i)) $ f @t
-    constructors = foldr (\dcon@(DataConstructor name _) acc -> case M.lookup name indices of
+    ixs          = M.fromList . map (\(i,t) ->  (T.pack t, i)) $ f @t
+    constructors = foldr (\dcon@(DataConstructor name _) acc -> case M.lookup name ixs of
                              -- we want to error here
                              Nothing -> error . T.unpack $ "Constructor \"" <> name <> "\" does not have a specified index!"
                              Just i  -> (i,dcon) : acc) [] $ gToConstructors (from (undefined :: t))
@@ -268,6 +268,9 @@ instanceToTypes Enum =
   pure $ constraintToType $ TypeInfo "purescript-enums" "Data.Enum" "Enum" []
 instanceToTypes Bounded =
   pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Bounded" []
+-- fix this later (i don't think it matters now)
+instanceToTypes HasConstrIndex =
+  pure $ constraintToType $ TypeInfo "" "" "" []
 instanceToTypes (Custom CustomInstance {..}) =
   constraintToType _customHead : (fmap constraintToType _customConstraints <> implementationToTypes _customImplementation)
 
