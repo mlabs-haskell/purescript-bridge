@@ -311,11 +311,13 @@ instances st@(SumType t cs is) = go <$> is
         prettyIndices [] = error "empty list of indices!"
         prettyIndices xs = listify (map mkIndex xs)
           where
+            quote :: Text -> Doc
+            quote txt = "\"" <> textStrict txt <> "\""
             listify :: [Doc] -> Doc
             listify txts = text "[" <> foldr (\(x :: Doc) (acc :: Doc) -> if isEmpty acc then x else x <> "," <> acc) "" txts <> "]"
 
             mkIndex :: forall lang. (Int, DataConstructor lang) -> Doc
-            mkIndex (i,DataConstructor name _) = text "(" <> int i  <> text "," <> textStrict name <> text ")"
+            mkIndex (i,DataConstructor name _) = text "(" <> int i  <> text "," <> quote name <> text ")"
     go Bounded =
       mkInstance
         (mkType "Bounded" [t])
@@ -450,9 +452,6 @@ typeToEncode (TypeInfo "purescript-maybe" "Data.Maybe" "Maybe" [t]) =
 typeToEncode (TypeInfo "purescript-either" "Data.Either" "Either" [l, r]) =
   parens $
     "E.either" <+> typeToEncode l <+> typeToEncode r
-typeToEncode (TypeInfo "purescript-tuples" "Data.Tuple" "Tuple" ts) =
-  parens $
-    "E.tuple" <+> parens (hsep $ punctuate " >/\\<" $ typeToEncode <$> flattenTuple ts)
 typeToEncode (TypeInfo "purescript-tuples" "Data.Tuple" "Tuple" ts) =
   parens $
     "E.tuple" <+> parens (hsep $ punctuate " >/\\<" $ typeToEncode <$> flattenTuple ts)
