@@ -313,11 +313,12 @@ instances st@(SumType t cs is) = go <$> is
           where
             quote :: Text -> Doc
             quote  = dquotes . textStrict
+
             listify :: [Doc] -> Doc
-            listify txts = text "[" <> foldr (\(x :: Doc) (acc :: Doc) -> if isEmpty acc then x else x <> "," <> acc) "" txts <> "]"
+            listify txts = brackets $ foldr (\(x :: Doc) (acc :: Doc) -> if isEmpty acc then x else x <> "," <> acc) "" txts
 
             mkIndex :: forall lang. (Int, DataConstructor lang) -> Doc
-            mkIndex (i,DataConstructor name _) = text "(" <> int i  <> text "," <> quote name <> text ")"
+            mkIndex (i,DataConstructor name _) = text "Tuple" <+> int i  <+>  quote name
     go Bounded =
       mkInstance
         (mkType "Bounded" [t])
