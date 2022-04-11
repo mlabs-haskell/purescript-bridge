@@ -11,7 +11,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE RankNTypes #-}
@@ -303,7 +302,7 @@ instanceToImportLines Bounded =
     ]
 instanceToImportLines HasConstrIndex =
   importsFromList
-    [ ImportLine "ConstrIndices" $ Set.fromList ["constrIndices"],
+    [ ImportLine "ConstrIndices" $ Set.fromList ["constrIndices", "fromConstr2Index"],
       ImportLine "Data.Tuple" $ Set.fromList ["Tuple(..)"]
     ]
 instanceToImportLines (Custom CustomInstance {_customImplementation = Explicit members}) =
