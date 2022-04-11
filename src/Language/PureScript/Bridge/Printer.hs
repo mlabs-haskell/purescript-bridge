@@ -318,7 +318,7 @@ instances st@(SumType t cs is) = go <$> is
             listify txts = brackets $ foldr (\(x :: Doc) (acc :: Doc) -> if isEmpty acc then x else x <> "," <> acc) "" txts
 
             mkIndex :: forall lang. (Int, DataConstructor lang) -> Doc
-            mkIndex (i,DataConstructor name _) = text "Tuple" <+> int i  <+>  quote name
+            mkIndex (i,DataConstructor name _) = text "Tuple"  <+>  quote name <+> int i
     go Bounded =
       mkInstance
         (mkType "Bounded" [t])
