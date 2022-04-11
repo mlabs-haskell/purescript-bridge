@@ -303,9 +303,9 @@ instances st@(SumType t cs is) = go <$> is
 
     go HasConstrIndex =
       mkInstance
-        (mkType "HasConstrIndex" [t])
+        (mkType "HasConstrIndices" [t])
         (const [])
-        ["constrIndex = " <> prettyIndices cs]
+        ["constrIndices _ = fromConstr2Index " <> prettyIndices cs]
      where
         prettyIndices :: [(Int,DataConstructor 'PureScript)] -> Doc
         prettyIndices [] = error "empty list of indices!"

@@ -11,7 +11,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE RankNTypes #-}
@@ -270,7 +269,7 @@ instanceToTypes Bounded =
   pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Bounded" []
 -- fix this later (i don't think it matters now)
 instanceToTypes HasConstrIndex =
-  pure $ constraintToType $ TypeInfo "" "" "" []
+  pure $ constraintToType $ TypeInfo "cardano-browser-tx" "ConstrIndices" "HasConstrIndices" []
 instanceToTypes (Custom CustomInstance {..}) =
   constraintToType _customHead : (fmap constraintToType _customConstraints <> implementationToTypes _customImplementation)
 
@@ -300,6 +299,11 @@ instanceToImportLines Enum =
 instanceToImportLines Bounded =
   importsFromList
     [ ImportLine "Data.Bounded.Generic" $ Set.fromList ["genericBottom", "genericTop"]
+    ]
+instanceToImportLines HasConstrIndex =
+  importsFromList
+    [ ImportLine "ConstrIndices" $ Set.fromList ["constrIndices", "fromConstr2Index"],
+      ImportLine "Data.Tuple" $ Set.fromList ["Tuple(..)"]
     ]
 instanceToImportLines (Custom CustomInstance {_customImplementation = Explicit members}) =
   importsFromList $ concatMap (Map.elems . _memberImportLines) members
