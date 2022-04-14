@@ -63,6 +63,7 @@ library
                 , Language.PureScript.Bridge.Tuple
                 , Language.PureScript.Bridge.TypeInfo
                 , Language.PureScript.Bridge.TypeParameters
+                , PlutusTx.Aux
 
   -- Modules included in this library but not exported.
   -- other-modules:
@@ -81,6 +82,9 @@ library
                      , transformers
                      , wl-pprint-text
                      , generic-deriving
+                     , template-haskell
+                     , th-abstraction
+                     , plutus-tx
 
   ghc-options:       -Wall
                      -fwarn-incomplete-patterns

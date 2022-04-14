@@ -1,0 +1,8 @@
+-- Keep the index-state in tune with bot-plutus-interface
+index-state: 2022-01-22T00:00:00Z
+
+packages: ./*.cabal
+
+--tests: true
+
+write-ghc-environment-files: never
