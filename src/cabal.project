@@ -1,8 +1,0 @@
--- Keep the index-state in tune with bot-plutus-interface
-index-state: 2022-01-22T00:00:00Z
-
-packages: purescript-bridge
-
---tests: true
-
-write-ghc-environment-files: never

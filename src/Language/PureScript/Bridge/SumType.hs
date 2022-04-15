@@ -34,6 +34,9 @@ import Generics.Deriving
 import Language.PureScript.Bridge.TypeInfo
 import Data.Kind ( Type, Constraint )
 
+-- For Plutus ToData/FromData generation
+import PlutusTx.ConstrIndices
+
 data ImportLine = ImportLine
   { importModule :: !Text,
     importTypes :: !(Set Text)
@@ -85,17 +88,32 @@ extremelyUnsafeMkSumType = case mkSumType @t of
   SumType tInfo constructors instances -> SumType tInfo constructors (instances <> [HasConstrIndex])
 
 -- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
---   index information.
-mkSumTypeIndexed :: forall (c :: Type -> Constraint) t. (Generic t, Typeable t, c t, GDataConstructor (Rep t))
+--   index information. This is possibly obsolete due to the PlutusTx.Foo modules now in this project,
+--   however I'm leaving this in as a convenience just in case IOHK improves the ergonomics for accessing the indices
+mkSumTypeIndexed_ :: forall (c :: Type -> Constraint) t. (Generic t, Typeable t, c t, GDataConstructor (Rep t))
                  => (forall x. c x =>  [(Int,String)])
                  -> SumType 'Haskell
-mkSumTypeIndexed f  = SumType (mkTypeInfo  @t) constructors (Generic : HasConstrIndex : maybeToList (nootype . map snd  $  constructors))
+mkSumTypeIndexed_ f  = SumType (mkTypeInfo  @t) constructors (Generic : HasConstrIndex : maybeToList (nootype . map snd  $  constructors))
   where
     ixs          = M.fromList . map (\(i,t) ->  (T.pack t, i)) $ f @t
     constructors = foldr (\dcon@(DataConstructor name _) acc -> case M.lookup name ixs of
                              -- we want to error here
                              Nothing -> error . T.unpack $ "Constructor \"" <> name <> "\" does not have a specified index!"
                              Just i  -> (i,dcon) : acc) [] $ gToConstructors (from (undefined :: t))
+
+-- | Variant of @mkSumType@ which constructs a SumType using the HasConstrIndices class. Meant to be used with the template haskell
+--   hooks from the PlutusTx.Aux module in this project.
+mkSumTypeIndexed ::
+  forall (t :: Type).
+  ( Generic t
+  , Typeable t
+  , GDataConstructor (Rep t)
+  , HasConstrIndices t
+  ) =>
+  SumType 'Haskell
+mkSumTypeIndexed = mkSumTypeIndexed_ @HasConstrIndices @t (getConstrIndices @t)
+
+
 -- | Purescript typeclass instances that can be generated for your Haskell types.
 data Instance (lang :: Language)
   = Generic

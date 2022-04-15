@@ -64,6 +64,8 @@ library
                 , Language.PureScript.Bridge.TypeInfo
                 , Language.PureScript.Bridge.TypeParameters
                 , PlutusTx.Aux
+                , PlutusTx.LedgerTypes
+                , PlutusTx.ConstrIndices
 
   -- Modules included in this library but not exported.
   -- other-modules:
@@ -85,6 +87,7 @@ library
                      , template-haskell
                      , th-abstraction
                      , plutus-tx
+                     , plutus-ledger-api
 
   ghc-options:       -Wall
                      -fwarn-incomplete-patterns
@@ -96,7 +99,35 @@ library
   -- Base language which the package is written in.
   default-language:    Haskell2010
 
-
+  default-extensions:
+    AllowAmbiguousTypes
+    BangPatterns
+    DataKinds
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    ExplicitForAll
+    FlexibleContexts
+    FlexibleInstances
+    GADTs
+    KindSignatures
+    LambdaCase
+    MonoLocalBinds
+    MultiParamTypeClasses
+    NumericUnderscores
+    OverloadedStrings
+    QuasiQuotes
+    RankNTypes
+    RecordWildCards
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    TemplateHaskell
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    TypeSynonymInstances
 Test-Suite tests
   type:          exitcode-stdio-1.0
   main-is:       Spec.hs
