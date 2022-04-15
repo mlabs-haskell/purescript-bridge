@@ -3,7 +3,7 @@ module PlutusTx.Aux where
 import qualified Language.Haskell.TH as TH
 import qualified Language.Haskell.TH.Datatype as TH
 import qualified PlutusTx.IsData  as P
-import Prelude (Int, Maybe (Just, Nothing), fromIntegral, map, pure, zip, ($), (.), (<$>), (<>))
+import Prelude (Show(show),Int, Maybe (Just, Nothing), fromIntegral, map, pure, zip, ($), (.), (<$>), (<>))
 
 -- PlutusTx doesn't export this so we need to duplicate it here
 defaultIndex :: TH.Name -> TH.Q [(TH.Name, Int)]
@@ -12,10 +12,12 @@ defaultIndex name = do
   pure $ zip (TH.constructorName <$> TH.datatypeCons info) [0 ..]
 
 makeHasConstrIndex :: TH.Name -> [(TH.Name, Int)] -> TH.Q [TH.Dec]
-makeHasConstrIndex name indices =
-  pure [TH.InstanceD Nothing [] instanceType [getIndices]]
-  where
-    instanceType = TH.AppT classType (TH.ConT name)
+makeHasConstrIndex name indices = do
+  info <- TH.reifyDatatype name
+  let argTy = TH.datatypeType info
+  pure [TH.InstanceD Nothing [] (instanceType argTy) [getIndices]]
+ where
+    instanceType ty = TH.AppT classType ty
 
     classType = TH.ConT $ TH.mkName "HasConstrIndices"
 
@@ -54,3 +56,11 @@ mkIndicesDefault :: TH.Name -> TH.Q [TH.Dec]
 mkIndicesDefault name = do
   indices <- defaultIndex name
   makeHasConstrIndex name indices
+
+-- for testing/debugging
+
+showInfo :: TH.Name -> TH.Q TH.Exp
+showInfo name = (TH.LitE . TH.stringL . show) <$> TH.reifyDatatype  name
+
+showTy :: TH.Name -> TH.Q TH.Exp
+showTy name = (TH.LitE . TH.stringL . show . TH.datatypeType) <$> TH.reifyDatatype  name

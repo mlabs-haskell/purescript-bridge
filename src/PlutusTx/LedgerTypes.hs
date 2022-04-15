@@ -6,6 +6,7 @@ module PlutusTx.LedgerTypes where
 import PlutusTx.ConstrIndices ()
 import Language.PureScript.Bridge.SumType
 import Language.PureScript.Bridge.TypeInfo
+import Language.PureScript.Bridge.TypeParameters (A)
 
 -- Ledger type imports
 import Plutus.V1.Ledger.Ada (Ada)
@@ -15,6 +16,7 @@ import Plutus.V1.Ledger.Contexts (ScriptContext,ScriptPurpose,TxInfo,TxInInfo)
 import Plutus.V1.Ledger.Credential (StakingCredential, Credential)
 import Plutus.V1.Ledger.Crypto (PubKey,PubKeyHash,PrivateKey,Signature)
 import Plutus.V1.Ledger.DCert (DCert)
+import Plutus.V1.Ledger.Interval (Interval, UpperBound, LowerBound, Extended)
 import Plutus.V1.Ledger.Value (CurrencySymbol, AssetClass, Value, TokenName)
 import Plutus.V1.Ledger.TxId (TxId)
 import Plutus.V1.Ledger.Tx (TxOut,TxOutRef)
@@ -61,9 +63,13 @@ ledgerTypes =
   , extremelyUnsafeMkSumType @LedgerBytes
   , extremelyUnsafeMkSumType @Address
   , extremelyUnsafeMkSumType @Ada
+  , extremelyUnsafeMkSumType @(Interval A)
+  , extremelyUnsafeMkSumType @(LowerBound A)
+  , extremelyUnsafeMkSumType @(UpperBound A)
 
   -- True sum types, HasConstrIndices instances generated in the PlutusTx.ConstrIndices module
   , mkSumTypeIndexed @DCert
+  , mkSumTypeIndexed @(Extended A)
   , mkSumTypeIndexed @StakingCredential
   , mkSumTypeIndexed @Credential
   , mkSumTypeIndexed @ScriptPurpose

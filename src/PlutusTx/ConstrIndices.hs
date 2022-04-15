@@ -4,6 +4,7 @@ import Data.Kind (Type)
 import Prelude (Int, String)
 import PlutusTx.Aux
 
+import Plutus.V1.Ledger.Interval (Extended(..))
 import Plutus.V1.Ledger.DCert (DCert(..))
 import Plutus.V1.Ledger.Credential (StakingCredential(..), Credential(..))
 import Plutus.V1.Ledger.Contexts (ScriptPurpose(..))
@@ -40,3 +41,5 @@ makeHasConstrIndex ''ScriptPurpose [ ('Minting,0)
                                    , ('Rewarding,2)
                                    , ('Certifying,3)
                                    ]
+
+makeHasConstrIndex ''Extended [('NegInf,0),('Finite,1),('PosInf,2)]
