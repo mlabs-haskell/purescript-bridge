@@ -4,8 +4,7 @@ module PlutusTx.LedgerTypes where
 
 -- local imports
 import PlutusTx.ConstrIndices ()
-import Language.PureScript.Bridge.SumType
-import Language.PureScript.Bridge.TypeInfo
+import Language.PureScript.Bridge
 import Language.PureScript.Bridge.TypeParameters (A)
 
 -- Ledger type imports
@@ -32,6 +31,18 @@ import Plutus.V1.Ledger.Scripts (
   StakeValidatorHash,
  )
 
+-- other imports
+import Data.Text
+
+writeLedgerTypes :: FilePath -> IO ()
+writeLedgerTypes fp = writeLedgerTypesAnd fp []
+
+writeLedgerTypesAnd :: FilePath -> [SumType 'Haskell] -> IO ()
+writeLedgerTypesAnd fp myTypes =
+  writePSTypes
+    fp
+    (buildBridge (defaultBridge <|> plutusBridge))
+    (ledgerTypes <> myTypes)
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
@@ -74,3 +85,43 @@ ledgerTypes =
   , mkSumTypeIndexed @Credential
   , mkSumTypeIndexed @ScriptPurpose
   ]
+
+-- I'm leaving this commented b/c I'm not sure what the module structure for the ledger types should be.
+-- My assumption was that, like Plutarch, we'd just shove everything into it's respective Plutus.V1.Ledger module
+plutusBridge :: BridgeBuilder PSType
+plutusBridge =
+ -- cbtxBridge "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
+  --  <|> cbtxBridge "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
+  --  <|> cbtxBridge "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
+  --  <|> cbtxBridge "Plutus.V1.Ledger.Address" "Address" "Serialization.Address" "Address"
+     cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinByteString" "Types.ByteArray" "ByteArray"
+  --  <|> cbtxBridge "Plutus.V1.Ledger.Bytes" "LedgerBytes" "Types.ByteArray" "ByteArray"
+  -- <|> cbtxBridge "Plutus.V1.Ledger.Time" "POSIXTime" "Types.Interval" "POSIXTime"
+    <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
+    <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Data.Rational" "Rational"
+  --  <|> assetClassBridge
+
+cbtxBridge :: Text -> Text -> Text -> Text -> BridgePart
+cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
+  typeModule ^== haskTypeModule
+  typeName ^== haskTypeName
+  return $
+    TypeInfo
+      { _typePackage = "plutonomicon-cardano-browser-tx"
+      , _typeModule = psTypeModule
+      , _typeName = psTypeName
+      , _typeParameters = []
+      }
+{-
+assetClassBridge :: BridgePart
+assetClassBridge = do
+  typeModule ^== "Plutus.V1.Ledger.Value"
+  typeName ^== "AssetClass"
+  return $
+    TypeInfo
+      { _typePackage = "plutonomicon-cardano-browser-tx"
+      , _typeModule = "Data.Tuple"
+      , _typeName = "Tuple"
+      , _typeParameters = [TypeInfo "" "Types.Value" "CurrencySymbol" [], TypeInfo "" "Types.Value" "TokenName" []]
+      }
+-}
