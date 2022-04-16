@@ -137,15 +137,21 @@ Test-Suite tests
                , RoundTrip.Types
   build-depends: aeson
                , bytestring
+               , containers
                , HUnit
                , base
                , containers
                , directory
                , hspec
                , hspec-expectations-pretty-diff
+               , mtl
+               , transformers
                , process
                , purescript-bridge
                , QuickCheck
+               , random
+               , template-haskell
+               , th-abstraction
                , text
                , utf8-string
                , wl-pprint-text
