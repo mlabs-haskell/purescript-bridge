@@ -30,7 +30,7 @@ In cases where you are _certain_ that the index information for a type will neve
 
 ## A Plutus.V1.Ledger Type Package 
 
-Because almost anyone using this library will probably want PureScript versions of those `Plutus.V1.Ledger.X` which have `Lift`/`ToData`/`FromData` instances, functions for generating those types are provided in this project's `PlutusTx.LedgerTypes` module. 
+Because almost anyone using this library will probably want PureScript versions of those `Plutus.V1.Ledger.X` types that have `Lift`/`ToData`/`FromData` instances, functions for generating those types are provided in this project's `PlutusTx.LedgerTypes` module. 
 
 If you want to generate _only_ the Ledger types (and not generate PureScript versions of your own Haskell types), use `writeLedgerTypes :: FilePath -> IO ()`. The Sample directory in this project's root folder provides an example of the output of that function. 
 
