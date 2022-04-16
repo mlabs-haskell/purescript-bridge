@@ -8,13 +8,10 @@
 
     plutip.url = "github:mlabs-haskell/plutip?rev=88d069d68c41bfd31b2057446a9d4e584a4d2f32";
 
-    plutarch.url = "github:Plutonomicon/plutarch";
-    plutarch.inputs.haskell-nix.follows = "plutip/haskell-nix";
-    plutarch.inputs.nixpkgs.follows = "plutip/nixpkgs";
   };
 
 
-  outputs = inputs@{ self, nixpkgs, haskell-nix, plutarch, plutip, ... }:
+  outputs = inputs@{ self, nixpkgs, haskell-nix, plutip, ... }:
     let
       # GENERAL
       supportedSystems = with nixpkgs.lib.systems.supported; tier1 ++ tier2 ++ tier3;
@@ -27,76 +24,8 @@
       };
       nixpkgsFor' = system: import nixpkgs { inherit system; };
 
-      formatCheckFor = system:
-        let
-          pkgs = nixpkgsFor system;
-          pkgs' = nixpkgsFor' system;
-        in
-        pkgs.runCommand "format-check"
-          {
-            nativeBuildInputs = [
-              pkgs'.git
-              pkgs'.fd
-              pkgs'.haskellPackages.cabal-fmt
-              pkgs'.nixpkgs-fmt
-              (pkgs.haskell-nix.tools onchain.ghcVersion { inherit (plutarch.tools) fourmolu; }).fourmolu
-            ];
-          } ''
-          export LC_CTYPE=C.UTF-8
-          export LC_ALL=C.UTF-8
-          export LANG=C.UTF-8
-          cd ${self}
-          make format_check
-          mkdir $out
-        ''
-      ;
 
       deferPluginErrors = true;
-
-      # ONCHAIN / Plutarch
-
-      onchain = rec {
-        ghcVersion = "ghc8107";
-
-        projectFor = system:
-          let pkgs = nixpkgsFor system; in
-          let pkgs' = nixpkgsFor' system; in
-          (nixpkgsFor system).haskell-nix.cabalProject' {
-            src = ./.;
-            compiler-nix-name = ghcVersion;
-            inherit (plutarch) cabalProjectLocal;
-            extraSources = plutarch.extraSources ++ [
-              {
-                src = inputs.plutarch;
-                subdirs = [ "." ];
-              }
-            ];
-            modules = [ (plutarch.haskellModule system) ];
-            shell = {
-              withHoogle = true;
-
-              exactDeps = true;
-
-              # We use the ones from Nixpkgs, since they are cached reliably.
-              # Eventually we will probably want to build these with haskell.nix.
-              nativeBuildInputs = [
-                pkgs'.cabal-install
-                pkgs'.fd
-                pkgs'.haskellPackages.apply-refact
-                pkgs'.haskellPackages.cabal-fmt
-                pkgs'.hlint
-                pkgs'.nixpkgs-fmt
-              ];
-
-              inherit (plutarch) tools;
-
-              additional = ps: [
-                ps.plutarch
-               # ps.tasty-quickcheck
-              ];
-            };
-          };
-      };
 
       # OFFCHAIN / Testnet, Cardano, ...
 
@@ -162,26 +91,16 @@
     {
       inherit nixpkgsFor;
 
-      onchain = {
-        project = perSystem onchain.projectFor;
-        flake = perSystem (system: (onchain.projectFor system).flake { });
-      };
-
       offchain = {
         project = perSystem offchain.projectFor;
         flake = perSystem (system: (offchain.projectFor system).flake { });
       };
 
       packages = perSystem (system:
-        self.onchain.flake.${system}.packages
-        // self.offchain.flake.${system}.packages
+        self.offchain.flake.${system}.packages
       );
       checks = perSystem (system:
-        self.onchain.flake.${system}.checks
-        // self.offchain.flake.${system}.checks
-        // {
-          formatCheck = formatCheckFor system;
-        }
+        self.offchain.flake.${system}.checks
       );
       check = perSystem (system:
         (nixpkgsFor system).runCommand "combined-test"
@@ -200,8 +119,7 @@
       );
 
       devShells = perSystem (system: {
-        onchain = self.onchain.flake.${system}.devShell;
-        offchain = self.offchain.flake.${system}.devShell;
+        purescript-bridge = self.offchain.flake.${system}.devShell;
       });
     };
 }
