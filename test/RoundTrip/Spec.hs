@@ -62,7 +62,7 @@ import System.Process (
  )
 import Test.HUnit (assertBool, assertEqual)
 import Test.Hspec (Spec, around, aroundAll_, around_, describe, it)
-import Test.Hspec.Expectations.Pretty (shouldBe)
+import Test.Hspec.Expectations (shouldBe)
 import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck (noShrinking, once, verbose, withMaxSuccess)
 import Test.QuickCheck.Property (Testable (property))
@@ -109,6 +109,7 @@ roundtripSpec = do
   where
     withApp = bracket runApp killApp
     runApp = do
+      runInteractiveCommand "spago build"
       (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
       mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
       -- Wait until Spago is done with the build

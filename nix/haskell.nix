@@ -1,12 +1,41 @@
-{ src, pkgs, easy-ps, system }:
-
-pkgs.haskell-nix.project' {
+{ src, system, pkgs, easy-ps, inputs, extraSources }:
+let
+  # Poor caching due to overlay
+  pkgs' = import inputs.nixpkgs {
+    overlays =
+      [ inputs.haskell-nix.overlay (import "${inputs.iohk-nix}/overlays/crypto") ];
+    inherit system;
+    inherit (inputs.haskell-nix) config;
+  };
+in
+pkgs'.haskell-nix.cabalProject' {
   inherit src;
   compiler-nix-name = "ghc8107";
+  cabalProjectFileName = "cabal.project";
   modules = [
     ({ config, ... }: {
       packages = {
         allComponent.doHoogle = true;
+
+        # Massaging the compilation
+        plutus-ledger.doHaddock = false;
+        plutus-ledger.flags.defer-plugin-errors = false;
+        plutus-contract.doHaddock = false;
+        plutus-contract.flags.defer-plugin-errors = false;
+        plutus-use-cases.doHaddock = false;
+        plutus-use-cases.flags.defer-plugin-errors = false;
+
+        cardano-crypto-praos.components.library.pkgconfig =
+          pkgs'.lib.mkForce [ [ pkgs'.libsodium-vrf ] ];
+
+        cardano-crypto-class.components.library.pkgconfig =
+          pkgs'.lib.mkForce [ [ pkgs'.libsodium-vrf ] ];
+
+        cardano-wallet-core.components.library.build-tools =
+          [ pkgs'.buildPackages.buildPackages.gitMinimal ];
+
+        cardano-config.components.library.build-tools =
+          [ pkgs'.buildPackages.buildPackages.gitMinimal ];
 
         # Required for Spago based `around` tests
         purescript-bridge.components.tests.tests.build-tools =
@@ -23,6 +52,8 @@ pkgs.haskell-nix.project' {
 
     })
   ];
+
+  inherit extraSources;
 
   shell = {
 
@@ -64,6 +95,9 @@ pkgs.haskell-nix.project' {
       nodePackages.jsonlint
     ];
 
+    # Add here so `cabal build` can find them
+    additional = ps: [ ps.plutus-tx ps.plutus-ledger-api ];
+
     tools = { haskell-language-server = "latest"; };
 
     shellHook = ''
@@ -72,5 +106,4 @@ pkgs.haskell-nix.project' {
       export LANG=C.UTF-8
     '';
   };
-  extraSources = [ ];
 }

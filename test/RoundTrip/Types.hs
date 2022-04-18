@@ -20,7 +20,7 @@ import System.Exit (ExitCode (ExitSuccess))
 import System.Process (readProcessWithExitCode)
 import Test.HUnit (assertEqual)
 import Test.Hspec (Spec, aroundAll_, describe, it)
-import Test.Hspec.Expectations.Pretty (shouldBe)
+import Test.Hspec.Expectations (shouldBe)
 import Test.QuickCheck (Arbitrary (..), chooseEnum, oneof, resize, sized)
 
 data TestData

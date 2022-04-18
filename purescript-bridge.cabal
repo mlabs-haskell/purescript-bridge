@@ -41,16 +41,13 @@ build-type:         Simple
 cabal-version:      >=1.10
 extra-source-files: README.md
 
-source-repository head
-  type:     git
-  location: https://github.com/eskimor/purescript-bridge.git
-
 library
   -- Modules exported by the library.
   exposed-modules:
     Language.PureScript.Bridge
     Language.PureScript.Bridge.Builder
     Language.PureScript.Bridge.CodeGenSwitches
+    Language.PureScript.Bridge.Plutus
     Language.PureScript.Bridge.Primitives
     Language.PureScript.Bridge.Printer
     Language.PureScript.Bridge.PSTypes
@@ -58,6 +55,7 @@ library
     Language.PureScript.Bridge.Tuple
     Language.PureScript.Bridge.TypeInfo
     Language.PureScript.Bridge.TypeParameters
+    PlutusTx.Aux
 
   -- Modules included in this library but not exported.
   -- other-modules:
@@ -119,14 +117,18 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:
-      base              >=4.8 && <6.0
+      base               >=4.8 && <6.0
     , containers
     , directory
     , filepath
     , generic-deriving
     , lens
     , mtl
+    , plutus-ledger-api
+    , plutus-tx
+    , template-haskell
     , text
+    , th-abstraction
     , transformers
     , wl-pprint-text
 
@@ -209,7 +211,7 @@ test-suite tests
     , containers
     , directory
     , hspec
-    , hspec-expectations-pretty-diff
+    , hspec-expectations
     , HUnit
     , process
     , purescript-bridge

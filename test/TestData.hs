@@ -6,6 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
@@ -40,6 +41,7 @@ import Language.PureScript.Bridge (
  )
 import Language.PureScript.Bridge.CodeGenSwitches (defaultSettings)
 import Language.PureScript.Bridge.PSTypes (psString)
+import PlutusTx.Aux (HasConstrIndices (getConstrIndices), mkIndicesDefault)
 
 -- Check that examples compile:
 textBridge :: BridgePart
@@ -95,6 +97,8 @@ data TwoRecords
       , _srd :: [Int]
       }
   deriving stock (Generic, Typeable, Show)
+
+mkIndicesDefault ''TwoRecords
 
 newtype SomeNewtype = SomeNewtype Int
   deriving stock (Generic, Typeable, Show)
