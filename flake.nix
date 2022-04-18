@@ -43,7 +43,13 @@
             purs
             purescript-language-server
             spago
-            haskellPackages.ormolu
+            haskellPackages.fourmolu
+            nodejs
+            dhall
+            dhall-lsp-server
+            nodejs
+            nodePackages.node2nix
+            nodePackages.jsonlint
           ];
         };
       });

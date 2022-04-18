@@ -5,7 +5,7 @@ import Prelude
 import Data.Argonaut.Core (stringify)
 import Data.Argonaut.Decode (JsonDecodeError, decodeJson, parseJson, printJsonDecodeError)
 import Data.Argonaut.Encode (encodeJson)
-import Data.Either (Either(..))
+import Data.Either (Either(Left, Right))
 import Effect (Effect)
 import Effect.Class.Console (error, log)
 import Node.ReadLine (createConsoleInterface, noCompletion, question)
@@ -17,7 +17,7 @@ main = do
   log "ready"
   go interface
   where
-  go interface = 
+  go interface =
     interface # question "" \input -> do
       let
         parsed :: Either JsonDecodeError TestData
@@ -31,3 +31,4 @@ main = do
           error ""
           log $ stringify $ encodeJson testData
       go interface
+

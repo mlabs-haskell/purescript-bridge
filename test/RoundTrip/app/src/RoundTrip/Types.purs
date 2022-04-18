@@ -5,10 +5,10 @@ import Prelude
 
 import Control.Lazy (defer)
 import Data.Argonaut.Core (jsonNull)
-import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>))
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
 import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<))
+import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Bounded.Generic (genericBottom, genericTop)
 import Data.Either (Either)
 import Data.Enum (class Enum)
@@ -18,7 +18,7 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Map (Map)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe, Maybe(Nothing, Just))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Set (Set)
 import Data.Show.Generic (genericShow)
@@ -105,7 +105,7 @@ derive instance Ord TestSum
 
 instance EncodeJson TestSum where
   encodeJson = defer \_ -> case _ of
-    Nullary -> encodeJson { tag: "Nullary", contents: jsonNull }
+    Nullary -> encodeJson { tag: "Nullary" }
     Bool a -> E.encodeTagged "Bool" a E.value
     Int a -> E.encodeTagged "Int" a E.value
     Number a -> E.encodeTagged "Number" a E.value
@@ -298,7 +298,7 @@ derive instance Ord TestRecursiveA
 
 instance EncodeJson TestRecursiveA where
   encodeJson = defer \_ -> case _ of
-    Nil -> encodeJson { tag: "Nil", contents: jsonNull }
+    Nil -> encodeJson { tag: "Nil" }
     Recurse a -> E.encodeTagged "Recurse" a E.value
 
 instance DecodeJson TestRecursiveA where
@@ -456,14 +456,14 @@ data TestMultiInlineRecords
     , _bar2 :: Boolean
     }
 
-derive instance eqTestMultiInlineRecords :: Eq TestMultiInlineRecords
+derive instance Eq TestMultiInlineRecords
 
-instance showTestMultiInlineRecords :: Show TestMultiInlineRecords where
+instance Show TestMultiInlineRecords where
   show a = genericShow a
 
-derive instance ordTestMultiInlineRecords :: Ord TestMultiInlineRecords
+derive instance Ord TestMultiInlineRecords
 
-instance encodeJsonTestMultiInlineRecords :: EncodeJson TestMultiInlineRecords where
+instance EncodeJson TestMultiInlineRecords where
   encodeJson = defer \_ -> case _ of
     Foo {_foo1, _foo2} -> encodeJson
       { tag: "Foo"
@@ -476,7 +476,7 @@ instance encodeJsonTestMultiInlineRecords :: EncodeJson TestMultiInlineRecords w
       , _bar2: flip E.encode _bar2 E.value
       }
 
-instance decodeJsonTestMultiInlineRecords :: DecodeJson TestMultiInlineRecords where
+instance DecodeJson TestMultiInlineRecords where
   decodeJson = defer \_ -> D.decode
     $ D.sumType "TestMultiInlineRecords" $ Map.fromFoldable
       [ "Foo" /\ (Foo <$> D.object "Foo"
@@ -489,7 +489,7 @@ instance decodeJsonTestMultiInlineRecords :: DecodeJson TestMultiInlineRecords w
         })
       ]
 
-derive instance genericTestMultiInlineRecords :: Generic TestMultiInlineRecords _
+derive instance Generic TestMultiInlineRecords _
 
 --------------------------------------------------------------------------------
 
