@@ -635,7 +635,7 @@ constructorToOptic hasOtherConstructors typeInfo (DataConstructor n args) =
     (Record rs, True) ->
       prism pName typeInfo (recordType rs) fromExpr toExpr cName
       where
-        fromExpr = parens $ pattern n toExpr
+        fromExpr = parens $ pattern' n toExpr
         toExpr = "a"
   where
     cName = textStrict n
@@ -710,7 +710,7 @@ nullaryExpr :: Doc
 nullaryExpr = "unit"
 
 normalPattern :: Text -> NonEmpty PSType -> Doc
-normalPattern name = pattern name . hsep . normalLabels
+normalPattern name = pattern' name . hsep . normalLabels
 
 normalExpr :: NonEmpty PSType -> Doc
 normalExpr (_ :| []) = "a"
@@ -720,7 +720,7 @@ normalLabels :: NonEmpty PSType -> [Doc]
 normalLabels = fmap char . zipWith const ['a' ..] . NE.toList
 
 recordPattern :: Text -> NonEmpty (RecordEntry 'PureScript) -> Doc
-recordPattern name = pattern name . hrecord . fields
+recordPattern name = pattern' name . hrecord . fields
 
 vrecord :: [Doc] -> Doc
 vrecord = encloseVsep lbrace rbrace comma
@@ -740,8 +740,8 @@ fieldSignatures = fmap fieldSignature . NE.toList
 fieldSignature :: RecordEntry 'PureScript -> Doc
 fieldSignature = uncurry signature' . (field &&& _recValue)
 
-pattern :: Text -> Doc -> Doc
-pattern name = (textStrict name <+>)
+pattern' :: Text -> Doc -> Doc
+pattern' name = (textStrict name <+>)
 
 case_of :: [(Doc, Doc)] -> Doc
 case_of = caseOf "_"

@@ -128,7 +128,7 @@ import Language.PureScript.Bridge.Printer as Bridge
       field,
       fieldSignatures,
       fieldSignature,
-      pattern,
+      pattern',
       case_of,
       caseOf,
       branch,

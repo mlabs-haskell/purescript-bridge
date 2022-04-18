@@ -72,5 +72,5 @@ pkgs.haskell-nix.project' {
       export LANG=C.UTF-8
     '';
   };
-  extraSources = [];
+  extraSources = [ ];
 }

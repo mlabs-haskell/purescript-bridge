@@ -3,7 +3,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-
 -- | PureScript types to be used for bridges, e.g. in "Language.PureScript.Bridge.Primitives".
 module Language.PureScript.Bridge.PSTypes where
 
