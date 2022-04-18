@@ -55,12 +55,9 @@ let
 
   # Shell scripts.
   sScript = {
-    check-formatting = ./scripts/check-formatting.sh;
     format = ./scripts/format.sh;
-    lint = ./scripts/lint.sh;
     lint-inplace = ./scripts/lint-inplace.sh;
   };
-
 in
 {
   "format" = makeCIAction {

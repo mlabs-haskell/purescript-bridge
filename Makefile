@@ -1,6 +1,7 @@
 current-system := $(shell nix eval --impure --expr builtins.currentSystem)
 
 NIX_BUILD:= nix -L --show-trace build
+NIX_RUN:= nix -L --show-trace run
 
 # Tests
 test:
@@ -16,7 +17,7 @@ build-test-all: build-all test-all
 
 # Fix files
 fix-files:
-	./nix/scripts/format.sh
+	$(NIX_RUN) .#$@.${current-system}
 
 # Check files
 check-files:
