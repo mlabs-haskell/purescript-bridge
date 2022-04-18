@@ -7,6 +7,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore SingleValueConstr #-}
 
 module TestData where
 
@@ -80,7 +83,7 @@ data SingleRecord a b = SingleRecord
   , _b :: b
   , c :: String
   }
-  deriving (Generic, Eq, Ord, Typeable, Show)
+  deriving stock (Generic, Eq, Ord, Typeable, Show)
 
 data TwoRecords
   = FirstRecord
@@ -91,7 +94,7 @@ data TwoRecords
       { _src :: Int
       , _srd :: [Int]
       }
-  deriving (Generic, Typeable, Show)
+  deriving stock (Generic, Typeable, Show)
 
 newtype SomeNewtype = SomeNewtype Int
   deriving stock (Generic, Typeable, Show)

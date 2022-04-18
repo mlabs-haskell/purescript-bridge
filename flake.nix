@@ -20,10 +20,11 @@
         easy-ps = import inputs.easy-ps { inherit pkgs; };
         pursBridgeHsProjectFor = system: import ./nix/haskell.nix { inherit system pkgs easy-ps src; };
         pursBridgeFlakeFor = system: (pursBridgeHsProjectFor system).flake { };
+        fileCheckers = (import ./nix/code-quality.nix { projectName = ""; inherit pkgs easy-ps; }).checkers pkgs;
       in
       {
         # Useful attributes
-        inherit pkgs;
+        inherit pkgs fileCheckers;
         pursBridgeFlake = pursBridgeFlakeFor system;
 
         # Flake standard attributes
@@ -32,6 +33,16 @@
         devShells = {
           "default" = self.pursBridgeFlake.${system}.devShell;
         };
+
+        # Used by CI
+        build-all = pkgs.runCommand "build-all"
+          (self.packages.${system} // self.devShells.${system})
+          "touch $out";
+
+        check-files = pkgs.runCommand "check-files"
+          (builtins.mapAttrs (_: v: v src) fileCheckers)
+          "touch $out";
+
       }
     );
 }
