@@ -5,7 +5,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 {- | A bridge builder DSL, powered by 'Monad', 'Alternative' and lens.
 
@@ -36,18 +35,27 @@ module Language.PureScript.Bridge.Builder (
   buildBridgeWithCustomFixUp,
 ) where
 
-import Control.Applicative
-import Control.Lens
+import Control.Applicative (Alternative (empty, (<|>)))
+import Control.Lens (Getter, Lens', to, view, views, (^.))
 import Control.Monad (MonadPlus, guard, mplus, mzero)
-import Control.Monad.Reader.Class
+import Control.Monad.Reader.Class (MonadReader)
 import Control.Monad.Trans.Reader (Reader, ReaderT (..), runReader)
 import Data.Maybe (fromMaybe)
 import Data.Text qualified as T
-import Language.PureScript.Bridge.TypeInfo
+import Language.PureScript.Bridge.TypeInfo (
+  HasHaskType (..),
+  HaskellType,
+  PSType,
+  TypeInfo (..),
+  typeModule,
+  typeName,
+  typePackage,
+  typeParameters,
+ )
 
 newtype BridgeBuilder a
   = BridgeBuilder (ReaderT BridgeData Maybe a)
-  deriving (Functor, Applicative, Monad, MonadReader BridgeData)
+  deriving newtype (Functor, Applicative, Monad, MonadReader BridgeData)
 
 type BridgePart = BridgeBuilder PSType
 
@@ -79,7 +87,7 @@ type BridgePart = BridgeBuilder PSType
 -}
 newtype FixUpBuilder a
   = FixUpBuilder (Reader BridgeData a)
-  deriving (Functor, Applicative, Monad, MonadReader BridgeData)
+  deriving newtype (Functor, Applicative, Monad, MonadReader BridgeData)
 
 type FixUpBridge = FixUpBuilder PSType
 

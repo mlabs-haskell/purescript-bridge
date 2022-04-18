@@ -14,7 +14,6 @@
   , "ordered-collections"
   , "prelude"
   , "profunctor-lenses"
-  , "psci-support"
   , "tuples"
   ]
 , packages = ./packages.dhall

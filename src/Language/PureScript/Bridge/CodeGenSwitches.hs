@@ -16,7 +16,7 @@ newtype Settings = Settings
   { -- | use purescript-profunctor-lens for generated PS-types?
     generateLenses :: Bool
   }
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 -- | Settings to generate Lenses
 defaultSettings :: Settings

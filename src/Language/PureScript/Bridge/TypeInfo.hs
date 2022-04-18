@@ -7,7 +7,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module Language.PureScript.Bridge.TypeInfo (
   TypeInfo (..),
@@ -25,11 +24,20 @@ module Language.PureScript.Bridge.TypeInfo (
   flattenTypeInfo,
 ) where
 
-import Control.Lens
-import Data.Proxy
+import Control.Lens (Lens', makeLenses)
+import Data.Proxy (Proxy (Proxy))
 import Data.Text (Text)
 import Data.Text qualified as T
-import Data.Typeable
+import Data.Typeable (
+  TypeRep,
+  Typeable,
+  tyConModule,
+  tyConName,
+  tyConPackage,
+  typeRep,
+  typeRepArgs,
+  typeRepTyCon,
+ )
 
 data Language
   = Haskell
@@ -44,7 +52,7 @@ data TypeInfo (lang :: Language) = TypeInfo
   , _typeName :: !Text
   , _typeParameters :: ![TypeInfo lang]
   }
-  deriving (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show)
 
 makeLenses ''TypeInfo
 

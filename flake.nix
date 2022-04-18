@@ -7,57 +7,31 @@
     url = "github:justinwoo/easy-purescript-nix";
     flake = false;
   };
-  outputs = { self, nixpkgs, flake-utils, haskell-nix, easy-ps }:
+  outputs = inputs@{ self, nixpkgs, flake-utils, haskell-nix, ... }:
     flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
       let
-        overlays = [
-          haskell-nix.overlay
-          (final: prev: {
-            # This overlay adds our project to pkgs
-            purescript-bridge =
-              final.haskell-nix.project' {
-                src = ./.;
-                compiler-nix-name = "ghc8107";
-              };
-          })
-        ];
-        pkgs = import nixpkgs { inherit system overlays; inherit (haskell-nix) config; };
-        flake = pkgs.purescript-bridge.flake { };
-      in
-      flake // {
-        # Built by `nix build .`
-        defaultPackage = flake.packages."purescript-bridge:test:purescript-bridge";
-        devShell = pkgs.purescript-bridge.shellFor {
-          withHoogle = true;
-          tools = {
-            cabal = "latest";
-            hlint = "latest";
-            haskell-language-server = "latest";
-          };
-
-          exactDeps = true;
-
-          buildInputs = with pkgs; with import easy-ps { inherit pkgs; }; [
-            ghcid
-            nixpkgs-fmt
-            purs
-            purescript-language-server
-            spago
-            haskellPackages.fourmolu
-            nodejs
-            dhall
-            dhall-lsp-server
-            nodejs
-            nodePackages.node2nix
-            nodePackages.jsonlint
-            cabal-install
-            hlint
-            haskellPackages.hasktags
-            haskellPackages.cabal-fmt
-            nixpkgs-fmt
-            shellcheck
-            shfmt
-          ];
+        src = ./.;
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays =
+            [ haskell-nix.overlay ];
+          inherit (haskell-nix) config;
         };
-      });
+        easy-ps = import inputs.easy-ps { inherit pkgs; };
+        pursBridgeHsProjectFor = system: import ./nix/haskell.nix { inherit system pkgs easy-ps src; };
+        pursBridgeFlakeFor = system: (pursBridgeHsProjectFor system).flake { };
+      in
+      {
+        # Useful attributes
+        inherit pkgs;
+        pursBridgeFlake = pursBridgeFlakeFor system;
+
+        # Flake standard attributes
+        packages = self.pursBridgeFlake.${system}.packages;
+        checks = self.pursBridgeFlake.${system}.checks;
+        devShells = {
+          "default" = self.pursBridgeFlake.${system}.devShell;
+        };
+      }
+    );
 }

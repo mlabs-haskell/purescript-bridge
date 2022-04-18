@@ -16,29 +16,49 @@ import Data.Char (isLower)
 import Data.Function (on, (&))
 import Data.List (groupBy, nubBy, sortBy)
 import Data.List.NonEmpty (NonEmpty ((:|)))
-import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict qualified as Map
 import Data.Maybe (catMaybes, fromMaybe, isJust)
 import Data.Set (Set)
-import qualified Data.Set as Set
+import Data.Set qualified as Set
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import qualified Language.PureScript.Bridge.CodeGenSwitches as Switches
+import Data.Text qualified as T
+import Data.Text.IO qualified as T
+import Language.PureScript.Bridge.CodeGenSwitches qualified as Switches
 import Language.PureScript.Bridge.PSTypes (psUnit)
 import Language.PureScript.Bridge.SumType (
-  CustomInstance (..),
-  DataConstructor (..),
+  CustomInstance (
+    CustomInstance,
+    _customConstraints,
+    _customHead,
+    _customImplementation
+  ),
+  DataConstructor (DataConstructor, _sigValues),
   DataConstructorArgs (..),
   ImportLine (..),
   ImportLines,
-  Instance (..),
-  InstanceImplementation (..),
+  Instance (
+    Bounded,
+    Custom,
+    Enum,
+    Eq,
+    Eq1,
+    FromData,
+    Functor,
+    Generic,
+    GenericShow,
+    HasConstrIndex,
+    Json,
+    Newtype,
+    Ord,
+    ToData
+  ),
+  InstanceImplementation (Derive, DeriveNewtype, Explicit),
   InstanceMember (..),
   PSInstance,
   RecordEntry (..),
-  SumType (SumType),
+  SumType (..),
   getUsedTypes,
   importsFromList,
   instanceToImportLines,
@@ -46,7 +66,6 @@ import Language.PureScript.Bridge.SumType (
   recLabel,
   recValue,
   sigConstructor,
-  _recLabel,
  )
 import Language.PureScript.Bridge.TypeInfo (
   Language (PureScript),

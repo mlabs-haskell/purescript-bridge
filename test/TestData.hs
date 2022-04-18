@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -53,10 +54,10 @@ data Foo
   = Foo
   | Bar Int
   | FooBar Int Text
-  deriving (Eq, Ord, Generic, Typeable, Show)
+  deriving stock (Eq, Ord, Generic, Typeable, Show)
 
 data Func a = Func Int a
-  deriving (Eq, Ord, Functor, Generic, Typeable, Show)
+  deriving stock (Eq, Ord, Functor, Generic, Typeable, Show)
 
 instance Eq1 Func where
   liftEq eq (Func n x) (Func m y) = n == m && x `eq` y
@@ -65,14 +66,14 @@ data Test
   = TestIntInt Int Int
   | TestBool {bool :: Bool}
   | TestVoid
-  deriving (Generic, Typeable, Show)
+  deriving stock (Generic, Typeable, Show)
 
 data Bar a b m c
   = Bar1 (Maybe a)
   | Bar2 (Either a b)
   | Bar3 a
   | Bar4 {myMonadicResult :: m b}
-  deriving (Generic, Typeable, Show)
+  deriving stock (Generic, Typeable, Show)
 
 data SingleRecord a b = SingleRecord
   { _a :: a
@@ -93,13 +94,13 @@ data TwoRecords
   deriving (Generic, Typeable, Show)
 
 newtype SomeNewtype = SomeNewtype Int
-  deriving (Generic, Typeable, Show)
+  deriving stock (Generic, Typeable, Show)
 
 data SingleValueConstr = SingleValueConstr Int
-  deriving (Generic, Typeable, Show)
+  deriving stock (Generic, Typeable, Show)
 
 data SingleProduct = SingleProduct Text Int
-  deriving (Generic, Typeable, Show)
+  deriving stock (Generic, Typeable, Show)
 
 a :: HaskellType
 a = mkTypeInfo @(Either String Int)
