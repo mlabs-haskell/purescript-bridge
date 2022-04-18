@@ -9,10 +9,10 @@
 module Main where
 
 import Data.Map (empty)
-import qualified Data.Map as Map
+import Data.Map qualified as Map
 import Data.Monoid ((<>))
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Language.PureScript.Bridge (
   CustomInstance (CustomInstance),
   Instance (Custom),

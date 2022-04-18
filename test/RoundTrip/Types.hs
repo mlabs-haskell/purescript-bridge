@@ -35,8 +35,8 @@ instance ToJSON TestData
 instance Arbitrary TestData where
   arbitrary =
     oneof
-      [ Maybe <$> arbitrary,
-        Either <$> arbitrary
+      [ Maybe <$> arbitrary
+      , Either <$> arbitrary
       ]
 
 data TestSum
@@ -72,27 +72,27 @@ instance ToJSON TestSum
 instance Arbitrary TestSum where
   arbitrary =
     oneof
-      [ pure Nullary,
-        Bool <$> arbitrary,
-        Int <$> arbitrary,
-        Number <$> arbitrary,
-        String <$> arbitrary,
-        Array <$> arbitrary,
-        InlineRecord <$> arbitrary <*> arbitrary,
-        MultiInlineRecords <$> arbitrary,
-        Record <$> arbitrary,
-        NestedRecord <$> arbitrary,
-        NT <$> arbitrary,
-        NTRecord <$> arbitrary,
-        Map <$> arbitrary,
-        Set <$> arbitrary,
-        TwoFields <$> arbitrary,
-        pure $ Unit (),
-        Pair <$> arbitrary,
-        Triple <$> arbitrary,
-        Quad <$> arbitrary,
-        QuadSimple <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary,
-        Enum <$> arbitrary
+      [ pure Nullary
+      , Bool <$> arbitrary
+      , Int <$> arbitrary
+      , Number <$> arbitrary
+      , String <$> arbitrary
+      , Array <$> arbitrary
+      , InlineRecord <$> arbitrary <*> arbitrary
+      , MultiInlineRecords <$> arbitrary
+      , Record <$> arbitrary
+      , NestedRecord <$> arbitrary
+      , NT <$> arbitrary
+      , NTRecord <$> arbitrary
+      , Map <$> arbitrary
+      , Set <$> arbitrary
+      , TwoFields <$> arbitrary
+      , pure $ Unit ()
+      , Pair <$> arbitrary
+      , Triple <$> arbitrary
+      , Quad <$> arbitrary
+      , QuadSimple <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+      , Enum <$> arbitrary
       ]
 
 data TestRecursiveA = Nil | Recurse TestRecursiveB
@@ -118,12 +118,12 @@ instance ToJSON TestRecursiveB
 
 data TestMultiInlineRecords
   = Foo
-      { _foo1 :: Maybe Int,
-        _foo2 :: ()
+      { _foo1 :: Maybe Int
+      , _foo2 :: ()
       }
   | Bar
-      { _bar1 :: String,
-        _bar2 :: Bool
+      { _bar1 :: String
+      , _bar2 :: Bool
       }
   deriving (Show, Eq, Ord, Generic)
 
@@ -134,13 +134,13 @@ instance ToJSON TestMultiInlineRecords
 instance Arbitrary TestMultiInlineRecords where
   arbitrary =
     oneof
-      [ Foo <$> arbitrary <*> arbitrary,
-        Bar <$> arbitrary <*> arbitrary
+      [ Foo <$> arbitrary <*> arbitrary
+      , Bar <$> arbitrary <*> arbitrary
       ]
 
 data TestRecord a = TestRecord
-  { _field1 :: Maybe Int,
-    _field2 :: a
+  { _field1 :: Maybe Int
+  , _field2 :: a
   }
   deriving (Show, Eq, Ord, Generic)
 

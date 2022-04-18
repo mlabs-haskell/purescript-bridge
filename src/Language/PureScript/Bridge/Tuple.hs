@@ -3,7 +3,7 @@
 
 module Language.PureScript.Bridge.Tuple where
 
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Language.PureScript.Bridge.Builder
 import Language.PureScript.Bridge.PSTypes (psTuple)
 import Language.PureScript.Bridge.TypeInfo

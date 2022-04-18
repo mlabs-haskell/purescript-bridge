@@ -1,17 +1,17 @@
 {
   description = "Generate PureScript data types from Haskell data types";
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
+  inputs.haskell-nix.url = "github:mlabs-haskell/haskell.nix";
+  inputs.nixpkgs.follows = "haskell-nix/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.easy-ps = {
     url = "github:justinwoo/easy-purescript-nix";
     flake = false;
   };
-  outputs = { self, nixpkgs, flake-utils, haskellNix, easy-ps }:
+  outputs = { self, nixpkgs, flake-utils, haskell-nix, easy-ps }:
     flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
       let
         overlays = [
-          haskellNix.overlay
+          haskell-nix.overlay
           (final: prev: {
             # This overlay adds our project to pkgs
             purescript-bridge =
@@ -21,7 +21,7 @@
               };
           })
         ];
-        pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
+        pkgs = import nixpkgs { inherit system overlays; inherit (haskell-nix) config; };
         flake = pkgs.purescript-bridge.flake { };
       in
       flake // {
@@ -50,6 +50,13 @@
             nodejs
             nodePackages.node2nix
             nodePackages.jsonlint
+            cabal-install
+            hlint
+            haskellPackages.hasktags
+            haskellPackages.cabal-fmt
+            nixpkgs-fmt
+            shellcheck
+            shfmt
           ];
         };
       });

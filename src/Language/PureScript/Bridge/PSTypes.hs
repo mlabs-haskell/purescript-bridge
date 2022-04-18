@@ -19,10 +19,10 @@ psArray = TypeInfo "" "Prim" "Array" <$> psTypeParameters
 psBool :: PSType
 psBool =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "Boolean",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "Boolean"
+    , _typeParameters = []
     }
 
 -- | Uses  type parameters from 'haskType' (bridged).
@@ -33,19 +33,19 @@ psEither =
 psInt :: PSType
 psInt =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "Int",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "Int"
+    , _typeParameters = []
     }
 
 psNumber :: PSType
 psNumber =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "Number",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "Number"
+    , _typeParameters = []
     }
 
 -- | Uses  type parameters from 'haskType' (bridged).
@@ -55,10 +55,10 @@ psMaybe = TypeInfo "purescript-maybe" "Data.Maybe" "Maybe" <$> psTypeParameters
 psString :: PSType
 psString =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "String",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "String"
+    , _typeParameters = []
     }
 
 -- | Uses  type parameters from 'haskType' (bridged).
@@ -75,10 +75,10 @@ psTuple = do
 psUnit :: PSType
 psUnit =
   TypeInfo
-    { _typePackage = "purescript-prelude",
-      _typeModule = "Prelude",
-      _typeName = "Unit",
-      _typeParameters = []
+    { _typePackage = "purescript-prelude"
+    , _typeModule = "Prelude"
+    , _typeName = "Unit"
+    , _typeParameters = []
     }
 
 psMap :: MonadReader BridgeData m => m PSType
