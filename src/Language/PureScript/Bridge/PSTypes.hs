@@ -2,15 +2,29 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 -- | PureScript types to be used for bridges, e.g. in "Language.PureScript.Bridge.Primitives".
 module Language.PureScript.Bridge.PSTypes where
 
 import Control.Lens (view)
-import Control.Monad.Reader.Class
-import Language.PureScript.Bridge.Builder
-import Language.PureScript.Bridge.TypeInfo
+import Control.Monad.Reader.Class (MonadReader)
+import Language.PureScript.Bridge.Builder (
+  BridgeData,
+  fullBridge,
+  psTypeParameters,
+ )
+import Language.PureScript.Bridge.TypeInfo (
+  HasHaskType (haskType),
+  PSType,
+  TypeInfo (
+    TypeInfo,
+    _typeModule,
+    _typeName,
+    _typePackage,
+    _typeParameters
+  ),
+  typeParameters,
+ )
 
 -- | Uses  type parameters from 'haskType' (bridged).
 psArray :: MonadReader BridgeData m => m PSType
@@ -19,10 +33,10 @@ psArray = TypeInfo "" "Prim" "Array" <$> psTypeParameters
 psBool :: PSType
 psBool =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "Boolean",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "Boolean"
+    , _typeParameters = []
     }
 
 -- | Uses  type parameters from 'haskType' (bridged).
@@ -33,19 +47,19 @@ psEither =
 psInt :: PSType
 psInt =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "Int",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "Int"
+    , _typeParameters = []
     }
 
 psNumber :: PSType
 psNumber =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "Number",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "Number"
+    , _typeParameters = []
     }
 
 -- | Uses  type parameters from 'haskType' (bridged).
@@ -55,10 +69,10 @@ psMaybe = TypeInfo "purescript-maybe" "Data.Maybe" "Maybe" <$> psTypeParameters
 psString :: PSType
 psString =
   TypeInfo
-    { _typePackage = "",
-      _typeModule = "Prim",
-      _typeName = "String",
-      _typeParameters = []
+    { _typePackage = ""
+    , _typeModule = "Prim"
+    , _typeName = "String"
+    , _typeParameters = []
     }
 
 -- | Uses  type parameters from 'haskType' (bridged).
@@ -75,10 +89,10 @@ psTuple = do
 psUnit :: PSType
 psUnit =
   TypeInfo
-    { _typePackage = "purescript-prelude",
-      _typeModule = "Prelude",
-      _typeName = "Unit",
-      _typeParameters = []
+    { _typePackage = "purescript-prelude"
+    , _typeModule = "Prelude"
+    , _typeName = "Unit"
+    , _typeParameters = []
     }
 
 psMap :: MonadReader BridgeData m => m PSType

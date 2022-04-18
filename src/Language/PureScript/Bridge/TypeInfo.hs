@@ -7,30 +7,37 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
-module Language.PureScript.Bridge.TypeInfo
-  ( TypeInfo (..),
-    PSType,
-    HaskellType,
-    mkTypeInfo,
-    mkTypeInfo',
-    Language (..),
-    typePackage,
-    typeModule,
-    typeName,
-    typeParameters,
-    HasHaskType,
-    haskType,
-    flattenTypeInfo,
-  )
-where
+module Language.PureScript.Bridge.TypeInfo (
+  TypeInfo (..),
+  PSType,
+  HaskellType,
+  mkTypeInfo,
+  mkTypeInfo',
+  Language (..),
+  typePackage,
+  typeModule,
+  typeName,
+  typeParameters,
+  HasHaskType,
+  haskType,
+  flattenTypeInfo,
+) where
 
-import Control.Lens
-import Data.Proxy
+import Control.Lens (Lens', makeLenses)
+import Data.Proxy (Proxy (Proxy))
 import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Typeable
+import Data.Text qualified as T
+import Data.Typeable (
+  TypeRep,
+  Typeable,
+  tyConModule,
+  tyConName,
+  tyConPackage,
+  typeRep,
+  typeRepArgs,
+  typeRepTyCon,
+ )
 
 data Language
   = Haskell
@@ -39,13 +46,13 @@ data Language
 -- | Basic info about a data type:
 data TypeInfo (lang :: Language) = TypeInfo
   { -- | Hackage package
-    _typePackage :: !Text,
-    -- | Full Module path
-    _typeModule :: !Text,
-    _typeName :: !Text,
-    _typeParameters :: ![TypeInfo lang]
+    _typePackage :: !Text
+  , -- | Full Module path
+    _typeModule :: !Text
+  , _typeName :: !Text
+  , _typeParameters :: ![TypeInfo lang]
   }
-  deriving (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show)
 
 makeLenses ''TypeInfo
 
@@ -70,10 +77,10 @@ mkTypeInfo' :: TypeRep -> HaskellType
 mkTypeInfo' rep =
   let con = typeRepTyCon rep
    in TypeInfo
-        { _typePackage = T.pack $ tyConPackage con,
-          _typeModule = T.pack $ tyConModule con,
-          _typeName = T.pack $ tyConName con,
-          _typeParameters = map mkTypeInfo' (typeRepArgs rep)
+        { _typePackage = T.pack $ tyConPackage con
+        , _typeModule = T.pack $ tyConModule con
+        , _typeName = T.pack $ tyConName con
+        , _typeParameters = map mkTypeInfo' (typeRepArgs rep)
         }
 
 -- | Put the TypeInfo in a list together with all its '_typeParameters' (recursively)

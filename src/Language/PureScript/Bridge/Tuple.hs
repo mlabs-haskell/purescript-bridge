@@ -1,12 +1,15 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Language.PureScript.Bridge.Tuple where
 
-import qualified Data.Text as T
-import Language.PureScript.Bridge.Builder
+import Data.Text qualified as T
+import Language.PureScript.Bridge.Builder (BridgePart, doCheck)
 import Language.PureScript.Bridge.PSTypes (psTuple)
-import Language.PureScript.Bridge.TypeInfo
+import Language.PureScript.Bridge.TypeInfo (
+  HasHaskType (haskType),
+  HaskellType,
+  TypeInfo (_typeName),
+ )
 
 tupleBridge :: BridgePart
 tupleBridge = doCheck haskType isTuple >> psTuple
@@ -17,7 +20,7 @@ data TupleParserState
   | ColonFound
   | Tuple
   | NoTuple
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 step :: TupleParserState -> Char -> TupleParserState
 step Start '(' = OpenFound

@@ -1,14 +1,13 @@
 -- | General switches for the code generation, such as generating profunctor-lenses or not
-module Language.PureScript.Bridge.CodeGenSwitches
-  ( Settings (..),
-    defaultSettings,
-    Switch,
-    getSettings,
-    defaultSwitch,
-    noLenses,
-    genLenses,
-  )
-where
+module Language.PureScript.Bridge.CodeGenSwitches (
+  Settings (..),
+  defaultSettings,
+  Switch,
+  getSettings,
+  defaultSwitch,
+  noLenses,
+  genLenses,
+) where
 
 import Data.Monoid (Endo (..))
 
@@ -17,7 +16,7 @@ newtype Settings = Settings
   { -- | use purescript-profunctor-lens for generated PS-types?
     generateLenses :: Bool
   }
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 -- | Settings to generate Lenses
 defaultSettings :: Settings

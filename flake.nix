@@ -1,50 +1,71 @@
 {
   description = "Generate PureScript data types from Haskell data types";
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.easy-ps = {
-    url = "github:justinwoo/easy-purescript-nix";
-    flake = false;
+  nixConfig.bash-prompt = "\\[\\e[0m\\][\\[\\e[0;2m\\]nix-develop \\[\\e[0;1m\\]purescript-bridge \\[\\e[0;93m\\]\\w\\[\\e[0m\\]]\\[\\e[0m\\]$ \\[\\e[0m\\]";
+  inputs = {
+    haskell-nix.url = "github:mlabs-haskell/haskell.nix";
+    flake-utils.url = "github:numtide/flake-utils";
+    easy-ps = {
+      url = "github:justinwoo/easy-purescript-nix";
+      flake = false;
+    };
+
+    # Needed for crypto overlay
+    iohk-nix = {
+      url = "github:input-output-hk/iohk-nix";
+      flake = false;
+    };
+
+    # We're reusing inputs from bot-plutus-interface as it's currently the source of nix truth.
+    bot-plutus-interface.url = "github:mlabs-haskell/bot-plutus-interface";
+
   };
-  outputs = { self, nixpkgs, flake-utils, haskellNix, easy-ps }:
+
+  outputs = inputs@{ self, flake-utils, ... }:
     flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
       let
-        overlays = [
-          haskellNix.overlay
-          (final: prev: {
-            # This overlay adds our project to pkgs
-            purescript-bridge =
-              final.haskell-nix.project' {
-                src = ./.;
-                compiler-nix-name = "ghc8107";
-              };
-          })
-        ];
-        pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
-        flake = pkgs.purescript-bridge.flake { };
-      in
-      flake // {
-        # Built by `nix build .`
-        defaultPackage = flake.packages."purescript-bridge:test:purescript-bridge";
-        devShell = pkgs.purescript-bridge.shellFor {
-          withHoogle = true;
-          tools = {
-            cabal = "latest";
-            hlint = "latest";
-            haskell-language-server = "latest";
-          };
+        # TODO: Perhaps cleanSource
+        src = ./.;
 
-          exactDeps = true;
+        # Nixpkgs from bot-plutus-interface
+        inherit (inputs.bot-plutus-interface.inputs) nixpkgs;
 
-          buildInputs = with pkgs; with import easy-ps { inherit pkgs; }; [
-            ghcid
-            nixpkgs-fmt
-            purs
-            purescript-language-server
-            spago
-            haskellPackages.ormolu
-          ];
+        # Reliably cached
+        pkgs = import nixpkgs { inherit system; };
+
+        easy-ps = import inputs.easy-ps { inherit pkgs; };
+        pursBridgeHsProjectFor = system: import ./nix/haskell.nix {
+          inherit src system pkgs easy-ps;
+          inputs = inputs // inputs.bot-plutus-interface.inputs;
+          extraSources = inputs.bot-plutus-interface.extraSources;
         };
-      });
+        pursBridgeFlakeFor = system: (pursBridgeHsProjectFor system).flake { };
+        cq = import ./nix/code-quality.nix { projectName = ""; inherit pkgs easy-ps; };
+        fileCheckers = cq.checkers pkgs;
+      in
+      {
+        # Useful attributes
+        inherit pkgs;
+        pursBridgeFlake = pursBridgeFlakeFor system;
+
+        # Flake standard attributes
+        packages = self.pursBridgeFlake.${system}.packages;
+        checks = self.pursBridgeFlake.${system}.checks;
+        devShells = {
+          "default" = self.pursBridgeFlake.${system}.devShell;
+        };
+
+        # Fix files
+        fix-files = cq.format;
+
+        # Used by CI
+        build-all = pkgs.runCommand "build-all"
+          (self.packages.${system} // self.devShells.${system})
+          "touch $out";
+
+        check-files = pkgs.runCommand "check-files"
+          (builtins.mapAttrs (_: v: v src) fileCheckers)
+          "touch $out";
+
+      }
+    );
 }

@@ -1,15 +1,15 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeApplications #-}
 
 module RoundTrip.Types where
 
 import Control.Applicative ((<|>))
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
-import Data.Proxy (Proxy (..))
+import Data.Proxy (Proxy (Proxy))
 import Data.Set (Set)
 import Data.Text (Text)
 import GHC.Generics (Generic)
@@ -20,13 +20,13 @@ import System.Exit (ExitCode (ExitSuccess))
 import System.Process (readProcessWithExitCode)
 import Test.HUnit (assertEqual)
 import Test.Hspec (Spec, aroundAll_, describe, it)
-import Test.Hspec.Expectations.Pretty (shouldBe)
+import Test.Hspec.Expectations (shouldBe)
 import Test.QuickCheck (Arbitrary (..), chooseEnum, oneof, resize, sized)
 
 data TestData
   = Maybe (Maybe TestSum)
   | Either (Either (Maybe Int) (Maybe Bool))
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestData
 
@@ -35,8 +35,8 @@ instance ToJSON TestData
 instance Arbitrary TestData where
   arbitrary =
     oneof
-      [ Maybe <$> arbitrary,
-        Either <$> arbitrary
+      [ Maybe <$> arbitrary
+      , Either <$> arbitrary
       ]
 
 data TestSum
@@ -63,7 +63,7 @@ data TestSum
   | QuadSimple Int Double Bool Double
   | Recursive TestRecursiveA
   | Enum TestEnum
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestSum
 
@@ -72,31 +72,31 @@ instance ToJSON TestSum
 instance Arbitrary TestSum where
   arbitrary =
     oneof
-      [ pure Nullary,
-        Bool <$> arbitrary,
-        Int <$> arbitrary,
-        Number <$> arbitrary,
-        String <$> arbitrary,
-        Array <$> arbitrary,
-        InlineRecord <$> arbitrary <*> arbitrary,
-        MultiInlineRecords <$> arbitrary,
-        Record <$> arbitrary,
-        NestedRecord <$> arbitrary,
-        NT <$> arbitrary,
-        NTRecord <$> arbitrary,
-        Map <$> arbitrary,
-        Set <$> arbitrary,
-        TwoFields <$> arbitrary,
-        pure $ Unit (),
-        Pair <$> arbitrary,
-        Triple <$> arbitrary,
-        Quad <$> arbitrary,
-        QuadSimple <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary,
-        Enum <$> arbitrary
+      [ pure Nullary
+      , Bool <$> arbitrary
+      , Int <$> arbitrary
+      , Number <$> arbitrary
+      , String <$> arbitrary
+      , Array <$> arbitrary
+      , InlineRecord <$> arbitrary <*> arbitrary
+      , MultiInlineRecords <$> arbitrary
+      , Record <$> arbitrary
+      , NestedRecord <$> arbitrary
+      , NT <$> arbitrary
+      , NTRecord <$> arbitrary
+      , Map <$> arbitrary
+      , Set <$> arbitrary
+      , TwoFields <$> arbitrary
+      , pure $ Unit ()
+      , Pair <$> arbitrary
+      , Triple <$> arbitrary
+      , Quad <$> arbitrary
+      , QuadSimple <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+      , Enum <$> arbitrary
       ]
 
 data TestRecursiveA = Nil | Recurse TestRecursiveB
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestRecursiveA
 
@@ -110,7 +110,8 @@ instance Arbitrary TestRecursiveA where
         | otherwise = pure Nil
 
 newtype TestRecursiveB = RecurseB TestRecursiveB
-  deriving (Show, Eq, Ord, Generic, Arbitrary)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (Arbitrary)
 
 instance FromJSON TestRecursiveB
 
@@ -118,14 +119,14 @@ instance ToJSON TestRecursiveB
 
 data TestMultiInlineRecords
   = Foo
-      { _foo1 :: Maybe Int,
-        _foo2 :: ()
+      { _foo1 :: Maybe Int
+      , _foo2 :: ()
       }
   | Bar
-      { _bar1 :: String,
-        _bar2 :: Bool
+      { _bar1 :: String
+      , _bar2 :: Bool
       }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestMultiInlineRecords
 
@@ -134,15 +135,15 @@ instance ToJSON TestMultiInlineRecords
 instance Arbitrary TestMultiInlineRecords where
   arbitrary =
     oneof
-      [ Foo <$> arbitrary <*> arbitrary,
-        Bar <$> arbitrary <*> arbitrary
+      [ Foo <$> arbitrary <*> arbitrary
+      , Bar <$> arbitrary <*> arbitrary
       ]
 
 data TestRecord a = TestRecord
-  { _field1 :: Maybe Int,
-    _field2 :: a
+  { _field1 :: Maybe Int
+  , _field2 :: a
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance (FromJSON a) => FromJSON (TestRecord a)
 
@@ -152,7 +153,7 @@ instance (Arbitrary a) => Arbitrary (TestRecord a) where
   arbitrary = TestRecord <$> arbitrary <*> arbitrary
 
 data TestTwoFields = TestTwoFields Bool Int
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestTwoFields
 
@@ -162,7 +163,7 @@ instance Arbitrary TestTwoFields where
   arbitrary = TestTwoFields <$> arbitrary <*> arbitrary
 
 newtype TestNewtype = TestNewtype (TestRecord Bool)
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestNewtype
 
@@ -172,7 +173,7 @@ instance Arbitrary TestNewtype where
   arbitrary = TestNewtype <$> arbitrary
 
 newtype TestNewtypeRecord = TestNewtypeRecord {unTestNewtypeRecord :: TestNewtype}
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestNewtypeRecord
 
@@ -189,7 +190,7 @@ data TestEnum
   | Fri
   | Sat
   | Sun
-  deriving (Show, Eq, Ord, Bounded, Enum, Generic)
+  deriving stock (Show, Eq, Ord, Bounded, Enum, Generic)
 
 instance FromJSON TestEnum
 
@@ -198,7 +199,7 @@ instance ToJSON TestEnum
 instance Arbitrary TestEnum where
   arbitrary = chooseEnum (minBound, maxBound)
 
-data MyUnit = U deriving (Show, Eq, Ord, Bounded, Enum, Generic)
+data MyUnit = U deriving stock (Show, Eq, Ord, Bounded, Enum, Generic)
 
 instance FromJSON MyUnit
 
