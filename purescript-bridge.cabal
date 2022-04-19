@@ -228,3 +228,16 @@ test-suite tests
 
   -- The name of the package.
   default-language:   Haskell2010
+
+executable cli
+  build-depends:
+      base
+    , directory
+    , filepath
+    , optparse-applicative
+    , purescript-bridge
+
+  scope:          public
+  hs-source-dirs: app
+  main-is:        Main.hs
+  ghc-options:    -Wno-missing-home-modules

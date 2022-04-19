@@ -69,8 +69,7 @@ writeLedgerTypesAnd fp myTypes =
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  [ -- Newtypes or single constructor data types (extremelyUnsafeMkSumType is safe)
-    extremelyUnsafeMkSumType @Value
+  [ extremelyUnsafeMkSumType @Value
   , extremelyUnsafeMkSumType @CurrencySymbol
   , extremelyUnsafeMkSumType @AssetClass
   , extremelyUnsafeMkSumType @TokenName
@@ -101,8 +100,7 @@ ledgerTypes =
   , extremelyUnsafeMkSumType @(LowerBound A)
   , extremelyUnsafeMkSumType @(UpperBound A)
   , extremelyUnsafeMkSumType @(Map A B)
-  , -- True sum types, HasConstrIndices instances generated in the PlutusTx.ConstrIndices module
-    mkSumTypeIndexed @DCert
+  , mkSumTypeIndexed @DCert
   , mkSumTypeIndexed @(Extended A)
   , mkSumTypeIndexed @StakingCredential
   , mkSumTypeIndexed @Credential

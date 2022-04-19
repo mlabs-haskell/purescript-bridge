@@ -210,8 +210,8 @@ import Language.PureScript.Bridge.TypeInfo as Bridge (
   typeParameters,
  )
 
-{-
-| Your entry point to this library and quite likely all you will need.
+{- |
+  Your entry point to this library and quite likely all you will need.
   Make sure all your types derive `Generic` and `Typeable`.
   Typeable is not needed from ghc-7.10 on.
 
