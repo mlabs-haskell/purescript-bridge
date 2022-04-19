@@ -47,7 +47,6 @@ library
     Language.PureScript.Bridge
     Language.PureScript.Bridge.Builder
     Language.PureScript.Bridge.CodeGenSwitches
-    Language.PureScript.Bridge.Plutus
     Language.PureScript.Bridge.Primitives
     Language.PureScript.Bridge.Printer
     Language.PureScript.Bridge.PSTypes
@@ -56,6 +55,9 @@ library
     Language.PureScript.Bridge.TypeInfo
     Language.PureScript.Bridge.TypeParameters
     PlutusTx.Aux
+    PlutusTx.ConstrIndices
+    PlutusTx.LedgerTypes
+
 
   -- Modules included in this library but not exported.
   -- other-modules:

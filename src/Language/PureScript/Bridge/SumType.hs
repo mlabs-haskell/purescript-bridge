@@ -53,6 +53,8 @@ import Language.PureScript.Bridge.TypeInfo (
   mkTypeInfo,
   typeName,
  )
+-- For Plutus ToData/FromData generation
+import PlutusTx.ConstrIndices (HasConstrIndices(getConstrIndices))
 
 data ImportLine = ImportLine
   { importModule :: !Text
@@ -113,12 +115,12 @@ extremelyUnsafeMkSumType = case mkSumType @t of
 {- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
    index information.
 -}
-mkSumTypeIndexed ::
+mkSumTypeIndexed_ ::
   forall (c :: Type -> Constraint) t.
   (Generic t, Typeable t, c t, GDataConstructor (Rep t)) =>
   (forall x. c x => [(Int, String)]) ->
   SumType 'Haskell
-mkSumTypeIndexed f = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIndex : ToData : FromData : Json : maybeToList (nootype . map snd $ constructors))
+mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIndex : ToData : FromData : Json : maybeToList (nootype . map snd $ constructors))
   where
     ixs = M.fromList . map (\(i, t) -> (T.pack t, i)) $ f @t
     constructors =
@@ -130,6 +132,20 @@ mkSumTypeIndexed f = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIn
         )
         []
         $ gToConstructors (from (undefined :: t))
+
+{-  | Variant of @mkSumType@ which constructs a SumType using the HasConstrIndices class. Meant to be used with the template haskell
+    hooks from the PlutusTx.Aux module in this project.
+-}
+mkSumTypeIndexed ::
+  forall (t :: Type).
+  ( Generic t
+  , Typeable t
+  , GDataConstructor (Rep t)
+  , HasConstrIndices t
+  ) =>
+  SumType 'Haskell
+mkSumTypeIndexed = mkSumTypeIndexed_ @HasConstrIndices @t (getConstrIndices @t)
+
 
 -- | Purescript typeclass instances that can be generated for your Haskell types.
 data Instance (lang :: Language)
