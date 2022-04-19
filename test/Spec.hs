@@ -41,7 +41,7 @@ import Language.PureScript.Bridge.CodeGenSwitches (
   getSettings,
   noLenses,
  )
-import Language.PureScript.Bridge.Plutus (mkSumTypeIndexed)
+import Language.PureScript.Bridge.SumType (mkSumTypeIndexed)
 import Language.PureScript.Bridge.TypeParameters (A, B, C, M1)
 import RoundTrip.Spec (roundtripSpec)
 import Test.Hspec (

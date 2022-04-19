@@ -41,8 +41,8 @@ import Language.PureScript.Bridge (
  )
 import Language.PureScript.Bridge.CodeGenSwitches (defaultSettings)
 import Language.PureScript.Bridge.PSTypes (psString)
-import PlutusTx.Aux (HasConstrIndices (getConstrIndices), mkIndicesDefault)
-
+import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
+import PlutusTx.Aux(mkIndicesDefault)
 -- Check that examples compile:
 textBridge :: BridgePart
 textBridge = do
