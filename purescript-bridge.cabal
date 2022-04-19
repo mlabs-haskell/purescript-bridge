@@ -58,7 +58,6 @@ library
     PlutusTx.ConstrIndices
     PlutusTx.LedgerTypes
 
-
   -- Modules included in this library but not exported.
   -- other-modules:
   default-extensions:

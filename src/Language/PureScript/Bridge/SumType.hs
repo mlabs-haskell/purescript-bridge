@@ -53,8 +53,9 @@ import Language.PureScript.Bridge.TypeInfo (
   mkTypeInfo,
   typeName,
  )
+
 -- For Plutus ToData/FromData generation
-import PlutusTx.ConstrIndices (HasConstrIndices(getConstrIndices))
+import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
 
 data ImportLine = ImportLine
   { importModule :: !Text
@@ -145,7 +146,6 @@ mkSumTypeIndexed ::
   ) =>
   SumType 'Haskell
 mkSumTypeIndexed = mkSumTypeIndexed_ @HasConstrIndices @t (getConstrIndices @t)
-
 
 -- | Purescript typeclass instances that can be generated for your Haskell types.
 data Instance (lang :: Language)
