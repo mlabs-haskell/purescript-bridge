@@ -2400,7 +2400,8 @@
         "flake-utils": "flake-utils_3",
         "haskell-nix": "haskell-nix_2",
         "iohk-nix": "iohk-nix_2",
-        "plutip": "plutip"
+        "plutip": "plutip",
+        "servant-purescript": "servant-purescript_3"
       }
     },
     "servant-purescript": {
@@ -2434,6 +2435,22 @@
         "owner": "input-output-hk",
         "repo": "servant-purescript",
         "rev": "44e7cacf109f84984cd99cd3faf185d161826963",
+        "type": "github"
+      }
+    },
+    "servant-purescript_3": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1649250430,
+        "narHash": "sha256-akWM/v0XAe6sAdGUFKgq6j0YTwsY3fjgbr/cErMwaLk=",
+        "owner": "mlabs-haskell",
+        "repo": "servant-purescript",
+        "rev": "956027374c6f8f79909ca9bfab1eb78150eb7b88",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mlabs-haskell",
+        "repo": "servant-purescript",
         "type": "github"
       }
     },

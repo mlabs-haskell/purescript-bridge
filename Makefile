@@ -12,7 +12,7 @@ develop:
 
 # Tests
 test:
-	$(NIX_BUILD) .#checks.${current-system}.purescript-bridge:test:tests
+	$(NIX_BUILD) .#checks.${current-system}."purescript-bridge:test:tests"
 
 test-all: test
 
