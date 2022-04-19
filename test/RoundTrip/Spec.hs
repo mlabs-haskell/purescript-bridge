@@ -94,7 +94,6 @@ roundtripSpec = do
   where
     withApp = bracket runApp killApp
     runApp = do
-      runInteractiveCommand "spago build"
       (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
       mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
       -- Wait until Spago is done with the build
