@@ -26,7 +26,7 @@ derive instance Generic Address _
 derive instance Newtype Address _
 
 instance HasConstrIndices Address where
-  constrIndices _ = fromConstr2Index [Tuple "Address" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "Address" 0 ]
 
 instance ToData Address where
   toData x = genericToData x
@@ -36,5 +36,9 @@ instance FromData Address where
 
 --------------------------------------------------------------------------------
 
-_Address :: Iso' Address {addressCredential :: Credential, addressStakingCredential :: Maybe StakingCredential}
+_Address
+  :: Iso' Address
+       { addressCredential :: Credential
+       , addressStakingCredential :: Maybe StakingCredential
+       }
 _Address = _Newtype

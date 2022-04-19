@@ -25,7 +25,7 @@ derive instance Generic Value _
 derive instance Newtype Value _
 
 instance HasConstrIndices Value where
-  constrIndices _ = fromConstr2Index [Tuple "Value" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "Value" 0 ]
 
 instance ToData Value where
   toData x = genericToData x
@@ -35,7 +35,7 @@ instance FromData Value where
 
 --------------------------------------------------------------------------------
 
-_Value :: Iso' Value {getValue :: Map CurrencySymbol (Map TokenName BigInt)}
+_Value :: Iso' Value { getValue :: Map CurrencySymbol (Map TokenName BigInt) }
 _Value = _Newtype
 
 --------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ derive instance Generic CurrencySymbol _
 derive instance Newtype CurrencySymbol _
 
 instance HasConstrIndices CurrencySymbol where
-  constrIndices _ = fromConstr2Index [Tuple "CurrencySymbol" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "CurrencySymbol" 0 ]
 
 instance ToData CurrencySymbol where
   toData x = genericToData x
@@ -57,19 +57,20 @@ instance FromData CurrencySymbol where
 
 --------------------------------------------------------------------------------
 
-_CurrencySymbol :: Iso' CurrencySymbol {unCurrencySymbol :: ByteArray}
+_CurrencySymbol :: Iso' CurrencySymbol { unCurrencySymbol :: ByteArray }
 _CurrencySymbol = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
+newtype AssetClass = AssetClass
+  { unAssetClass :: Tuple CurrencySymbol TokenName }
 
 derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
 
 instance HasConstrIndices AssetClass where
-  constrIndices _ = fromConstr2Index [Tuple "AssetClass" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "AssetClass" 0 ]
 
 instance ToData AssetClass where
   toData x = genericToData x
@@ -79,7 +80,8 @@ instance FromData AssetClass where
 
 --------------------------------------------------------------------------------
 
-_AssetClass :: Iso' AssetClass {unAssetClass :: Tuple CurrencySymbol TokenName}
+_AssetClass
+  :: Iso' AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
 _AssetClass = _Newtype
 
 --------------------------------------------------------------------------------
@@ -91,7 +93,7 @@ derive instance Generic TokenName _
 derive instance Newtype TokenName _
 
 instance HasConstrIndices TokenName where
-  constrIndices _ = fromConstr2Index [Tuple "TokenName" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "TokenName" 0 ]
 
 instance ToData TokenName where
   toData x = genericToData x
@@ -101,5 +103,5 @@ instance FromData TokenName where
 
 --------------------------------------------------------------------------------
 
-_TokenName :: Iso' TokenName {unTokenName :: ByteArray}
+_TokenName :: Iso' TokenName { unTokenName :: ByteArray }
 _TokenName = _Newtype

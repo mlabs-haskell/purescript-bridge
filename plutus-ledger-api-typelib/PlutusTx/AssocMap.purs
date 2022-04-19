@@ -22,7 +22,7 @@ derive instance Generic (Map a b) _
 derive instance Newtype (Map a b) _
 
 instance HasConstrIndices (Map a b) where
-  constrIndices _ = fromConstr2Index [Tuple "Map" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "Map" 0 ]
 
 instance (ToData a, ToData b) => ToData (Map a b) where
   toData x = genericToData x
@@ -32,5 +32,5 @@ instance (FromData a, FromData b) => FromData (Map a b) where
 
 --------------------------------------------------------------------------------
 
-_Map :: forall a b. Iso' (Map a b) {unMap :: Array (Tuple a b)}
+_Map :: forall a b. Iso' (Map a b) { unMap :: Array (Tuple a b) }
 _Map = _Newtype
