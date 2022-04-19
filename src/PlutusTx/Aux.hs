@@ -60,7 +60,7 @@ mkIndicesDefault name = do
 -- for testing/debugging
 
 showInfo :: TH.Name -> TH.Q TH.Exp
-showInfo name = (TH.LitE . TH.stringL . show) <$> TH.reifyDatatype name
+showInfo name = TH.LitE . TH.stringL . show <$> TH.reifyDatatype name
 
 showTy :: TH.Name -> TH.Q TH.Exp
-showTy name = (TH.LitE . TH.stringL . show . TH.datatypeType) <$> TH.reifyDatatype name
+showTy name = TH.LitE . TH.stringL . show . TH.datatypeType <$> TH.reifyDatatype name
