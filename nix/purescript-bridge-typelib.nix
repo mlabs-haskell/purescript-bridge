@@ -1,13 +1,13 @@
-{ pkgs, cli, purs }:
+{ pkgs, pursDir, purs }:
 with import ./purescript-bridge-typelib-spago/spago-packages.nix { inherit pkgs; };
 pkgs.stdenv.mkDerivation {
   name = "purescript-bridge-typelib-spago-build";
   src = ./purescript-bridge-typelib-spago;
-  buildInputs = [ purs cli installSpagoStyle buildFromNixStore ];
+  buildInputs = [ purs installSpagoStyle buildFromNixStore ];
   doCheck = true;
   buildPhase = ''
     mkdir src
-    cli generate-plutus-ledger-api-types --purs-dir src
+    cp -r ${pursDir} src/
   '';
   checkPhase = ''
     install-spago-style

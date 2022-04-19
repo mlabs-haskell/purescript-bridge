@@ -15,10 +15,12 @@ import Options.Applicative (
   metavar,
   prefs,
   progDesc,
+  showDefault,
   showHelpOnEmpty,
   showHelpOnError,
   strOption,
   subparser,
+  value,
   (<$>),
  )
 import PlutusTx.LedgerTypes (writeLedgerTypesAnd)
@@ -36,6 +38,8 @@ gptOpts =
       ( long "purs-dir"
           <> metavar "PURS_DIR"
           <> help "Directory to store the generated purescript type library"
+          <> value "plutus-ledger-api-typelib"
+          <> showDefault
       )
 
 -- https://github.com/input-output-hk/plutus/tree/master/plutus-ledger-api

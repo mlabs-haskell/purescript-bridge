@@ -356,12 +356,12 @@ instances st@(SumType t cs is) = go <$> is
     go ToData =
       mkInstance
         (mkType "ToData" [t])
-        (const [])
+        (constrainWith "ToData")
         ["toData x = genericToData x"]
     go FromData =
       mkInstance
         (mkType "FromData" [t])
-        (const [])
+        (constrainWith "FromData")
         ["fromData pd = genericFromData pd"]
     go HasConstrIndex =
       mkInstance

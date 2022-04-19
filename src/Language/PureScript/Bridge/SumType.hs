@@ -112,7 +112,7 @@ extremelyUnsafeMkSumType ::
   (Generic t, Typeable t, GDataConstructor (Rep t)) =>
   SumType 'Haskell
 extremelyUnsafeMkSumType = case mkSumType @t of
-  SumType tInfo constructors instances -> SumType tInfo constructors (instances <> [Generic, HasConstrIndex, ToData, FromData, Json])
+  SumType tInfo constructors instances -> SumType tInfo constructors (instances <> [HasConstrIndex, ToData, FromData])
 
 {- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
    index information.
@@ -122,7 +122,7 @@ mkSumTypeIndexed_ ::
   (Generic t, Typeable t, c t, GDataConstructor (Rep t)) =>
   (forall x. c x => [(Int, String)]) ->
   SumType 'Haskell
-mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIndex : ToData : FromData : Json : maybeToList (nootype . map snd $ constructors))
+mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIndex : ToData : FromData : maybeToList (nootype . map snd $ constructors))
   where
     ixs = M.fromList . map (\(i, t) -> (T.pack t, i)) $ f @t
     constructors =

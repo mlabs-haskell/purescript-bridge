@@ -1,44 +1,18 @@
-cabal-version:      2.4
+cabal-version:      3.0
 name:               purescript-bridge
-
--- The package version.  See the Haskell package versioning policy (PVP)
--- for standards guiding when and how versions should be incremented.
--- http://www.haskell.org/haskellwiki/Package_versioning_policy
--- PVP summary:      +-+------- breaking API changes
---                   | | +----- non-breaking API additions
---                   | | | +--- code changes with no API change
 version:            0.14.0.0
-
--- A short (one-line) description of the package.
 synopsis:           Generate PureScript data types from Haskell data types
-
--- A longer description of the package.
--- description:
-
--- The license under which the package is released.
 license:            BSD-3-Clause
-
--- The file containing the license text.
 license-file:       LICENSE
-
--- The package author(s).
 author:             Robert Klotzner
-
--- An email address to which users can send suggestions, bug reports, and
--- patches.
 maintainer:         robert . klotzner A T gmx . at
-
--- A copyright notice.
--- copyright:
-
 category:           Web
 build-type:         Simple
-
--- Extra files to be distributed with the package, such as examples or a
--- README.
--- extra-source-files:
-
 extra-source-files: README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/mlabs-haskell/purescript-bridge
 
 common common-lang
   ghc-options:
