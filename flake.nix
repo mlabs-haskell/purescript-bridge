@@ -41,6 +41,13 @@
         pursBridgeFlakeFor = system: (pursBridgeHsProjectFor system).flake { };
         cq = import ./nix/code-quality.nix { projectName = ""; inherit pkgs easy-ps; };
         fileCheckers = cq.checkers pkgs;
+
+        # plutus-ledger-api Purescript typelib
+        ledgerTypelib = import ./nix/purescript-bridge-typelib.nix {
+          inherit pkgs;
+          purs = easy-ps.purs-0_14_5; # TODO: Extract the purs version as a param and share across
+          cli = (pursBridgeHsProjectFor system).getComponent "purescript-bridge:exe:cli";
+        };
       in
       {
         # Useful attributes
