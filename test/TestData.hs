@@ -8,10 +8,10 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 {-# HLINT ignore SingleValueConstr #-}
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 
 module TestData where
 
