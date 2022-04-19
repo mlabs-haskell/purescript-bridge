@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 
 module PlutusTx.LedgerTypes where
 

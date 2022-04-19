@@ -1,16 +1,19 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module PlutusTx.ConstrIndices where
+module PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices)) where
 
 import Data.Kind (Type)
-import PlutusTx.Aux
+import PlutusTx.Aux (makeHasConstrIndex)
 import Prelude (Int, String)
 
-import Plutus.V1.Ledger.Contexts (ScriptPurpose (..))
-import Plutus.V1.Ledger.Credential (Credential (..), StakingCredential (..))
-import Plutus.V1.Ledger.DCert (DCert (..))
-import Plutus.V1.Ledger.Interval (Extended (..))
+import Plutus.V1.Ledger.Api (DCert (DCertDelegRegKey))
+import Plutus.V1.Ledger.Contexts (ScriptPurpose (Certifying, Minting, Rewarding, Spending))
+import Plutus.V1.Ledger.Credential (Credential (PubKeyCredential, ScriptCredential), StakingCredential (StakingHash, StakingPtr))
+import Plutus.V1.Ledger.DCert (
+  DCert (DCertDelegDeRegKey, DCertDelegDelegate, DCertGenesis, DCertMir, DCertPoolRegister, DCertPoolRetire),
+ )
+import Plutus.V1.Ledger.Interval (Extended (Finite, NegInf, PosInf))
 
 -- This module contains the HasConstrIndices class, which is used for generating the corresponding PureScript class of
 -- the same name. It also contains instances for Plutus Ledger types with multiple constructors because we cannot hook

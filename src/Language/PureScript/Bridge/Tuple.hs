@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 
-module Language.PureScript.Bridge.Tuple where
+module Language.PureScript.Bridge.Tuple (step, isTuple, TupleParserState, tupleBridge) where
 
 import Data.Text qualified as T
 import Language.PureScript.Bridge.Builder (BridgePart, doCheck)

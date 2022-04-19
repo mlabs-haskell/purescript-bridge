@@ -1,4 +1,4 @@
-module PlutusTx.Aux where
+module PlutusTx.Aux (makeHasConstrIndex, unstableMakeIsData, makeIsDataIndexed, mkIndicesDefault, showInfo, showTy) where
 
 import Language.Haskell.TH qualified as TH
 import Language.Haskell.TH.Datatype qualified as TH

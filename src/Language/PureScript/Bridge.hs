@@ -2,6 +2,8 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-dodgy-imports #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module Language.PureScript.Bridge (
   bridgeSumType,

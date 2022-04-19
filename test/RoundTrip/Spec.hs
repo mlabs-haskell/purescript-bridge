@@ -2,19 +2,15 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module RoundTrip.Spec (roundtripSpec) where
 
 import Control.Exception (bracket)
 import Control.Monad (guard, unless)
-import Data.Aeson (FromJSON, ToJSON (toJSON), eitherDecode, encode, fromJSON)
-import Data.ByteString.Lazy (hGetContents, hPutStr, putStr, stripSuffix)
+import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
-import Data.Foldable (traverse_)
 import Data.List (isInfixOf)
-import Data.Maybe (fromJust, fromMaybe, isJust, isNothing)
-import Data.Proxy (Proxy (Proxy))
-import GHC.Generics (Generic)
 import Language.PureScript.Bridge (
   BridgePart,
   Language (..),
@@ -28,7 +24,6 @@ import Language.PureScript.Bridge (
   genericShow,
   mkSumType,
   order,
-  writePSTypes,
   writePSTypesWith,
  )
 import Language.PureScript.Bridge.TypeParameters (A)
@@ -45,26 +40,16 @@ import RoundTrip.Types (
   TestSum,
   TestTwoFields,
  )
-import System.Directory (removeDirectoryRecursive, removeFile, withCurrentDirectory)
+import System.Directory (withCurrentDirectory)
 import System.Exit (ExitCode (ExitSuccess))
-import System.IO (BufferMode (LineBuffering), Handle, hFlush, hGetLine, hPutStrLn, hSetBuffering, stderr, stdout)
+import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
-  CreateProcess (std_err, std_in, std_out),
-  StdStream (CreatePipe),
-  createProcess,
-  getProcessExitCode,
-  proc,
   readProcessWithExitCode,
   runInteractiveCommand,
-  runInteractiveProcess,
   terminateProcess,
-  waitForProcess,
  )
 import Test.HUnit (assertBool, assertEqual)
-import Test.Hspec (Spec, around, aroundAll_, around_, describe, it)
-import Test.Hspec.Expectations (shouldBe)
-import Test.Hspec.QuickCheck (prop)
-import Test.QuickCheck (noShrinking, once, verbose, withMaxSuccess)
+import Test.Hspec (Spec, around, aroundAll_, describe, it)
 import Test.QuickCheck.Property (Testable (property))
 
 myBridge :: BridgePart
@@ -93,11 +78,11 @@ roundtripSpec = do
         (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
         assertEqual (stdout <> stderr) exitCode ExitSuccess
       it "should not warn of unused packages buildable" do
-        (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+        (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
         assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
       around withApp $
         it "should produce aeson-compatible argonaut instances" $
-          \(hin, hout, herr, hproc) ->
+          \(hin, hout, herr, _) ->
             property $
               \testData -> do
                 let input = toString $ encode @TestData testData

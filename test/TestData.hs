@@ -8,9 +8,10 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
 {-# HLINT ignore SingleValueConstr #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 
 module TestData where
 
@@ -39,7 +40,6 @@ import Language.PureScript.Bridge (
   (<|>),
   (^==),
  )
-import Language.PureScript.Bridge.CodeGenSwitches (defaultSettings)
 import Language.PureScript.Bridge.PSTypes (psString)
 import PlutusTx.Aux (mkIndicesDefault)
 import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))

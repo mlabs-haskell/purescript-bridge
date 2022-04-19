@@ -4,7 +4,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | PureScript types to be used for bridges, e.g. in "Language.PureScript.Bridge.Primitives".
-module Language.PureScript.Bridge.PSTypes where
+module Language.PureScript.Bridge.PSTypes (
+  psArray,
+  psBool,
+  psEither,
+  psInt,
+  psNumber,
+  psMaybe,
+  psString,
+  psTuple,
+  psMap,
+  psSet,
+  psUnit,
+) where
 
 import Control.Lens (view)
 import Control.Monad.Reader.Class (MonadReader)

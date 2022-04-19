@@ -21,59 +21,112 @@
      st = mkSumType @(Maybe' A) -- Note that we use "Maybe' A" instead of just Maybe - which would not work.
    @
 -}
-module Language.PureScript.Bridge.TypeParameters where
+module Language.PureScript.Bridge.TypeParameters (
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  K,
+  L,
+  M,
+  N,
+  O,
+  P,
+  Q,
+  R,
+  S,
+  T,
+  U,
+  V,
+  W,
+  X,
+  Y,
+  Z,
+  A1,
+  B1,
+  C1,
+  D1,
+  E1,
+  F1,
+  G1,
+  H1,
+  I1,
+  J1,
+  K1,
+  L1,
+  M1,
+  N1,
+  O1,
+  P1,
+  Q1,
+  R1,
+  S1,
+  T1,
+  U1,
+  V1,
+  W1,
+  X1,
+  Y1,
+  Z1,
+) where
 
-data A deriving (Eq, Ord)
+data A deriving stock (Eq, Ord)
 
-data B deriving (Eq, Ord)
+data B deriving stock (Eq, Ord)
 
-data C deriving (Eq, Ord)
+data C deriving stock (Eq, Ord)
 
-data D deriving (Eq, Ord)
+data D deriving stock (Eq, Ord)
 
-data E deriving (Eq, Ord)
+data E deriving stock (Eq, Ord)
 
-data F deriving (Eq, Ord)
+data F deriving stock (Eq, Ord)
 
-data G deriving (Eq, Ord)
+data G deriving stock (Eq, Ord)
 
-data H deriving (Eq, Ord)
+data H deriving stock (Eq, Ord)
 
-data I deriving (Eq, Ord)
+data I deriving stock (Eq, Ord)
 
-data J deriving (Eq, Ord)
+data J deriving stock (Eq, Ord)
 
-data K deriving (Eq, Ord)
+data K deriving stock (Eq, Ord)
 
-data L deriving (Eq, Ord)
+data L deriving stock (Eq, Ord)
 
-data M deriving (Eq, Ord)
+data M deriving stock (Eq, Ord)
 
-data N deriving (Eq, Ord)
+data N deriving stock (Eq, Ord)
 
-data O deriving (Eq, Ord)
+data O deriving stock (Eq, Ord)
 
-data P deriving (Eq, Ord)
+data P deriving stock (Eq, Ord)
 
-data Q deriving (Eq, Ord)
+data Q deriving stock (Eq, Ord)
 
-data R deriving (Eq, Ord)
+data R deriving stock (Eq, Ord)
 
-data S deriving (Eq, Ord)
+data S deriving stock (Eq, Ord)
 
-data T deriving (Eq, Ord)
+data T deriving stock (Eq, Ord)
 
-data U deriving (Eq, Ord)
+data U deriving stock (Eq, Ord)
 
-data V deriving (Eq, Ord)
+data V deriving stock (Eq, Ord)
 
-data W deriving (Eq, Ord)
+data W deriving stock (Eq, Ord)
 
-data X deriving (Eq, Ord)
+data X deriving stock (Eq, Ord)
 
-data Y deriving (Eq, Ord)
+data Y deriving stock (Eq, Ord)
 
-data Z deriving (Eq, Ord)
+data Z deriving stock (Eq, Ord)
 
 {- | You can use those if your type parameters are actually type constructors as well:
    @

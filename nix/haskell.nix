@@ -38,12 +38,12 @@ pkgs'.haskell-nix.cabalProject' {
           [ pkgs'.buildPackages.buildPackages.gitMinimal ];
 
         # Required for Spago based `around` tests
-        purescript-bridge.components.tests.tests.build-tools =
-          [
-            easy-ps.purs-0_14_5
-            easy-ps.spago
-            pkgs.nodejs-12_x
-          ];
+        # purescript-bridge.components.tests.tests.build-tools =
+        #   [
+        #     easy-ps.purs-0_14_5
+        #     easy-ps.spago
+        #     pkgs.nodejs-12_x
+        #   ];
 
         # Don't build in dev
         # TODO: Add purescript-bridge.components.library.configureFlags = [ dev ];

@@ -51,8 +51,13 @@
       in
       {
         # Useful attributes
-        inherit pkgs;
+        inherit pkgs ledgerTypelib;
         pursBridgeFlake = pursBridgeFlakeFor system;
+        pursBridgeHsProjectFor = system: import ./nix/haskell.nix {
+          inherit src system pkgs easy-ps;
+          inputs = inputs // inputs.bot-plutus-interface.inputs;
+          extraSources = inputs.bot-plutus-interface.extraSources;
+        };
 
         # Flake standard attributes
         packages = self.pursBridgeFlake.${system}.packages;

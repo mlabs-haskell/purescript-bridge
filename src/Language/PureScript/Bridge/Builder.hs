@@ -39,14 +39,14 @@ import Control.Applicative (Alternative (empty, (<|>)))
 import Control.Lens (Getter, Lens', to, view, views, (^.))
 import Control.Monad (MonadPlus, guard, mplus, mzero)
 import Control.Monad.Reader.Class (MonadReader)
-import Control.Monad.Trans.Reader (Reader, ReaderT (..), runReader)
+import Control.Monad.Trans.Reader (Reader, ReaderT (ReaderT, runReaderT), runReader)
 import Data.Maybe (fromMaybe)
 import Data.Text qualified as T
 import Language.PureScript.Bridge.TypeInfo (
-  HasHaskType (..),
+  HasHaskType (haskType),
   HaskellType,
   PSType,
-  TypeInfo (..),
+  TypeInfo (TypeInfo, _typeModule, _typeName, _typePackage, _typeParameters),
   typeModule,
   typeName,
   typePackage,

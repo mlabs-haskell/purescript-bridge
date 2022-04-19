@@ -6,6 +6,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module Language.PureScript.Bridge.Printer where
 
@@ -129,7 +131,7 @@ data Module (lang :: Language) = PSModule
   , psQualifiedImports :: !(Map Text Text)
   , psTypes :: ![SumType lang]
   }
-  deriving (Show)
+  deriving stock (Show)
 
 type PSModule = Module 'PureScript
 

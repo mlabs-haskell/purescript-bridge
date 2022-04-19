@@ -14,6 +14,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 
 module Language.PureScript.Bridge.SumType where
 
@@ -47,7 +48,7 @@ import Generics.Deriving (
   type (:+:),
  )
 import Language.PureScript.Bridge.TypeInfo (
-  Language (..),
+  Language (Haskell, PureScript),
   TypeInfo (TypeInfo),
   flattenTypeInfo,
   mkTypeInfo,
@@ -61,14 +62,14 @@ data ImportLine = ImportLine
   { importModule :: !Text
   , importTypes :: !(Set Text)
   }
-  deriving (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show)
 
 type ImportLines = Map Text ImportLine
 
 -- | Generic representation of your Haskell types.
 data SumType (lang :: Language)
   = SumType (TypeInfo lang) [(Int, DataConstructor lang)] [Instance lang]
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 -- | TypeInfo lens for 'SumType'.
 sumTypeInfo ::
@@ -163,7 +164,7 @@ data Instance (lang :: Language)
   | ToData
   | FromData
   | Custom (CustomInstance lang)
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 type PSInstance = Instance 'PureScript
 
@@ -174,20 +175,20 @@ data InstanceMember (lang :: Language) = InstanceMember
   , _memberDependencies :: [TypeInfo lang]
   , _memberImportLines :: ImportLines
   }
-  deriving (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show)
 
 data InstanceImplementation (lang :: Language)
   = Derive
   | DeriveNewtype
   | Explicit [InstanceMember lang]
-  deriving (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show)
 
 data CustomInstance (lang :: Language) = CustomInstance
   { _customConstraints :: [TypeInfo lang]
   , _customHead :: TypeInfo lang
   , _customImplementation :: InstanceImplementation lang
   }
-  deriving (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show)
 
 {- | The Purescript typeclass `Newtype` might be derivable if the original
  Haskell type was a simple type wrapper.
@@ -228,13 +229,13 @@ data DataConstructor (lang :: Language) = DataConstructor
     _sigConstructor :: !Text
   , _sigValues :: !(DataConstructorArgs lang)
   }
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 data DataConstructorArgs (lang :: Language)
   = Nullary
   | Normal (NonEmpty (TypeInfo lang))
   | Record (NonEmpty (RecordEntry lang))
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 instance Semigroup (DataConstructorArgs lang) where
   Nullary <> b = b
@@ -252,7 +253,7 @@ data RecordEntry (lang :: Language) = RecordEntry
     _recLabel :: !Text
   , _recValue :: !(TypeInfo lang)
   }
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 class GDataConstructor f where
   gToConstructors :: f a -> [DataConstructor 'Haskell]

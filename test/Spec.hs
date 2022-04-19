@@ -6,12 +6,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module Main where
 
 import Data.Map (empty)
 import Data.Map qualified as Map
-import Data.Monoid ((<>))
 import Data.Text (Text)
 import Data.Text qualified as T
 import Language.PureScript.Bridge (
@@ -39,7 +40,6 @@ import Language.PureScript.Bridge (
  )
 import Language.PureScript.Bridge.CodeGenSwitches (
   getSettings,
-  noLenses,
  )
 import Language.PureScript.Bridge.SumType (mkSumTypeIndexed)
 import Language.PureScript.Bridge.TypeParameters (A, B, C, M1)
@@ -63,9 +63,6 @@ import TestData (
  )
 import Text.PrettyPrint.Leijen.Text (
   Doc,
-  cat,
-  linebreak,
-  punctuate,
   vsep,
  )
 
