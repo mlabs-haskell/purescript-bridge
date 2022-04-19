@@ -1,6 +1,7 @@
 {
   description = "Generate PureScript data types from Haskell data types";
-  nixConfig.bash-prompt = "\\[\\e[0m\\][\\[\\e[0;2m\\]nix-develop \\[\\e[0;1m\\]purescript-bridge \\[\\e[0;93m\\]\\w\\[\\e[0m\\]]\\[\\e[0m\\]$ \\[\\e[0m\\]";
+  nixConfig.bash-prompt =
+    "\\[\\e[0m\\][\\[\\e[0;2m\\]nix-develop \\[\\e[0;1m\\]purescript-bridge \\[\\e[0;93m\\]\\w\\[\\e[0m\\]]\\[\\e[0m\\]$ \\[\\e[0m\\]";
   inputs = {
     haskell-nix.url = "github:mlabs-haskell/haskell.nix";
     flake-utils.url = "github:numtide/flake-utils";
@@ -21,10 +22,10 @@
   };
 
   outputs = inputs@{ self, flake-utils, ... }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
+    flake-utils.lib.eachDefaultSystem (system:
       let
-        # TODO: Perhaps cleanSource
-        src = ./.;
+
+        src = self;
 
         # Nixpkgs from bot-plutus-interface
         inherit (inputs.bot-plutus-interface.inputs) nixpkgs;
@@ -33,51 +34,42 @@
         pkgs = import nixpkgs { inherit system; };
 
         easy-ps = import inputs.easy-ps { inherit pkgs; };
-        pursBridgeHsProjectFor = system: import ./nix/haskell.nix {
+
+        pursBridgeHsProject = import ./nix/haskell.nix {
           inherit src system pkgs easy-ps;
           inputs = inputs // inputs.bot-plutus-interface.inputs;
           extraSources = inputs.bot-plutus-interface.extraSources;
         };
-        pursBridgeFlakeFor = system: (pursBridgeHsProjectFor system).flake { };
-        cq = import ./nix/code-quality.nix { projectName = ""; inherit pkgs easy-ps; };
+
+        pursBridgeFlake = pursBridgeHsProject.flake { };
+
+        cq = import ./nix/code-quality.nix {
+          projectName = "purescript-bridge-code-quality";
+          inherit pkgs easy-ps;
+        };
+
         fileCheckers = cq.checkers pkgs;
 
         # plutus-ledger-api Purescript typelib
         ledgerTypelib = import ./nix/purescript-bridge-typelib.nix {
           inherit pkgs;
-          purs = easy-ps.purs-0_14_5; # TODO: Extract the purs version as a param and share across
-          cli = (pursBridgeHsProjectFor system).getComponent "purescript-bridge:exe:cli";
+          # TODO: Extract the purs version as a param and share across
+          purs = easy-ps.purs-0_14_5;
+          cli = pursBridgeHsProject.getComponent "purescript-bridge:exe:cli";
         };
-      in
-      {
+
+      in {
         # Useful attributes
-        inherit pkgs ledgerTypelib;
-        pursBridgeFlake = pursBridgeFlakeFor system;
-        pursBridgeHsProjectFor = system: import ./nix/haskell.nix {
-          inherit src system pkgs easy-ps;
-          inputs = inputs // inputs.bot-plutus-interface.inputs;
-          extraSources = inputs.bot-plutus-interface.extraSources;
-        };
+        inherit pkgs ledgerTypelib pursBridgeFlake pursBridgeHsProject;
 
         # Flake standard attributes
         packages = self.pursBridgeFlake.${system}.packages;
         checks = self.pursBridgeFlake.${system}.checks;
-        devShells = {
-          "default" = self.pursBridgeFlake.${system}.devShell;
-        };
-
-        # Fix files
-        fix-files = cq.format;
-
-        # Used by CI
+        devShells = { default = self.pursBridgeFlake.${system}.devShell; };
+        fix-files = cq.format; # Fix files
         build-all = pkgs.runCommand "build-all"
-          (self.packages.${system} // self.devShells.${system})
-          "touch $out";
-
+          (self.packages.${system} // self.devShells.${system}) "touch $out"; # Used by CI
         check-files = pkgs.runCommand "check-files"
-          (builtins.mapAttrs (_: v: v src) fileCheckers)
-          "touch $out";
-
-      }
-    );
+          (builtins.mapAttrs (_: v: v src) fileCheckers) "touch $out";
+      });
 }
