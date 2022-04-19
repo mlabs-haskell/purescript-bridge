@@ -3,7 +3,12 @@ module Main where
 import Prelude
 
 import Data.Argonaut.Core (stringify)
-import Data.Argonaut.Decode (JsonDecodeError, decodeJson, parseJson, printJsonDecodeError)
+import Data.Argonaut.Decode
+  ( JsonDecodeError
+  , decodeJson
+  , parseJson
+  , printJsonDecodeError
+  )
 import Data.Argonaut.Encode (encodeJson)
 import Data.Either (Either(Left, Right))
 import Effect (Effect)

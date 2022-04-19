@@ -9,7 +9,7 @@ module Language.PureScript.Bridge.CodeGenSwitches (
   genLenses,
 ) where
 
-import Data.Monoid (Endo (..))
+import Data.Monoid (Endo (Endo, appEndo))
 
 -- | General settings for code generation
 newtype Settings = Settings

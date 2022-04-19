@@ -1,15 +1,7 @@
-{ src, system, pkgs, easy-ps, inputs, extraSources }:
-let
-  # Poor caching due to overlay
-  pkgs' = import inputs.nixpkgs {
-    overlays =
-      [ inputs.haskell-nix.overlay (import "${inputs.iohk-nix}/overlays/crypto") ];
-    inherit system;
-    inherit (inputs.haskell-nix) config;
-  };
-in
+{ src, system, pkgs, pkgs', easy-ps, inputs, extraSources }:
 pkgs'.haskell-nix.cabalProject' {
   inherit src;
+  name = "purescript-bridge";
   compiler-nix-name = "ghc8107";
   cabalProjectFileName = "cabal.project";
   modules = [
@@ -38,12 +30,12 @@ pkgs'.haskell-nix.cabalProject' {
           [ pkgs'.buildPackages.buildPackages.gitMinimal ];
 
         # Required for Spago based `around` tests
-        purescript-bridge.components.tests.tests.build-tools =
-          [
-            easy-ps.purs-0_14_5
-            easy-ps.spago
-            pkgs.nodejs-12_x
-          ];
+        # purescript-bridge.components.tests.tests.build-tools =
+        #   [
+        #     easy-ps.purs-0_14_5
+        #     easy-ps.spago
+        #     pkgs.nodejs-12_x
+        #   ];
 
         # Don't build in dev
         # TODO: Add purescript-bridge.components.library.configureFlags = [ dev ];
@@ -61,8 +53,7 @@ pkgs'.haskell-nix.cabalProject' {
 
     exactDeps = true;
 
-    # We use the ones from Nixpkgs, since they are cached reliably.
-    # Eventually we will probably want to build these with haskell.nix.
+    # We use the ones from vanilla Nixpkgs, since they are cached reliably.
     nativeBuildInputs = with pkgs; [
       # Building code
       cabal-install

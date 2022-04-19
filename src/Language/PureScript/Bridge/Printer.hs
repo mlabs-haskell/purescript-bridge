@@ -6,6 +6,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module Language.PureScript.Bridge.Printer where
 
@@ -129,7 +131,7 @@ data Module (lang :: Language) = PSModule
   , psQualifiedImports :: !(Map Text Text)
   , psTypes :: ![SumType lang]
   }
-  deriving (Show)
+  deriving stock (Show)
 
 type PSModule = Module 'PureScript
 
@@ -354,12 +356,12 @@ instances st@(SumType t cs is) = go <$> is
     go ToData =
       mkInstance
         (mkType "ToData" [t])
-        (const [])
+        (constrainWith "ToData")
         ["toData x = genericToData x"]
     go FromData =
       mkInstance
         (mkType "FromData" [t])
-        (const [])
+        (constrainWith "FromData")
         ["fromData pd = genericFromData pd"]
     go HasConstrIndex =
       mkInstance

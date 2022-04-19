@@ -6,12 +6,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module Main where
 
 import Data.Map (empty)
 import Data.Map qualified as Map
-import Data.Monoid ((<>))
 import Data.Text (Text)
 import Data.Text qualified as T
 import Language.PureScript.Bridge (
@@ -39,7 +40,6 @@ import Language.PureScript.Bridge (
  )
 import Language.PureScript.Bridge.CodeGenSwitches (
   getSettings,
-  noLenses,
  )
 import Language.PureScript.Bridge.SumType (mkSumTypeIndexed)
 import Language.PureScript.Bridge.TypeParameters (A, B, C, M1)
@@ -63,9 +63,6 @@ import TestData (
  )
 import Text.PrettyPrint.Leijen.Text (
   Doc,
-  cat,
-  linebreak,
-  punctuate,
   vsep,
  )
 
@@ -326,22 +323,11 @@ allTests = do
               , "import Prelude"
               , ""
               , "import ConstrIndices (class HasConstrIndices, constrIndices, fromConstr2Index)"
-              , "import Control.Lazy (defer)"
-              , "import Data.Argonaut.Core (jsonNull)"
-              , "import Data.Argonaut.Decode (class DecodeJson, decodeJson)"
-              , "import Data.Argonaut.Decode.Aeson ((</$\\>), (</*\\>), (</\\>), decode, null)"
-              , "import Data.Argonaut.Encode (class EncodeJson, encodeJson)"
-              , "import Data.Argonaut.Encode.Aeson ((>$<), (>/\\<), encode, null)"
               , "import Data.Generic.Rep (class Generic)"
               , "import Data.Maybe (Maybe(Nothing, Just))"
-              , "import Data.Newtype (unwrap)"
               , "import Data.Tuple (Tuple(Tuple))"
-              , "import Data.Tuple.Nested ((/\\))"
               , "import FromData (class FromData, fromData, genericFromData)"
               , "import ToData (class ToData, genericToData, toData)"
-              , "import Data.Argonaut.Decode.Aeson as D"
-              , "import Data.Argonaut.Encode.Aeson as E"
-              , "import Data.Map as Map"
               , ""
               , "data TwoRecords"
               , "  = FirstRecord"
@@ -363,32 +349,6 @@ allTests = do
               , ""
               , "instance FromData TwoRecords where"
               , "  fromData pd = genericFromData pd"
-              , ""
-              , "instance EncodeJson TwoRecords where"
-              , "  encodeJson = defer \\_ -> case _ of"
-              , "    FirstRecord {_fra, _frb} -> encodeJson"
-              , "      { tag: \"FirstRecord\""
-              , "      , _fra: flip E.encode _fra E.value"
-              , "      , _frb: flip E.encode _frb E.value"
-              , "      }"
-              , "    SecondRecord {_src, _srd} -> encodeJson"
-              , "      { tag: \"SecondRecord\""
-              , "      , _src: flip E.encode _src E.value"
-              , "      , _srd: flip E.encode _srd E.value"
-              , "      }"
-              , ""
-              , "instance DecodeJson TwoRecords where"
-              , "  decodeJson = defer \\_ -> D.decode"
-              , "    $ D.sumType \"TwoRecords\" $ Map.fromFoldable"
-              , "      [ \"FirstRecord\" /\\ (FirstRecord <$> D.object \"FirstRecord\""
-              , "        { _fra: D.value :: _ String"
-              , "        , _frb: D.value :: _ Int"
-              , "        })"
-              , "      , \"SecondRecord\" /\\ (SecondRecord <$> D.object \"SecondRecord\""
-              , "        { _src: D.value :: _ Int"
-              , "        , _srd: D.value :: _ (Array Int)"
-              , "        })"
-              , "      ]"
               ]
        in m `shouldBe` txt
 

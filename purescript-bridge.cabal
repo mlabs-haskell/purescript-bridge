@@ -1,48 +1,87 @@
+cabal-version:      3.0
 name:               purescript-bridge
-
--- The package version.  See the Haskell package versioning policy (PVP)
--- for standards guiding when and how versions should be incremented.
--- http://www.haskell.org/haskellwiki/Package_versioning_policy
--- PVP summary:      +-+------- breaking API changes
---                   | | +----- non-breaking API additions
---                   | | | +--- code changes with no API change
 version:            0.14.0.0
-
--- A short (one-line) description of the package.
 synopsis:           Generate PureScript data types from Haskell data types
-
--- A longer description of the package.
--- description:
-
--- The license under which the package is released.
-license:            BSD3
-
--- The file containing the license text.
+license:            BSD-3-Clause
 license-file:       LICENSE
-
--- The package author(s).
 author:             Robert Klotzner
-
--- An email address to which users can send suggestions, bug reports, and
--- patches.
 maintainer:         robert . klotzner A T gmx . at
-
--- A copyright notice.
--- copyright:
-
 category:           Web
 build-type:         Simple
-
--- Extra files to be distributed with the package, such as examples or a
--- README.
--- extra-source-files:
-
--- Constraint on the version of Cabal needed to build this package.
-cabal-version:      >=1.10
 extra-source-files: README.md
 
+source-repository head
+  type:     git
+  location: https://github.com/mlabs-haskell/purescript-bridge
+
+common common-lang
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-uni-patterns -Wno-unused-do-bind
+    -Wno-partial-type-signatures -Wmissing-export-lists
+    -Wincomplete-record-updates -Wmissing-deriving-strategies
+    -Wno-name-shadowing -Wunused-foralls -fprint-explicit-foralls
+    -fprint-explicit-kinds -fwarn-missing-import-lists -Werror
+
+  build-depends:      base
+  default-extensions:
+    NoStarIsType
+    BangPatterns
+    BinaryLiterals
+    ConstrainedClassMethods
+    ConstraintKinds
+    DataKinds
+    DeriveAnyClass
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    DoAndIfThenElse
+    EmptyCase
+    EmptyDataDecls
+    EmptyDataDeriving
+    ExistentialQuantification
+    ExplicitForAll
+    FlexibleContexts
+    FlexibleInstances
+    ForeignFunctionInterface
+    GADTSyntax
+    GeneralisedNewtypeDeriving
+    HexFloatLiterals
+    ImplicitPrelude
+    ImportQualifiedPost
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    MonomorphismRestriction
+    MultiParamTypeClasses
+    NamedFieldPuns
+    NamedWildCards
+    NumericUnderscores
+    OverloadedStrings
+    PartialTypeSignatures
+    PatternGuards
+    PolyKinds
+    PostfixOperators
+    RankNTypes
+    RelaxedPolyRec
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    TypeSynonymInstances
+    ViewPatterns
+
+  default-language:   Haskell2010
+
 library
-  -- Modules exported by the library.
+  import:           common-lang
   exposed-modules:
     Language.PureScript.Bridge
     Language.PureScript.Bridge.Builder
@@ -58,68 +97,8 @@ library
     PlutusTx.ConstrIndices
     PlutusTx.LedgerTypes
 
-
-  -- Modules included in this library but not exported.
-  -- other-modules:
-  default-extensions:
-    NoStarIsType
-    BangPatterns
-    BinaryLiterals
-    ConstrainedClassMethods
-    ConstraintKinds
-    DataKinds
-    DeriveAnyClass
-    DeriveDataTypeable
-    DeriveFoldable
-    DeriveFunctor
-    DeriveGeneric
-    DeriveLift
-    DeriveTraversable
-    DerivingStrategies
-    DerivingVia
-    DoAndIfThenElse
-    EmptyCase
-    EmptyDataDecls
-    EmptyDataDeriving
-    ExistentialQuantification
-    ExplicitForAll
-    FlexibleContexts
-    FlexibleInstances
-    ForeignFunctionInterface
-    GADTSyntax
-    GeneralisedNewtypeDeriving
-    HexFloatLiterals
-    ImplicitPrelude
-    ImportQualifiedPost
-    InstanceSigs
-    KindSignatures
-    LambdaCase
-    MonomorphismRestriction
-    MultiParamTypeClasses
-    NamedFieldPuns
-    NamedWildCards
-    NumericUnderscores
-    OverloadedStrings
-    PartialTypeSignatures
-    PatternGuards
-    PolyKinds
-    PostfixOperators
-    RankNTypes
-    RelaxedPolyRec
-    ScopedTypeVariables
-    StandaloneDeriving
-    StandaloneKindSignatures
-    TraditionalRecordSyntax
-    TupleSections
-    TypeApplications
-    TypeFamilies
-    TypeOperators
-    TypeSynonymInstances
-    ViewPatterns
-
-  -- Other library packages from which modules are imported.
   build-depends:
-      base               >=4.8 && <6.0
+    , base               >=4.8 && <6.0
     , containers
     , directory
     , filepath
@@ -134,80 +113,21 @@ library
     , transformers
     , wl-pprint-text
 
-  ghc-options:        -Wall -fwarn-incomplete-patterns -Werror
-
-  -- Directories containing source files.
-  hs-source-dirs:     src
-
-  -- Base language which the package is written in.
-  default-language:   Haskell2010
+  ghc-options:      -Wall -fwarn-incomplete-patterns -Werror
+  hs-source-dirs:   src
+  default-language: Haskell2010
 
 test-suite tests
-  type:               exitcode-stdio-1.0
-  main-is:            Spec.hs
+  import:           common-lang
+  type:             exitcode-stdio-1.0
+  main-is:          Spec.hs
   other-modules:
     RoundTrip.Spec
     RoundTrip.Types
     TestData
 
-  default-extensions:
-    NoStarIsType
-    BangPatterns
-    BinaryLiterals
-    ConstrainedClassMethods
-    ConstraintKinds
-    DataKinds
-    DeriveAnyClass
-    DeriveDataTypeable
-    DeriveFoldable
-    DeriveFunctor
-    DeriveGeneric
-    DeriveLift
-    DeriveTraversable
-    DerivingStrategies
-    DerivingVia
-    DoAndIfThenElse
-    EmptyCase
-    EmptyDataDecls
-    EmptyDataDeriving
-    ExistentialQuantification
-    ExplicitForAll
-    FlexibleContexts
-    FlexibleInstances
-    ForeignFunctionInterface
-    GADTSyntax
-    GeneralisedNewtypeDeriving
-    HexFloatLiterals
-    ImplicitPrelude
-    ImportQualifiedPost
-    InstanceSigs
-    KindSignatures
-    LambdaCase
-    MonomorphismRestriction
-    MultiParamTypeClasses
-    NamedFieldPuns
-    NamedWildCards
-    NumericUnderscores
-    OverloadedStrings
-    PartialTypeSignatures
-    PatternGuards
-    PolyKinds
-    PostfixOperators
-    RankNTypes
-    RelaxedPolyRec
-    ScopedTypeVariables
-    StandaloneDeriving
-    StandaloneKindSignatures
-    TraditionalRecordSyntax
-    TupleSections
-    TypeApplications
-    TypeFamilies
-    TypeOperators
-    TypeSynonymInstances
-    ViewPatterns
-
   build-depends:
-      aeson
+    , aeson
     , base
     , bytestring
     , containers
@@ -222,10 +142,19 @@ test-suite tests
     , utf8-string
     , wl-pprint-text
 
-  hs-source-dirs:     test
+  hs-source-dirs:   test
+  default-language: Haskell2010
 
-  -- Initial purescript-bridge.cabal generated by cabal init.  For further
-  -- documentation, see http://haskell.org/cabal/users-guide/
+executable cli
+  import:         common-lang
+  build-depends:
+    , base
+    , directory
+    , filepath
+    , optparse-applicative
+    , purescript-bridge
 
-  -- The name of the package.
-  default-language:   Haskell2010
+  scope:          public
+  hs-source-dirs: app
+  main-is:        Main.hs
+  ghc-options:    -Wno-missing-home-modules

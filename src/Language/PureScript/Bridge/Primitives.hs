@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Language.PureScript.Bridge.Primitives where
+module Language.PureScript.Bridge.Primitives (boolBridge, eitherBridge, setBridge, mapBridge, dummyBridge, intBridge, doubleBridge, maybeBridge, listBridge, stringBridge, textBridge, unitBridge, noContentBridge) where
 
 import Control.Monad.Reader.Class (MonadReader)
 import Language.PureScript.Bridge.Builder (
