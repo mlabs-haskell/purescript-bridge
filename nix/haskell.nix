@@ -2,13 +2,14 @@
 let
   # Poor caching due to overlay
   pkgs' = import inputs.nixpkgs {
-    overlays =
-      [ inputs.haskell-nix.overlay (import "${inputs.iohk-nix}/overlays/crypto") ];
+    overlays = [
+      inputs.haskell-nix.overlay
+      (import "${inputs.iohk-nix}/overlays/crypto")
+    ];
     inherit system;
     inherit (inputs.haskell-nix) config;
   };
-in
-pkgs'.haskell-nix.cabalProject' {
+in pkgs'.haskell-nix.cabalProject' {
   inherit src;
   compiler-nix-name = "ghc8107";
   cabalProjectFileName = "cabal.project";
