@@ -64,19 +64,18 @@
           purs = easy-ps.purs-0_14_5; # TODO: Extract the purs version as a param and share across
           pursDir = ./plutus-ledger-api-typelib;
         };
-
       in
       {
         # Useful attributes
         inherit pkgs easy-ps ledgerTypelib pursBridgeFlake;
 
         # Flake standard attributes
-        packages = self.pursBridgeFlake.${system}.packages // {
+        packages = pursBridgeFlake.packages // {
           plutus-ledger-api-typelib = ledgerTypelib;
         };
-        checks = self.pursBridgeFlake.${system}.checks;
+        checks = pursBridgeFlake.checks;
         devShells = {
-          "default" = self.pursBridgeFlake.${system}.devShell;
+          default = pursBridgeFlake.devShell;
         };
 
         # Fix files

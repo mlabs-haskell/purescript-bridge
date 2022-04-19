@@ -1,7 +1,14 @@
+
+.PHONY: test develop test-all build-all build-test-all fix-files \
+        check-files ci clean
+
 current-system := $(shell nix eval --impure --expr builtins.currentSystem)
 
 NIX_BUILD:= nix -L --show-trace build
 NIX_RUN:= nix -L --show-trace run
+
+develop:
+	nix develop -L .#default
 
 # Tests
 test:
