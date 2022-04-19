@@ -74,18 +74,32 @@
         fileCheckers = cq.checkers pkgs;
 
         # plutus-ledger-api Purescript typelib
-        ledgerTypelib = import ./nix/purescript-bridge-typelib.nix {
+        sampleLedgerTypelib = import ./nix/purescript-bridge-typelib.nix {
           inherit pkgs;
           purs = easy-ps.purs-0_14_5; # TODO: Extract the purs version as a param and share across
           pursDir = ./plutus-ledger-api-typelib;
         };
+        ledgerTypelib = import ./nix/purescript-bridge-typelib.nix {
+          inherit pkgs;
+          purs = easy-ps.purs-0_14_5; # TODO: Extract the purs version as a param and share across
+          pursDir = (pkgs.runCommand "generate-plutus-ledger-api-typelib"
+            {
+              cli = pursBridgeHsProject.getComponent "purescript-bridge:exe:cli";
+            }
+            ''
+              mkdir $out
+              $cli/bin/cli generate-plutus-ledger-api-types --purs-dir $out
+            '');
+        };
+
       in
       {
         # Useful attributes
-        inherit pkgs easy-ps ledgerTypelib pursBridgeFlake;
+        inherit pkgs easy-ps pursBridgeHsProject pursBridgeFlake;
 
         # Flake standard attributes
         packages = pursBridgeFlake.packages // {
+          sample-plutus-ledger-api-typelib = sampleLedgerTypelib;
           plutus-ledger-api-typelib = ledgerTypelib;
         };
         checks = pursBridgeFlake.checks;
