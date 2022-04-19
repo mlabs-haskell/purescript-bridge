@@ -112,16 +112,10 @@ ledgerTypes =
 -- My assumption was that, like Plutarch, we'd just shove everything into it's respective Plutus.V1.Ledger module
 plutusBridge :: BridgeBuilder PSType
 plutusBridge =
-  -- cbtxBridge "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
-  --  <|> cbtxBridge "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
-  --  <|> cbtxBridge "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
-  --  <|> cbtxBridge "Plutus.V1.Ledger.Address" "Address" "Serialization.Address" "Address"
   cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinByteString" "Types.ByteArray" "ByteArray"
     <|> cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
-    --  <|> cbtxBridge "Plutus.V1.Ledger.Bytes" "LedgerBytes" "Types.ByteArray" "ByteArray"
-    -- <|> cbtxBridge "Plutus.V1.Ledger.Time" "POSIXTime" "Types.Interval" "POSIXTime"
     <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
-    <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Data.Rational" "Rational"
+    <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
 
 --  <|> assetClassBridge
 
