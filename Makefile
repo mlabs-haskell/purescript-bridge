@@ -20,6 +20,9 @@ test-all: test
 build-all:
 	$(NIX_BUILD) .#build-all.${current-system}
 
+build-plutus-ledger-api-typelib:
+	$(NIX_BUILD) .#packages.${current-system}.plutus-ledger-api-typelib
+
 build-test-all: build-all test-all
 
 # Fix files
