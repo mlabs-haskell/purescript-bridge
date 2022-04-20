@@ -54,7 +54,7 @@ import Plutus.V1.Ledger.Slot (Slot)
 import Plutus.V1.Ledger.Time (DiffMilliSeconds, POSIXTime)
 import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
-import Plutus.V1.Ledger.Value (AssetClass) --  CurrencySymbol, TokenName, Value)
+import Plutus.V1.Ledger.Value (AssetClass, CurrencySymbol, TokenName, Value) --  CurrencySymbol, TokenName, Value)
 
 import Data.Text (Text)
 import PlutusTx.AssocMap (Map)
@@ -71,11 +71,11 @@ writeLedgerTypesAnd fp myTypes =
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  [ -- extremelyUnsafeMkSumType @Value
-    --  , extremelyUnsafeMkSumType @CurrencySymbol
-    order $ extremelyUnsafeMkSumType @AssetClass
-  , -- , extremelyUnsafeMkSumType @TokenName
-    order $ extremelyUnsafeMkSumType @TxId
+  [ extremelyUnsafeMkSumType @Value
+  , extremelyUnsafeMkSumType @CurrencySymbol
+  , order $ extremelyUnsafeMkSumType @AssetClass
+  , extremelyUnsafeMkSumType @TokenName
+  , order $ extremelyUnsafeMkSumType @TxId
   , extremelyUnsafeMkSumType @TxOut
   , extremelyUnsafeMkSumType @TxOutRef
   , order $ extremelyUnsafeMkSumType @DiffMilliSeconds
@@ -117,11 +117,6 @@ plutusBridge =
     <|> cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
     <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
     <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
-    <|> cbtxBridge "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
-    <|> cbtxBridge "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
-    <|> cbtxBridge "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
-
---  <|> assetClassBridge
 
 cbtxBridge :: Text -> Text -> Text -> Text -> BridgePart
 cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
@@ -134,17 +129,3 @@ cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
       , _typeName = psTypeName
       , _typeParameters = []
       }
-
-{-
-assetClassBridge :: BridgePart
-assetClassBridge = do
-  typeModule ^== "Plutus.V1.Ledger.Value"
-  typeName ^== "AssetClass"
-  return $
-    TypeInfo
-      { _typePackage = "plutonomicon-cardano-browser-tx"
-      , _typeModule = "Data.Tuple"
-      , _typeName = "Tuple"
-      , _typeParameters = [TypeInfo "" "Types.Value" "CurrencySymbol" [], TypeInfo "" "Types.Value" "TokenName" []]
-      }
--}
