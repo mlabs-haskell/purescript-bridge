@@ -18,6 +18,10 @@ import Type.Proxy (Proxy(Proxy))
 
 newtype DiffMilliSeconds = DiffMilliSeconds BigInt
 
+derive instance Eq DiffMilliSeconds
+
+derive instance Ord DiffMilliSeconds
+
 derive instance Generic DiffMilliSeconds _
 
 derive instance Newtype DiffMilliSeconds _
@@ -39,6 +43,10 @@ _DiffMilliSeconds = _Newtype
 --------------------------------------------------------------------------------
 
 newtype POSIXTime = POSIXTime { getPOSIXTime :: BigInt }
+
+derive instance Eq POSIXTime
+
+derive instance Ord POSIXTime
 
 derive instance Generic POSIXTime _
 

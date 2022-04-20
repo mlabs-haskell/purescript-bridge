@@ -18,6 +18,10 @@ import Types.ByteArray (ByteArray)
 
 newtype TxId = TxId { getTxId :: ByteArray }
 
+derive instance Eq TxId
+
+derive instance Ord TxId
+
 derive instance Generic TxId _
 
 derive instance Newtype TxId _

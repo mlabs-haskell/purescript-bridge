@@ -18,6 +18,10 @@ import Type.Proxy (Proxy(Proxy))
 
 newtype Slot = Slot { getSlot :: BigInt }
 
+derive instance Eq Slot
+
+derive instance Ord Slot
+
 derive instance Generic Slot _
 
 derive instance Newtype Slot _

@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
 import Data.Tuple (Tuple, Tuple(Tuple))
 import FromData (class FromData, fromData, genericFromData)
-import PlutusTx.AssocMap (Map)
+import Plutus.Types.AssocMap (Map)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
@@ -42,6 +42,10 @@ _Value = _Newtype
 
 newtype CurrencySymbol = CurrencySymbol { unCurrencySymbol :: ByteArray }
 
+derive instance Eq CurrencySymbol
+
+derive instance Ord CurrencySymbol
+
 derive instance Generic CurrencySymbol _
 
 derive instance Newtype CurrencySymbol _
@@ -65,6 +69,10 @@ _CurrencySymbol = _Newtype
 newtype AssetClass = AssetClass
   { unAssetClass :: Tuple CurrencySymbol TokenName }
 
+derive instance Eq AssetClass
+
+derive instance Ord AssetClass
+
 derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
@@ -87,6 +95,10 @@ _AssetClass = _Newtype
 --------------------------------------------------------------------------------
 
 newtype TokenName = TokenName { unTokenName :: ByteArray }
+
+derive instance Eq TokenName
+
+derive instance Ord TokenName
 
 derive instance Generic TokenName _
 

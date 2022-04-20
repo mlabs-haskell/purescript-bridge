@@ -170,7 +170,7 @@ let additions =
           , "untagged-union"
           ]
         , repo = "https://github.com/plutonomicon/cardano-transaction-lib.git"
-        , version = "682f325e248a54c431fb10dee9a373d2d6df328d"
+        , version = "bcce372942caf2d99157f28a0a98d66cd9be4560"
         }
       , properties =
         { dependencies = [ "prelude", "console" ]

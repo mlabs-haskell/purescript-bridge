@@ -5,6 +5,7 @@ module PlutusTx.LedgerTypes where
 
 -- local imports
 
+-- local imports
 import Language.PureScript.Bridge (
   BridgeBuilder,
   BridgePart,
@@ -23,13 +24,14 @@ import Language.PureScript.Bridge (
   extremelyUnsafeMkSumType,
   mkSumTypeIndexed,
   order,
+  psTypeParameters,
   typeModule,
   typeName,
   writePSTypes,
   (<|>),
   (^==),
  )
-import Language.PureScript.Bridge.TypeParameters (A, B)
+import Language.PureScript.Bridge.TypeParameters (A)
 import PlutusTx.ConstrIndices ()
 
 -- Ledger type imports
@@ -57,7 +59,6 @@ import Plutus.V1.Ledger.TxId (TxId)
 import Plutus.V1.Ledger.Value (AssetClass, CurrencySymbol, TokenName, Value) --  CurrencySymbol, TokenName, Value)
 
 import Data.Text (Text)
-import PlutusTx.AssocMap (Map)
 
 writeLedgerTypes :: FilePath -> IO ()
 writeLedgerTypes fp = writeLedgerTypesAnd fp []
@@ -101,7 +102,6 @@ ledgerTypes =
   , extremelyUnsafeMkSumType @(Interval A)
   , extremelyUnsafeMkSumType @(LowerBound A)
   , extremelyUnsafeMkSumType @(UpperBound A)
-  , extremelyUnsafeMkSumType @(Map A B)
   , mkSumTypeIndexed @DCert
   , mkSumTypeIndexed @(Extended A)
   , mkSumTypeIndexed @StakingCredential
@@ -117,6 +117,7 @@ plutusBridge =
     <|> cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
     <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
     <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
+    <|> mapBridge
 
 cbtxBridge :: Text -> Text -> Text -> Text -> BridgePart
 cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
@@ -124,8 +125,14 @@ cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
   typeName ^== haskTypeName
   return $
     TypeInfo
-      { _typePackage = "plutonomicon-cardano-browser-tx"
+      { _typePackage = "plutonomicon-cardano-transaction-lib"
       , _typeModule = psTypeModule
       , _typeName = psTypeName
       , _typeParameters = []
       }
+
+mapBridge :: BridgePart
+mapBridge = do
+  typeModule ^== "PlutusTx.AssocMap"
+  typeName ^== "Map"
+  TypeInfo "plutonomicon-cardano-transaction-lib" "Plutus.Types.AssocMap" "Map" <$> psTypeParameters
