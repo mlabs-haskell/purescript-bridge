@@ -22,7 +22,7 @@ import Language.PureScript.Bridge (
   defaultBridge,
   extremelyUnsafeMkSumType,
   mkSumTypeIndexed,
-  order,
+  --order,
   typeModule,
   typeName,
   writePSTypes,
@@ -54,7 +54,7 @@ import Plutus.V1.Ledger.Slot (Slot)
 import Plutus.V1.Ledger.Time (DiffMilliSeconds, POSIXTime)
 import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
-import Plutus.V1.Ledger.Value (AssetClass, CurrencySymbol, TokenName, Value)
+import Plutus.V1.Ledger.Value (AssetClass) --  CurrencySymbol, TokenName, Value)
 
 import Data.Text (Text)
 import PlutusTx.AssocMap (Map)
@@ -71,44 +71,43 @@ writeLedgerTypesAnd fp myTypes =
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  order
-    <$> [ extremelyUnsafeMkSumType @Value
-        , extremelyUnsafeMkSumType @CurrencySymbol
-        , extremelyUnsafeMkSumType @AssetClass
-        , extremelyUnsafeMkSumType @TokenName
-        , extremelyUnsafeMkSumType @TxId
-        , extremelyUnsafeMkSumType @TxOut
-        , extremelyUnsafeMkSumType @TxOutRef
-        , extremelyUnsafeMkSumType @DiffMilliSeconds
-        , extremelyUnsafeMkSumType @POSIXTime
-        , extremelyUnsafeMkSumType @Slot
-        , extremelyUnsafeMkSumType @Redeemer
-        , extremelyUnsafeMkSumType @Datum
-        , extremelyUnsafeMkSumType @ScriptHash
-        , extremelyUnsafeMkSumType @ValidatorHash
-        , extremelyUnsafeMkSumType @DatumHash
-        , extremelyUnsafeMkSumType @MintingPolicyHash
-        , extremelyUnsafeMkSumType @StakeValidatorHash
-        , extremelyUnsafeMkSumType @PubKey
-        , extremelyUnsafeMkSumType @PubKeyHash
-        , extremelyUnsafeMkSumType @PrivateKey
-        , extremelyUnsafeMkSumType @Signature
-        , extremelyUnsafeMkSumType @TxInfo
-        , extremelyUnsafeMkSumType @TxInInfo
-        , extremelyUnsafeMkSumType @ScriptContext
-        , extremelyUnsafeMkSumType @LedgerBytes
-        , extremelyUnsafeMkSumType @Address
-        , extremelyUnsafeMkSumType @Ada
-        , extremelyUnsafeMkSumType @(Interval A)
-        , extremelyUnsafeMkSumType @(LowerBound A)
-        , extremelyUnsafeMkSumType @(UpperBound A)
-        , extremelyUnsafeMkSumType @(Map A B)
-        , mkSumTypeIndexed @DCert
-        , mkSumTypeIndexed @(Extended A)
-        , mkSumTypeIndexed @StakingCredential
-        , mkSumTypeIndexed @Credential
-        , mkSumTypeIndexed @ScriptPurpose
-        ]
+  [ -- extremelyUnsafeMkSumType @Value
+    --  , extremelyUnsafeMkSumType @CurrencySymbol
+    extremelyUnsafeMkSumType @AssetClass
+  , -- , extremelyUnsafeMkSumType @TokenName
+    extremelyUnsafeMkSumType @TxId
+  , extremelyUnsafeMkSumType @TxOut
+  , extremelyUnsafeMkSumType @TxOutRef
+  , extremelyUnsafeMkSumType @DiffMilliSeconds
+  , extremelyUnsafeMkSumType @POSIXTime
+  , extremelyUnsafeMkSumType @Slot
+  , extremelyUnsafeMkSumType @Redeemer
+  , extremelyUnsafeMkSumType @Datum
+  , extremelyUnsafeMkSumType @ScriptHash
+  , extremelyUnsafeMkSumType @ValidatorHash
+  , extremelyUnsafeMkSumType @DatumHash
+  , extremelyUnsafeMkSumType @MintingPolicyHash
+  , extremelyUnsafeMkSumType @StakeValidatorHash
+  , extremelyUnsafeMkSumType @PubKey
+  , extremelyUnsafeMkSumType @PubKeyHash
+  , extremelyUnsafeMkSumType @PrivateKey
+  , extremelyUnsafeMkSumType @Signature
+  , extremelyUnsafeMkSumType @TxInfo
+  , extremelyUnsafeMkSumType @TxInInfo
+  , extremelyUnsafeMkSumType @ScriptContext
+  , extremelyUnsafeMkSumType @LedgerBytes
+  , extremelyUnsafeMkSumType @Address
+  , extremelyUnsafeMkSumType @Ada
+  , extremelyUnsafeMkSumType @(Interval A)
+  , extremelyUnsafeMkSumType @(LowerBound A)
+  , extremelyUnsafeMkSumType @(UpperBound A)
+  , extremelyUnsafeMkSumType @(Map A B)
+  , mkSumTypeIndexed @DCert
+  , mkSumTypeIndexed @(Extended A)
+  , mkSumTypeIndexed @StakingCredential
+  , mkSumTypeIndexed @Credential
+  , mkSumTypeIndexed @ScriptPurpose
+  ]
 
 -- I'm leaving this commented b/c I'm not sure what the module structure for the ledger types should be.
 -- My assumption was that, like Plutarch, we'd just shove everything into it's respective Plutus.V1.Ledger module
@@ -118,6 +117,9 @@ plutusBridge =
     <|> cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
     <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
     <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
 
 --  <|> assetClassBridge
 
