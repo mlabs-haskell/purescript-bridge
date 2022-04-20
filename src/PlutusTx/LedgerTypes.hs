@@ -22,7 +22,7 @@ import Language.PureScript.Bridge (
   defaultBridge,
   extremelyUnsafeMkSumType,
   mkSumTypeIndexed,
-  --order,
+  order,
   typeModule,
   typeName,
   writePSTypes,
@@ -79,7 +79,7 @@ ledgerTypes =
   , extremelyUnsafeMkSumType @TxOut
   , extremelyUnsafeMkSumType @TxOutRef
   , extremelyUnsafeMkSumType @DiffMilliSeconds
-  , extremelyUnsafeMkSumType @POSIXTime
+  , order $ extremelyUnsafeMkSumType @POSIXTime
   , extremelyUnsafeMkSumType @Slot
   , extremelyUnsafeMkSumType @Redeemer
   , extremelyUnsafeMkSumType @Datum
