@@ -72,9 +72,9 @@ writeLedgerTypesAnd fp myTypes =
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
   [ extremelyUnsafeMkSumType @Value
-  , extremelyUnsafeMkSumType @CurrencySymbol
+  , order $ extremelyUnsafeMkSumType @CurrencySymbol
   , order $ extremelyUnsafeMkSumType @AssetClass
-  , extremelyUnsafeMkSumType @TokenName
+  , order $ extremelyUnsafeMkSumType @TokenName
   , order $ extremelyUnsafeMkSumType @TxId
   , extremelyUnsafeMkSumType @TxOut
   , extremelyUnsafeMkSumType @TxOutRef
