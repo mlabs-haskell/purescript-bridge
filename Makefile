@@ -23,6 +23,9 @@ build-all:
 build-plutus-ledger-api-typelib:
 	$(NIX_BUILD) .#packages.${current-system}.plutus-ledger-api-typelib
 
+build-plutus-sample-ledger-api-typelib:
+	$(NIX_BUILD) .#packages.${current-system}.sample-plutus-ledger-api-typelib
+
 build-test-all: build-all test-all
 
 # Fix files
@@ -45,3 +48,8 @@ clean:
 	@ rm -rf ./test/RoundTrip/app/.spago    || true
 	@ rm -rf ./test/RoundTrip/app/.psci_modules    || true
 	@ rm -rf ./test/RoundTrip/app/.spago2nix    || true
+
+generate-plutus-ledger-api-typelib: plutus-ledger-api-typelib
+	@ git rm -r --cached plutus-ledger-api-typelib
+	@ rm -fR plutus-ledger-api-typelib
+	@ cabal run cli -- generate-plutus-ledger-api-types
