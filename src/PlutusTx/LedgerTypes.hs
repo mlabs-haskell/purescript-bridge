@@ -22,6 +22,7 @@ import Language.PureScript.Bridge (
   defaultBridge,
   extremelyUnsafeMkSumType,
   mkSumTypeIndexed,
+  order,
   typeModule,
   typeName,
   writePSTypes,
@@ -70,43 +71,44 @@ writeLedgerTypesAnd fp myTypes =
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  [ extremelyUnsafeMkSumType @Value
-  , extremelyUnsafeMkSumType @CurrencySymbol
-  , extremelyUnsafeMkSumType @AssetClass
-  , extremelyUnsafeMkSumType @TokenName
-  , extremelyUnsafeMkSumType @TxId
-  , extremelyUnsafeMkSumType @TxOut
-  , extremelyUnsafeMkSumType @TxOutRef
-  , extremelyUnsafeMkSumType @DiffMilliSeconds
-  , extremelyUnsafeMkSumType @POSIXTime
-  , extremelyUnsafeMkSumType @Slot
-  , extremelyUnsafeMkSumType @Redeemer
-  , extremelyUnsafeMkSumType @Datum
-  , extremelyUnsafeMkSumType @ScriptHash
-  , extremelyUnsafeMkSumType @ValidatorHash
-  , extremelyUnsafeMkSumType @DatumHash
-  , extremelyUnsafeMkSumType @MintingPolicyHash
-  , extremelyUnsafeMkSumType @StakeValidatorHash
-  , extremelyUnsafeMkSumType @PubKey
-  , extremelyUnsafeMkSumType @PubKeyHash
-  , extremelyUnsafeMkSumType @PrivateKey
-  , extremelyUnsafeMkSumType @Signature
-  , extremelyUnsafeMkSumType @TxInfo
-  , extremelyUnsafeMkSumType @TxInInfo
-  , extremelyUnsafeMkSumType @ScriptContext
-  , extremelyUnsafeMkSumType @LedgerBytes
-  , extremelyUnsafeMkSumType @Address
-  , extremelyUnsafeMkSumType @Ada
-  , extremelyUnsafeMkSumType @(Interval A)
-  , extremelyUnsafeMkSumType @(LowerBound A)
-  , extremelyUnsafeMkSumType @(UpperBound A)
-  , extremelyUnsafeMkSumType @(Map A B)
-  , mkSumTypeIndexed @DCert
-  , mkSumTypeIndexed @(Extended A)
-  , mkSumTypeIndexed @StakingCredential
-  , mkSumTypeIndexed @Credential
-  , mkSumTypeIndexed @ScriptPurpose
-  ]
+  order
+    <$> [ extremelyUnsafeMkSumType @Value
+        , extremelyUnsafeMkSumType @CurrencySymbol
+        , extremelyUnsafeMkSumType @AssetClass
+        , extremelyUnsafeMkSumType @TokenName
+        , extremelyUnsafeMkSumType @TxId
+        , extremelyUnsafeMkSumType @TxOut
+        , extremelyUnsafeMkSumType @TxOutRef
+        , extremelyUnsafeMkSumType @DiffMilliSeconds
+        , extremelyUnsafeMkSumType @POSIXTime
+        , extremelyUnsafeMkSumType @Slot
+        , extremelyUnsafeMkSumType @Redeemer
+        , extremelyUnsafeMkSumType @Datum
+        , extremelyUnsafeMkSumType @ScriptHash
+        , extremelyUnsafeMkSumType @ValidatorHash
+        , extremelyUnsafeMkSumType @DatumHash
+        , extremelyUnsafeMkSumType @MintingPolicyHash
+        , extremelyUnsafeMkSumType @StakeValidatorHash
+        , extremelyUnsafeMkSumType @PubKey
+        , extremelyUnsafeMkSumType @PubKeyHash
+        , extremelyUnsafeMkSumType @PrivateKey
+        , extremelyUnsafeMkSumType @Signature
+        , extremelyUnsafeMkSumType @TxInfo
+        , extremelyUnsafeMkSumType @TxInInfo
+        , extremelyUnsafeMkSumType @ScriptContext
+        , extremelyUnsafeMkSumType @LedgerBytes
+        , extremelyUnsafeMkSumType @Address
+        , extremelyUnsafeMkSumType @Ada
+        , extremelyUnsafeMkSumType @(Interval A)
+        , extremelyUnsafeMkSumType @(LowerBound A)
+        , extremelyUnsafeMkSumType @(UpperBound A)
+        , extremelyUnsafeMkSumType @(Map A B)
+        , mkSumTypeIndexed @DCert
+        , mkSumTypeIndexed @(Extended A)
+        , mkSumTypeIndexed @StakingCredential
+        , mkSumTypeIndexed @Credential
+        , mkSumTypeIndexed @ScriptPurpose
+        ]
 
 -- I'm leaving this commented b/c I'm not sure what the module structure for the ledger types should be.
 -- My assumption was that, like Plutarch, we'd just shove everything into it's respective Plutus.V1.Ledger module
