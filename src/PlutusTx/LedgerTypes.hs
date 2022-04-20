@@ -73,14 +73,14 @@ ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
   [ -- extremelyUnsafeMkSumType @Value
     --  , extremelyUnsafeMkSumType @CurrencySymbol
-    extremelyUnsafeMkSumType @AssetClass
+    order $ extremelyUnsafeMkSumType @AssetClass
   , -- , extremelyUnsafeMkSumType @TokenName
-    extremelyUnsafeMkSumType @TxId
+    order $ extremelyUnsafeMkSumType @TxId
   , extremelyUnsafeMkSumType @TxOut
   , extremelyUnsafeMkSumType @TxOutRef
-  , extremelyUnsafeMkSumType @DiffMilliSeconds
+  , order $ extremelyUnsafeMkSumType @DiffMilliSeconds
   , order $ extremelyUnsafeMkSumType @POSIXTime
-  , extremelyUnsafeMkSumType @Slot
+  , order $ extremelyUnsafeMkSumType @Slot
   , extremelyUnsafeMkSumType @Redeemer
   , extremelyUnsafeMkSumType @Datum
   , extremelyUnsafeMkSumType @ScriptHash
