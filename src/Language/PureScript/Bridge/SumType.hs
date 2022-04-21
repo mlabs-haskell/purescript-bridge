@@ -285,9 +285,12 @@ instance GDataConstructorArgs U1 where
   gToDataConstructorArgs _ = mempty
 
 instance (Selector a, Typeable t) => GDataConstructorArgs (S1 a (K1 R t)) where
-  gToDataConstructorArgs _ = Normal [mkTypeInfo @t {- case selName e of
-                                                   "" -> Normal [mkTypeInfo @t]
-                                                   name -> Record [RecordEntry (T.pack name) (mkTypeInfo @t)] -}]
+  gToDataConstructorArgs _ =
+    Normal
+      [ mkTypeInfo @t {- case selName e of
+                      "" -> Normal [mkTypeInfo @t]
+                      name -> Record [RecordEntry (T.pack name) (mkTypeInfo @t)] -}
+      ]
 
 {- | Get all used types in a sum type.
 
