@@ -119,6 +119,13 @@
               else v src)
             fileCheckers)
           "touch $out";
+
+        # Purescript and bridge Nix libs
+        lib = {
+          bridgeTypelib = import ./nix/purescript-bridge-typelib.nix;
+          pursFlake = import ./nix/purescript-flake.nix;
+          pursLib = import ./nix/purescript-lib.nix;
+        };
       }
     );
 }
