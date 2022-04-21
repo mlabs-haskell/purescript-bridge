@@ -29,7 +29,15 @@ data DCert
 derive instance Generic DCert _
 
 instance HasConstrIndices DCert where
-  constrIndices _ = fromConstr2Index [Tuple "DCertDelegRegKey" 0,Tuple "DCertDelegDeRegKey" 1,Tuple "DCertDelegDelegate" 2,Tuple "DCertPoolRegister" 3,Tuple "DCertPoolRetire" 4,Tuple "DCertGenesis" 5,Tuple "DCertMir" 6]
+  constrIndices _ = fromConstr2Index
+    [ Tuple "DCertDelegRegKey" 0
+    , Tuple "DCertDelegDeRegKey" 1
+    , Tuple "DCertDelegDelegate" 2
+    , Tuple "DCertPoolRegister" 3
+    , Tuple "DCertPoolRetire" 4
+    , Tuple "DCertGenesis" 5
+    , Tuple "DCertMir" 6
+    ]
 
 instance ToData DCert where
   toData x = genericToData x
@@ -48,12 +56,6 @@ _DCertDelegDeRegKey :: Prism' DCert StakingCredential
 _DCertDelegDeRegKey = prism' DCertDelegDeRegKey case _ of
   (DCertDelegDeRegKey a) -> Just a
   _ -> Nothing
-
-
-
-
-
-
 
 _DCertGenesis :: Prism' DCert Unit
 _DCertGenesis = prism' (const DCertGenesis) case _ of

@@ -23,7 +23,7 @@ derive instance Generic LedgerBytes _
 derive instance Newtype LedgerBytes _
 
 instance HasConstrIndices LedgerBytes where
-  constrIndices _ = fromConstr2Index [Tuple "LedgerBytes" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "LedgerBytes" 0 ]
 
 instance ToData LedgerBytes where
   toData x = genericToData x

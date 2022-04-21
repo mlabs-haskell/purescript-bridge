@@ -27,7 +27,7 @@ derive instance Generic TxId _
 derive instance Newtype TxId _
 
 instance HasConstrIndices TxId where
-  constrIndices _ = fromConstr2Index [Tuple "TxId" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "TxId" 0 ]
 
 instance ToData TxId where
   toData x = genericToData x

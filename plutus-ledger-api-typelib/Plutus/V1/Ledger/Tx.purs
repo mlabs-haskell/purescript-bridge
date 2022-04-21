@@ -24,7 +24,7 @@ data TxOut = TxOut Address Value (Maybe DatumHash)
 derive instance Generic TxOut _
 
 instance HasConstrIndices TxOut where
-  constrIndices _ = fromConstr2Index [Tuple "TxOut" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "TxOut" 0 ]
 
 instance ToData TxOut where
   toData x = genericToData x
@@ -34,8 +34,6 @@ instance FromData TxOut where
 
 --------------------------------------------------------------------------------
 
-
-
 --------------------------------------------------------------------------------
 
 data TxOutRef = TxOutRef TxId BigInt
@@ -43,7 +41,7 @@ data TxOutRef = TxOutRef TxId BigInt
 derive instance Generic TxOutRef _
 
 instance HasConstrIndices TxOutRef where
-  constrIndices _ = fromConstr2Index [Tuple "TxOutRef" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "TxOutRef" 0 ]
 
 instance ToData TxOutRef where
   toData x = genericToData x

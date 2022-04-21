@@ -23,7 +23,7 @@ derive instance Generic Ada _
 derive instance Newtype Ada _
 
 instance HasConstrIndices Ada where
-  constrIndices _ = fromConstr2Index [Tuple "Lovelace" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "Lovelace" 0 ]
 
 instance ToData Ada where
   toData x = genericToData x

@@ -24,12 +24,17 @@ import Plutus.V1.Ledger.Value (CurrencySymbol, Value)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 
-data TxInfo = TxInfo (Array TxInInfo) (Array TxOut) Value Value (Array DCert) (Array (Tuple StakingCredential BigInt)) (Interval POSIXTime) (Array PubKeyHash) (Array (Tuple DatumHash Datum)) TxId
+data TxInfo = TxInfo (Array TxInInfo) (Array TxOut) Value Value (Array DCert)
+  (Array (Tuple StakingCredential BigInt))
+  (Interval POSIXTime)
+  (Array PubKeyHash)
+  (Array (Tuple DatumHash Datum))
+  TxId
 
 derive instance Generic TxInfo _
 
 instance HasConstrIndices TxInfo where
-  constrIndices _ = fromConstr2Index [Tuple "TxInfo" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "TxInfo" 0 ]
 
 instance ToData TxInfo where
   toData x = genericToData x
@@ -39,8 +44,6 @@ instance FromData TxInfo where
 
 --------------------------------------------------------------------------------
 
-
-
 --------------------------------------------------------------------------------
 
 data TxInInfo = TxInInfo TxOutRef TxOut
@@ -48,7 +51,7 @@ data TxInInfo = TxInInfo TxOutRef TxOut
 derive instance Generic TxInInfo _
 
 instance HasConstrIndices TxInInfo where
-  constrIndices _ = fromConstr2Index [Tuple "TxInInfo" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "TxInInfo" 0 ]
 
 instance ToData TxInInfo where
   toData x = genericToData x
@@ -58,8 +61,6 @@ instance FromData TxInInfo where
 
 --------------------------------------------------------------------------------
 
-
-
 --------------------------------------------------------------------------------
 
 data ScriptContext = ScriptContext TxInfo ScriptPurpose
@@ -67,7 +68,7 @@ data ScriptContext = ScriptContext TxInfo ScriptPurpose
 derive instance Generic ScriptContext _
 
 instance HasConstrIndices ScriptContext where
-  constrIndices _ = fromConstr2Index [Tuple "ScriptContext" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "ScriptContext" 0 ]
 
 instance ToData ScriptContext where
   toData x = genericToData x
@@ -76,8 +77,6 @@ instance FromData ScriptContext where
   fromData pd = genericFromData pd
 
 --------------------------------------------------------------------------------
-
-
 
 --------------------------------------------------------------------------------
 
@@ -90,7 +89,12 @@ data ScriptPurpose
 derive instance Generic ScriptPurpose _
 
 instance HasConstrIndices ScriptPurpose where
-  constrIndices _ = fromConstr2Index [Tuple "Minting" 0,Tuple "Spending" 1,Tuple "Rewarding" 2,Tuple "Certifying" 3]
+  constrIndices _ = fromConstr2Index
+    [ Tuple "Minting" 0
+    , Tuple "Spending" 1
+    , Tuple "Rewarding" 2
+    , Tuple "Certifying" 3
+    ]
 
 instance ToData ScriptPurpose where
   toData x = genericToData x

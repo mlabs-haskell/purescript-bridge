@@ -24,7 +24,8 @@ data StakingCredential
 derive instance Generic StakingCredential _
 
 instance HasConstrIndices StakingCredential where
-  constrIndices _ = fromConstr2Index [Tuple "StakingHash" 0,Tuple "StakingPtr" 1]
+  constrIndices _ = fromConstr2Index
+    [ Tuple "StakingHash" 0, Tuple "StakingPtr" 1 ]
 
 instance ToData StakingCredential where
   toData x = genericToData x
@@ -39,7 +40,6 @@ _StakingHash = prism' StakingHash case _ of
   (StakingHash a) -> Just a
   _ -> Nothing
 
-
 --------------------------------------------------------------------------------
 
 data Credential
@@ -49,7 +49,8 @@ data Credential
 derive instance Generic Credential _
 
 instance HasConstrIndices Credential where
-  constrIndices _ = fromConstr2Index [Tuple "PubKeyCredential" 0,Tuple "ScriptCredential" 1]
+  constrIndices _ = fromConstr2Index
+    [ Tuple "PubKeyCredential" 0, Tuple "ScriptCredential" 1 ]
 
 instance ToData Credential where
   toData x = genericToData x

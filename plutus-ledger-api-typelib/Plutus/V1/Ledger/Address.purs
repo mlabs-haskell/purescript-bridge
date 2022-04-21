@@ -20,7 +20,7 @@ data Address = Address Credential (Maybe StakingCredential)
 derive instance Generic Address _
 
 instance HasConstrIndices Address where
-  constrIndices _ = fromConstr2Index [Tuple "Address" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "Address" 0 ]
 
 instance ToData Address where
   toData x = genericToData x

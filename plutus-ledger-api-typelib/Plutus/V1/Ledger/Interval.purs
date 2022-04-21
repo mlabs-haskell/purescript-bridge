@@ -19,7 +19,7 @@ data Interval a = Interval (LowerBound a) (UpperBound a)
 derive instance Generic (Interval a) _
 
 instance HasConstrIndices (Interval a) where
-  constrIndices _ = fromConstr2Index [Tuple "Interval" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "Interval" 0 ]
 
 instance (ToData a) => ToData (Interval a) where
   toData x = genericToData x
@@ -29,8 +29,6 @@ instance (FromData a) => FromData (Interval a) where
 
 --------------------------------------------------------------------------------
 
-
-
 --------------------------------------------------------------------------------
 
 data LowerBound a = LowerBound (Extended a) Boolean
@@ -38,7 +36,7 @@ data LowerBound a = LowerBound (Extended a) Boolean
 derive instance Generic (LowerBound a) _
 
 instance HasConstrIndices (LowerBound a) where
-  constrIndices _ = fromConstr2Index [Tuple "LowerBound" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "LowerBound" 0 ]
 
 instance (ToData a) => ToData (LowerBound a) where
   toData x = genericToData x
@@ -48,8 +46,6 @@ instance (FromData a) => FromData (LowerBound a) where
 
 --------------------------------------------------------------------------------
 
-
-
 --------------------------------------------------------------------------------
 
 data UpperBound a = UpperBound (Extended a) Boolean
@@ -57,7 +53,7 @@ data UpperBound a = UpperBound (Extended a) Boolean
 derive instance Generic (UpperBound a) _
 
 instance HasConstrIndices (UpperBound a) where
-  constrIndices _ = fromConstr2Index [Tuple "UpperBound" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "UpperBound" 0 ]
 
 instance (ToData a) => ToData (UpperBound a) where
   toData x = genericToData x
@@ -66,8 +62,6 @@ instance (FromData a) => FromData (UpperBound a) where
   fromData pd = genericFromData pd
 
 --------------------------------------------------------------------------------
-
-
 
 --------------------------------------------------------------------------------
 
@@ -79,7 +73,8 @@ data Extended a
 derive instance Generic (Extended a) _
 
 instance HasConstrIndices (Extended a) where
-  constrIndices _ = fromConstr2Index [Tuple "NegInf" 0,Tuple "Finite" 1,Tuple "PosInf" 2]
+  constrIndices _ = fromConstr2Index
+    [ Tuple "NegInf" 0, Tuple "Finite" 1, Tuple "PosInf" 2 ]
 
 instance (ToData a) => ToData (Extended a) where
   toData x = genericToData x
