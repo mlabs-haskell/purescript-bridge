@@ -82,14 +82,14 @@ import Language.PureScript.Bridge.Printer as Bridge (
   encloseVsep,
   encodeJsonConstraints,
   eqConstraints,
-  field,
-  fieldSignature,
-  fieldSignatures,
-  fields,
+  --field,
+  --fieldSignature,
+  --fieldSignatures,
+  --fields,
   flattenTuple,
   genericsImports,
-  hasUnderscore,
-  hrecord,
+  --hasUnderscore,
+  --hrecord,
   importLineToText,
   instanceToQualifiedImports,
   instances,
@@ -114,9 +114,9 @@ import Language.PureScript.Bridge.Printer as Bridge (
   printModule,
   prism,
   qualifiedImportToText,
-  recordEntryToLens,
-  recordOptics,
-  recordPattern,
+  --recordEntryToLens,
+  --recordOptics,
+  --recordPattern,
   renderText,
   showConstraints,
   signature,
@@ -137,13 +137,13 @@ import Language.PureScript.Bridge.Printer as Bridge (
   typeToEncode,
   typeToImportLines,
   typesToImportLines,
-  typesToRecord,
+  --typesToRecord,
   unionImportLine,
   unionImportLines,
   unionModules,
   unionQualifiedImports,
   unlessM,
-  vrecord,
+  --vrecord,
  )
 import Language.PureScript.Bridge.SumType as Bridge (
   CustomInstance (..),
@@ -157,7 +157,7 @@ import Language.PureScript.Bridge.SumType as Bridge (
   InstanceImplementation (..),
   InstanceMember (..),
   PSInstance,
-  RecordEntry (..),
+  --RecordEntry (..),
   SumType (..),
   argonaut,
   constraintToType,
@@ -184,8 +184,8 @@ import Language.PureScript.Bridge.SumType as Bridge (
   mkSumTypeIndexed,
   nootype,
   order,
-  recLabel,
-  recValue,
+  --recLabel,
+  --recValue,
   sigConstructor,
   sigValues,
   sumTypeConstructors,
@@ -367,10 +367,12 @@ bridgeConstructor _ (DataConstructor name Nullary) =
   DataConstructor name Nullary
 bridgeConstructor br (DataConstructor name (Normal infos)) =
   DataConstructor name . Normal $ fmap br infos
-bridgeConstructor br (DataConstructor name (Record record)) =
-  DataConstructor name . Record $ fmap (bridgeRecordEntry br) record
 
+{- -bridgeConstructor br (DataConstructor name (Record record)) =
+  DataConstructor name . Record $ fmap (bridgeRecordEntry br) record -}
+{-
 -- | Translate types in a record entry.
 bridgeRecordEntry ::
   FullBridge -> RecordEntry 'Haskell -> RecordEntry 'PureScript
 bridgeRecordEntry br (RecordEntry label value) = RecordEntry label $ br value
+-}

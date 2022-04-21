@@ -9,23 +9,17 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, fromData, genericFromData)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype Interval a = Interval
-  { ivFrom :: LowerBound a
-  , ivTo :: UpperBound a
-  }
+data Interval a = Interval (LowerBound a) (UpperBound a)
 
 derive instance Generic (Interval a) _
 
-derive instance Newtype (Interval a) _
-
 instance HasConstrIndices (Interval a) where
-  constrIndices _ = fromConstr2Index [ Tuple "Interval" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "Interval" 0]
 
 instance (ToData a) => ToData (Interval a) where
   toData x = genericToData x
@@ -35,10 +29,7 @@ instance (FromData a) => FromData (Interval a) where
 
 --------------------------------------------------------------------------------
 
-_Interval
-  :: forall a
-   . Iso' (Interval a) { ivFrom :: LowerBound a, ivTo :: UpperBound a }
-_Interval = _Newtype
+
 
 --------------------------------------------------------------------------------
 
@@ -47,7 +38,7 @@ data LowerBound a = LowerBound (Extended a) Boolean
 derive instance Generic (LowerBound a) _
 
 instance HasConstrIndices (LowerBound a) where
-  constrIndices _ = fromConstr2Index [ Tuple "LowerBound" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "LowerBound" 0]
 
 instance (ToData a) => ToData (LowerBound a) where
   toData x = genericToData x
@@ -57,9 +48,7 @@ instance (FromData a) => FromData (LowerBound a) where
 
 --------------------------------------------------------------------------------
 
-_LowerBound :: forall a. Iso' (LowerBound a) { a :: Extended a, b :: Boolean }
-_LowerBound = iso (\(LowerBound a b) -> { a, b })
-  (\{ a, b } -> (LowerBound a b))
+
 
 --------------------------------------------------------------------------------
 
@@ -68,7 +57,7 @@ data UpperBound a = UpperBound (Extended a) Boolean
 derive instance Generic (UpperBound a) _
 
 instance HasConstrIndices (UpperBound a) where
-  constrIndices _ = fromConstr2Index [ Tuple "UpperBound" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "UpperBound" 0]
 
 instance (ToData a) => ToData (UpperBound a) where
   toData x = genericToData x
@@ -78,9 +67,7 @@ instance (FromData a) => FromData (UpperBound a) where
 
 --------------------------------------------------------------------------------
 
-_UpperBound :: forall a. Iso' (UpperBound a) { a :: Extended a, b :: Boolean }
-_UpperBound = iso (\(UpperBound a b) -> { a, b })
-  (\{ a, b } -> (UpperBound a b))
+
 
 --------------------------------------------------------------------------------
 
@@ -92,8 +79,7 @@ data Extended a
 derive instance Generic (Extended a) _
 
 instance HasConstrIndices (Extended a) where
-  constrIndices _ = fromConstr2Index
-    [ Tuple "NegInf" 0, Tuple "Finite" 1, Tuple "PosInf" 2 ]
+  constrIndices _ = fromConstr2Index [Tuple "NegInf" 0,Tuple "Finite" 1,Tuple "PosInf" 2]
 
 instance (ToData a) => ToData (Extended a) where
   toData x = genericToData x

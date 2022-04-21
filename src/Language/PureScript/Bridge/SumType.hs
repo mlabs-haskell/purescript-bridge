@@ -42,7 +42,7 @@ import Generics.Deriving (
   M1 (M1),
   R,
   S1,
-  Selector (selName),
+  Selector, -- (selName),
   U1,
   type (:*:),
   type (:+:),
@@ -194,7 +194,7 @@ data CustomInstance (lang :: Language) = CustomInstance
  Haskell type was a simple type wrapper.
 -}
 nootype :: [DataConstructor lang] -> Maybe (Instance lang)
-nootype [DataConstructor _ (Record _)] = Just Newtype
+--nootype [DataConstructor _ (Record _)] = Just Newtype
 nootype [DataConstructor _ (Normal [_])] = Just Newtype
 nootype _ = Nothing
 
@@ -234,27 +234,29 @@ data DataConstructor (lang :: Language) = DataConstructor
 data DataConstructorArgs (lang :: Language)
   = Nullary
   | Normal (NonEmpty (TypeInfo lang))
-  | Record (NonEmpty (RecordEntry lang))
+  --   | Record (NonEmpty (RecordEntry lang))
   deriving stock (Show, Eq)
 
 instance Semigroup (DataConstructorArgs lang) where
   Nullary <> b = b
   a <> Nullary = a
   Normal as <> Normal bs = Normal $ as <> bs
-  Record as <> Record bs = Record $ as <> bs
-  Normal as <> Record bs = Normal as <> Normal (_recValue <$> bs)
-  Record as <> Normal bs = Normal (_recValue <$> as) <> Normal bs
+
+-- Record as <> Record bs = Record $ as <> bs
+-- Normal as <> Record bs = Normal as <> Normal (_recValue <$> bs)
+-- Record as <> Normal bs = Normal (_recValue <$> as) <> Normal bs
 
 instance Monoid (DataConstructorArgs lang) where
   mempty = Nullary
 
+{-
 data RecordEntry (lang :: Language) = RecordEntry
   { -- | e.g. `runState` for `State`
     _recLabel :: !Text
   , _recValue :: !(TypeInfo lang)
   }
   deriving stock (Show, Eq)
-
+-}
 class GDataConstructor f where
   gToConstructors :: f a -> [DataConstructor 'Haskell]
 
@@ -283,9 +285,9 @@ instance GDataConstructorArgs U1 where
   gToDataConstructorArgs _ = mempty
 
 instance (Selector a, Typeable t) => GDataConstructorArgs (S1 a (K1 R t)) where
-  gToDataConstructorArgs e = case selName e of
-    "" -> Normal [mkTypeInfo @t]
-    name -> Record [RecordEntry (T.pack name) (mkTypeInfo @t)]
+  gToDataConstructorArgs _ = Normal [mkTypeInfo @t {- case selName e of
+                                                   "" -> Normal [mkTypeInfo @t]
+                                                   name -> Record [RecordEntry (T.pack name) (mkTypeInfo @t)] -}]
 
 {- | Get all used types in a sum type.
 
@@ -300,7 +302,8 @@ getUsedTypes (SumType _ cs is) =
 constructorToTypes :: DataConstructor lang -> [TypeInfo lang]
 constructorToTypes (DataConstructor _ Nullary) = []
 constructorToTypes (DataConstructor _ (Normal ts)) = NE.toList ts
-constructorToTypes (DataConstructor _ (Record rs)) = _recValue <$> NE.toList rs
+
+--constructorToTypes (DataConstructor _ (Record rs)) = _recValue <$> NE.toList rs
 
 instanceToTypes :: Instance lang -> [TypeInfo lang]
 instanceToTypes Generic = pure $ constraintToType $ TypeInfo "purescript-prelude" "Data.Generic.Rep" "Generic" []
@@ -390,7 +393,7 @@ importsFromList ls =
 -- Lenses:
 makeLenses ''DataConstructor
 
-makeLenses ''RecordEntry
+--makeLenses ''RecordEntry
 
 makeLenses ''CustomInstance
 

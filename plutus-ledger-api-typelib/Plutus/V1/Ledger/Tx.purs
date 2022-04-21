@@ -10,7 +10,6 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe, Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, fromData, genericFromData)
 import Plutus.V1.Ledger.Address (Address)
@@ -20,18 +19,12 @@ import Plutus.V1.Ledger.Value (Value)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype TxOut = TxOut
-  { txOutAddress :: Address
-  , txOutValue :: Value
-  , txOutDatumHash :: Maybe DatumHash
-  }
+data TxOut = TxOut Address Value (Maybe DatumHash)
 
 derive instance Generic TxOut _
 
-derive instance Newtype TxOut _
-
 instance HasConstrIndices TxOut where
-  constrIndices _ = fromConstr2Index [ Tuple "TxOut" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "TxOut" 0]
 
 instance ToData TxOut where
   toData x = genericToData x
@@ -41,27 +34,16 @@ instance FromData TxOut where
 
 --------------------------------------------------------------------------------
 
-_TxOut
-  :: Iso' TxOut
-       { txOutAddress :: Address
-       , txOutValue :: Value
-       , txOutDatumHash :: Maybe DatumHash
-       }
-_TxOut = _Newtype
+
 
 --------------------------------------------------------------------------------
 
-newtype TxOutRef = TxOutRef
-  { txOutRefId :: TxId
-  , txOutRefIdx :: BigInt
-  }
+data TxOutRef = TxOutRef TxId BigInt
 
 derive instance Generic TxOutRef _
 
-derive instance Newtype TxOutRef _
-
 instance HasConstrIndices TxOutRef where
-  constrIndices _ = fromConstr2Index [ Tuple "TxOutRef" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "TxOutRef" 0]
 
 instance ToData TxOutRef where
   toData x = genericToData x
@@ -71,5 +53,3 @@ instance FromData TxOutRef where
 
 --------------------------------------------------------------------------------
 
-_TxOutRef :: Iso' TxOutRef { txOutRefId :: TxId, txOutRefIdx :: BigInt }
-_TxOutRef = _Newtype

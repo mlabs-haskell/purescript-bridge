@@ -17,14 +17,14 @@ import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 import Types.PlutusData (PlutusData)
 
-newtype Redeemer = Redeemer { getRedeemer :: PlutusData }
+newtype Redeemer = Redeemer PlutusData
 
 derive instance Generic Redeemer _
 
 derive instance Newtype Redeemer _
 
 instance HasConstrIndices Redeemer where
-  constrIndices _ = fromConstr2Index [ Tuple "Redeemer" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "Redeemer" 0]
 
 instance ToData Redeemer where
   toData x = genericToData x
@@ -34,19 +34,19 @@ instance FromData Redeemer where
 
 --------------------------------------------------------------------------------
 
-_Redeemer :: Iso' Redeemer { getRedeemer :: PlutusData }
+_Redeemer :: Iso' Redeemer PlutusData
 _Redeemer = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype Datum = Datum { getDatum :: PlutusData }
+newtype Datum = Datum PlutusData
 
 derive instance Generic Datum _
 
 derive instance Newtype Datum _
 
 instance HasConstrIndices Datum where
-  constrIndices _ = fromConstr2Index [ Tuple "Datum" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "Datum" 0]
 
 instance ToData Datum where
   toData x = genericToData x
@@ -56,19 +56,19 @@ instance FromData Datum where
 
 --------------------------------------------------------------------------------
 
-_Datum :: Iso' Datum { getDatum :: PlutusData }
+_Datum :: Iso' Datum PlutusData
 _Datum = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype ScriptHash = ScriptHash { getScriptHash :: ByteArray }
+newtype ScriptHash = ScriptHash ByteArray
 
 derive instance Generic ScriptHash _
 
 derive instance Newtype ScriptHash _
 
 instance HasConstrIndices ScriptHash where
-  constrIndices _ = fromConstr2Index [ Tuple "ScriptHash" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "ScriptHash" 0]
 
 instance ToData ScriptHash where
   toData x = genericToData x
@@ -78,7 +78,7 @@ instance FromData ScriptHash where
 
 --------------------------------------------------------------------------------
 
-_ScriptHash :: Iso' ScriptHash { getScriptHash :: ByteArray }
+_ScriptHash :: Iso' ScriptHash ByteArray
 _ScriptHash = _Newtype
 
 --------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ derive instance Generic ValidatorHash _
 derive instance Newtype ValidatorHash _
 
 instance HasConstrIndices ValidatorHash where
-  constrIndices _ = fromConstr2Index [ Tuple "ValidatorHash" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "ValidatorHash" 0]
 
 instance ToData ValidatorHash where
   toData x = genericToData x
@@ -112,7 +112,7 @@ derive instance Generic DatumHash _
 derive instance Newtype DatumHash _
 
 instance HasConstrIndices DatumHash where
-  constrIndices _ = fromConstr2Index [ Tuple "DatumHash" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "DatumHash" 0]
 
 instance ToData DatumHash where
   toData x = genericToData x
@@ -134,7 +134,7 @@ derive instance Generic MintingPolicyHash _
 derive instance Newtype MintingPolicyHash _
 
 instance HasConstrIndices MintingPolicyHash where
-  constrIndices _ = fromConstr2Index [ Tuple "MintingPolicyHash" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "MintingPolicyHash" 0]
 
 instance ToData MintingPolicyHash where
   toData x = genericToData x
@@ -156,7 +156,7 @@ derive instance Generic StakeValidatorHash _
 derive instance Newtype StakeValidatorHash _
 
 instance HasConstrIndices StakeValidatorHash where
-  constrIndices _ = fromConstr2Index [ Tuple "StakeValidatorHash" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "StakeValidatorHash" 0]
 
 instance ToData StakeValidatorHash where
   toData x = genericToData x

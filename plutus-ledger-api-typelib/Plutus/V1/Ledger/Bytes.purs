@@ -16,14 +16,14 @@ import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 
-newtype LedgerBytes = LedgerBytes { getLedgerBytes :: ByteArray }
+newtype LedgerBytes = LedgerBytes ByteArray
 
 derive instance Generic LedgerBytes _
 
 derive instance Newtype LedgerBytes _
 
 instance HasConstrIndices LedgerBytes where
-  constrIndices _ = fromConstr2Index [ Tuple "LedgerBytes" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "LedgerBytes" 0]
 
 instance ToData LedgerBytes where
   toData x = genericToData x
@@ -33,5 +33,5 @@ instance FromData LedgerBytes where
 
 --------------------------------------------------------------------------------
 
-_LedgerBytes :: Iso' LedgerBytes { getLedgerBytes :: ByteArray }
+_LedgerBytes :: Iso' LedgerBytes ByteArray
 _LedgerBytes = _Newtype

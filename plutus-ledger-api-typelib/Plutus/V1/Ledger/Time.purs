@@ -27,7 +27,7 @@ derive instance Generic DiffMilliSeconds _
 derive instance Newtype DiffMilliSeconds _
 
 instance HasConstrIndices DiffMilliSeconds where
-  constrIndices _ = fromConstr2Index [ Tuple "DiffMilliSeconds" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "DiffMilliSeconds" 0]
 
 instance ToData DiffMilliSeconds where
   toData x = genericToData x
@@ -42,7 +42,7 @@ _DiffMilliSeconds = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype POSIXTime = POSIXTime { getPOSIXTime :: BigInt }
+newtype POSIXTime = POSIXTime BigInt
 
 derive instance Eq POSIXTime
 
@@ -53,7 +53,7 @@ derive instance Generic POSIXTime _
 derive instance Newtype POSIXTime _
 
 instance HasConstrIndices POSIXTime where
-  constrIndices _ = fromConstr2Index [ Tuple "POSIXTime" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "POSIXTime" 0]
 
 instance ToData POSIXTime where
   toData x = genericToData x
@@ -63,5 +63,5 @@ instance FromData POSIXTime where
 
 --------------------------------------------------------------------------------
 
-_POSIXTime :: Iso' POSIXTime { getPOSIXTime :: BigInt }
+_POSIXTime :: Iso' POSIXTime BigInt
 _POSIXTime = _Newtype

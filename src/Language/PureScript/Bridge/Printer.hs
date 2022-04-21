@@ -11,11 +11,11 @@
 
 module Language.PureScript.Bridge.Printer where
 
-import Control.Arrow ((&&&))
-import Control.Lens (to, (%~), (<>~), (^.))
+--import Control.Arrow ((&&&))
+import Control.Lens (to, (^.)) --(to, (%~), (<>~), (^.))
 import Control.Monad (unless)
 import Data.Char (isLower)
-import Data.Function (on, (&))
+import Data.Function (on) -- (on, (&))
 import Data.List (groupBy, nubBy, sortBy)
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.List.NonEmpty qualified as NE
@@ -59,14 +59,14 @@ import Language.PureScript.Bridge.SumType (
   InstanceImplementation (Derive, DeriveNewtype, Explicit),
   InstanceMember (..),
   PSInstance,
-  RecordEntry (..),
+  --RecordEntry (..),
   SumType (..),
   getUsedTypes,
   importsFromList,
   instanceToImportLines,
   nootype,
-  recLabel,
-  recValue,
+  --recLabel,
+  --recValue,
   sigConstructor,
  )
 import Language.PureScript.Bridge.TypeInfo (
@@ -94,7 +94,7 @@ import Text.PrettyPrint.Leijen.Text (
   backslash,
   brackets,
   char,
-  colon,
+  --colon,
   comma,
   displayTStrict,
   dquotes,
@@ -103,7 +103,7 @@ import Text.PrettyPrint.Leijen.Text (
   indent,
   int,
   isEmpty,
-  lbrace,
+  --lbrace,
   lbracket,
   line,
   linebreak,
@@ -111,11 +111,11 @@ import Text.PrettyPrint.Leijen.Text (
   nest,
   parens,
   punctuate,
-  rbrace,
+  --rbrace,
   rbracket,
   renderPretty,
   rparen,
-  softline,
+  --softline,
   text,
   textStrict,
   vsep,
@@ -315,7 +315,8 @@ constructorToDoc (DataConstructor n args) =
     textStrict n : case args of
       Nullary -> []
       Normal ts -> NE.toList $ typeInfoToDoc <$> ts
-      Record rs -> [vrecord $ fieldSignatures rs]
+
+--      Record rs -> [vrecord $ fieldSignatures rs]
 
 {- | Given a Purescript type, generate instances for typeclass
  instances it claims to have.
@@ -469,7 +470,8 @@ sumTypeToEncode (SumType _ cs _)
               <+> dquotes (textStrict name)
               <+> normalExpr as
               <+> argsToEncode args
-          Record rs
+      )
+    {-  Record rs
             | any ((== "tag") . _recLabel) rs ->
               "E.encodeTagged"
                 <+> dquotes (textStrict name)
@@ -482,25 +484,27 @@ sumTypeToEncode (SumType _ cs _)
                     ("tag:" <+> dquotes (textStrict name)) :
                     (recordFieldToJson <$> NE.toList rs)
                 ]
+
       )
     recordFieldToJson (RecordEntry name t) =
       textStrict name
         <> colon
         <+> "flip E.encode"
         <+> textStrict name
-        <+> typeToEncode t
+        <+> typeToEncode t         -}
     argsToEncode Nullary = "E.null"
     argsToEncode (Normal (t :| [])) = typeToEncode t
     argsToEncode (Normal ts) =
       parens $ "E.tuple" <+> encloseHsep lparen rparen " >/\\<" (typeToEncode <$> NE.toList ts)
-    argsToEncode (Record rs) =
-      parens $ "E.record" <> softline <> vrecord (fieldSignatures $ fieldEncoder <$> rs)
-      where
-        fieldEncoder r =
-          r
-            & recValue %~ mkType "_" . pure
-            & recLabel <>~ renderText (":" <+> typeToEncode (_recValue r))
 
+{-  argsToEncode (Record rs) =
+    parens $ "E.record" <> softline <> vrecord (fieldSignatures $ fieldEncoder <$> rs)
+    where
+      fieldEncoder r =
+        r
+          & recValue %~ mkType "_" . pure
+          & recLabel <>~ renderText (":" <+> typeToEncode (_recValue r))
+-}
 flattenTuple :: [PSType] -> [PSType]
 flattenTuple [] = []
 flattenTuple [a] = [a]
@@ -558,7 +562,8 @@ constructorToDecode False (DataConstructor name (Normal as)) =
       <+> "$"
       <+> textStrict name
       <+> encloseHsep "</$\\>" mempty " </*\\>" (typeToDecode <$> NE.toList as)
-constructorToDecode True dc@(DataConstructor name (Record rs))
+
+{- -constructorToDecode True dc@(DataConstructor name (Record rs))
   | any ((== "tag") . _recLabel) rs =
     "D.content" <+> constructorToDecode False dc
   | otherwise =
@@ -572,6 +577,7 @@ constructorToDecode True dc@(DataConstructor name (Record rs))
       r
         & recValue %~ mkType "_" . pure
         & recLabel <>~ renderText (":" <+> typeToDecode (_recValue r))
+
 constructorToDecode False (DataConstructor name (Record rs)) =
   parens $
     textStrict name
@@ -583,7 +589,7 @@ constructorToDecode False (DataConstructor name (Record rs)) =
       r
         & recValue %~ mkType "_" . pure
         & recLabel <>~ renderText (":" <+> typeToDecode (_recValue r))
-
+-}
 typeToDecode :: PSType -> Doc
 typeToDecode (TypeInfo "purescript-prelude" "Prelude" "Unit" []) = "D.unit"
 typeToDecode (TypeInfo "purescript-maybe" "Data.Maybe" "Maybe" [t]) =
@@ -602,11 +608,12 @@ typeToDecode _ = "D.value"
 
 sumTypeToOptics :: SumType 'PureScript -> Doc
 sumTypeToOptics st =
-  vsep $ punctuate line $ constructorOptics st <> recordOptics st
+  vsep $ punctuate line $ constructorOptics st -- <> recordOptics st
 
 constructorOptics :: SumType 'PureScript -> [Doc]
 constructorOptics (SumType t cs _) = constructorToOptic (length cs > 1) t . snd <$> cs
 
+{-
 recordOptics :: SumType 'PureScript -> [Doc]
 recordOptics st@(SumType _ [(_, DataConstructor _ (Record rs))] _) =
   recordEntryToLens st <$> filter hasUnderscore (NE.toList rs)
@@ -614,7 +621,7 @@ recordOptics _ = []
 
 hasUnderscore :: RecordEntry lang -> Bool
 hasUnderscore (RecordEntry name _) = "_" `T.isPrefixOf` name
-
+-}
 constructorToOptic ::
   Bool -> TypeInfo 'PureScript -> DataConstructor 'PureScript -> Doc
 constructorToOptic hasOtherConstructors typeInfo (DataConstructor n args) =
@@ -623,29 +630,34 @@ constructorToOptic hasOtherConstructors typeInfo (DataConstructor n args) =
     (Nullary, True) -> prism pName typeInfo psUnit cName "unit" $ parens ("const" <+> cName)
     (Normal (t :| []), False) -> newtypeIso pName typeInfo t
     (Normal (t :| []), True) -> prism pName typeInfo t (parens $ normalPattern n [t]) "a" cName
-    (Normal ts, _)
-      | hasOtherConstructors -> prism pName typeInfo toType fromExpr toExpr toMorph
-      | otherwise -> iso pName typeInfo toType fromMorph toMorph
-      where
-        fields' = fields $ typesToRecord ts
-        toType = recordType $ typesToRecord ts
-        fromExpr = parens $ normalPattern n ts
-        toExpr = hrecord fields'
-        fromMorph = parens $ lambda fromExpr toExpr
-        toMorph = parens $ lambda toExpr fromExpr
-    (Record rs, False) -> newtypeIso pName typeInfo $ recordType rs
-    (Record rs, True) ->
-      prism pName typeInfo (recordType rs) fromExpr toExpr cName
-      where
-        fromExpr = parens $ pattern' n toExpr
-        toExpr = "a"
+    -- NOTE: Since we're turning records off temporarily, this won't generate *any* optics for normal product types
+    _ -> mempty
   where
+    {- (Normal ts, _)
+          | hasOtherConstructors -> prism pName typeInfo toType fromExpr toExpr toMorph
+          | otherwise -> iso pName typeInfo toType fromMorph toMorph
+          where
+            fields' = fields $ typesToRecord ts
+            toType = recordType $ typesToRecord ts
+            fromExpr = parens $ normalPattern n ts
+            toExpr = hrecord fields'
+            fromMorph = parens $ lambda fromExpr toExpr
+            toMorph = parens $ lambda toExpr fromExpr
+        (Record rs, False) -> newtypeIso pName typeInfo $ recordType rs
+        (Record rs, True) ->
+          prism pName typeInfo (recordType rs) fromExpr toExpr cName
+          where
+            fromExpr = parens $ pattern' n toExpr
+            toExpr = "a"
+     -}
+
     cName = textStrict n
     pName = "_" <> textStrict n
-    recordType = (`mkType` []) . renderText . hrecord . fieldSignatures
 
-typesToRecord :: NonEmpty PSType -> NonEmpty (RecordEntry 'PureScript)
-typesToRecord = fmap (uncurry RecordEntry) . NE.zip (T.singleton <$> ['a' ..])
+-- recordType = (`mkType` []) . renderText . hrecord . fieldSignatures
+
+--typesToRecord :: NonEmpty PSType -> NonEmpty (RecordEntry 'PureScript)
+--typesToRecord = fmap (uncurry RecordEntry) . NE.zip (T.singleton <$> ['a' ..])
 
 iso :: Doc -> PSType -> PSType -> Doc -> Doc -> Doc
 iso name fromType toType fromMorph toMorph =
@@ -679,6 +691,7 @@ newtypeIso name fromType toType =
     (mkType "Iso'" [fromType, toType])
     "_Newtype"
 
+{-
 recordEntryToLens :: SumType 'PureScript -> RecordEntry 'PureScript -> Doc
 recordEntryToLens (SumType t _ _) e =
   if hasUnderscore e
@@ -691,19 +704,21 @@ recordEntryToLens (SumType t _ _) e =
   where
     recName = e ^. recLabel . to textStrict
     lensName = e ^. recLabel . to (T.drop 1) . to textStrict
-
+-}
 unlessM :: Monad m => m Bool -> m () -> m ()
 unlessM mbool action = mbool >>= flip unless action
 
 constructorPattern :: DataConstructor 'PureScript -> Doc
 constructorPattern (DataConstructor name Nullary) = nullaryPattern name
 constructorPattern (DataConstructor name (Normal ts)) = normalPattern name ts
-constructorPattern (DataConstructor name (Record rs)) = recordPattern name rs
+
+--constructorPattern (DataConstructor name (Record rs)) = recordPattern name rs
 
 constructor :: DataConstructorArgs 'PureScript -> Doc
 constructor Nullary = nullaryExpr
 constructor (Normal ts) = normalExpr ts
-constructor (Record rs) = hrecord $ fields rs
+
+--constructor (Record rs) = hrecord $ fields rs
 
 nullaryPattern :: Text -> Doc
 nullaryPattern = textStrict
@@ -721,6 +736,7 @@ normalExpr ts = parens . hsep . punctuate " /\\" $ normalLabels ts
 normalLabels :: NonEmpty PSType -> [Doc]
 normalLabels = fmap char . zipWith const ['a' ..] . NE.toList
 
+{-
 recordPattern :: Text -> NonEmpty (RecordEntry 'PureScript) -> Doc
 recordPattern name = pattern' name . hrecord . fields
 
@@ -741,7 +757,7 @@ fieldSignatures = fmap fieldSignature . NE.toList
 
 fieldSignature :: RecordEntry 'PureScript -> Doc
 fieldSignature = uncurry signature' . (field &&& _recValue)
-
+-}
 pattern' :: Text -> Doc -> Doc
 pattern' name = (textStrict name <+>)
 

@@ -16,7 +16,7 @@ import FromData (class FromData, fromData, genericFromData)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype Slot = Slot { getSlot :: BigInt }
+newtype Slot = Slot BigInt
 
 derive instance Eq Slot
 
@@ -27,7 +27,7 @@ derive instance Generic Slot _
 derive instance Newtype Slot _
 
 instance HasConstrIndices Slot where
-  constrIndices _ = fromConstr2Index [ Tuple "Slot" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "Slot" 0]
 
 instance ToData Slot where
   toData x = genericToData x
@@ -37,5 +37,5 @@ instance FromData Slot where
 
 --------------------------------------------------------------------------------
 
-_Slot :: Iso' Slot { getSlot :: BigInt }
+_Slot :: Iso' Slot BigInt
 _Slot = _Newtype

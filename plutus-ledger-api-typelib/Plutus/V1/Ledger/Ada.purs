@@ -16,14 +16,14 @@ import FromData (class FromData, fromData, genericFromData)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype Ada = Lovelace { getLovelace :: BigInt }
+newtype Ada = Lovelace BigInt
 
 derive instance Generic Ada _
 
 derive instance Newtype Ada _
 
 instance HasConstrIndices Ada where
-  constrIndices _ = fromConstr2Index [ Tuple "Lovelace" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "Lovelace" 0]
 
 instance ToData Ada where
   toData x = genericToData x
@@ -33,5 +33,5 @@ instance FromData Ada where
 
 --------------------------------------------------------------------------------
 
-_Lovelace :: Iso' Ada { getLovelace :: BigInt }
+_Lovelace :: Iso' Ada BigInt
 _Lovelace = _Newtype

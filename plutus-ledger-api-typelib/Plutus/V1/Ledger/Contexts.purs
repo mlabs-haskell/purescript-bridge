@@ -10,7 +10,6 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
 import Data.Tuple (Tuple, Tuple(Tuple))
 import FromData (class FromData, fromData, genericFromData)
 import Plutus.V1.Ledger.Credential (StakingCredential)
@@ -25,25 +24,12 @@ import Plutus.V1.Ledger.Value (CurrencySymbol, Value)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype TxInfo = TxInfo
-  { txInfoInputs :: Array TxInInfo
-  , txInfoOutputs :: Array TxOut
-  , txInfoFee :: Value
-  , txInfoMint :: Value
-  , txInfoDCert :: Array DCert
-  , txInfoWdrl :: Array (Tuple StakingCredential BigInt)
-  , txInfoValidRange :: Interval POSIXTime
-  , txInfoSignatories :: Array PubKeyHash
-  , txInfoData :: Array (Tuple DatumHash Datum)
-  , txInfoId :: TxId
-  }
+data TxInfo = TxInfo (Array TxInInfo) (Array TxOut) Value Value (Array DCert) (Array (Tuple StakingCredential BigInt)) (Interval POSIXTime) (Array PubKeyHash) (Array (Tuple DatumHash Datum)) TxId
 
 derive instance Generic TxInfo _
 
-derive instance Newtype TxInfo _
-
 instance HasConstrIndices TxInfo where
-  constrIndices _ = fromConstr2Index [ Tuple "TxInfo" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "TxInfo" 0]
 
 instance ToData TxInfo where
   toData x = genericToData x
@@ -53,34 +39,16 @@ instance FromData TxInfo where
 
 --------------------------------------------------------------------------------
 
-_TxInfo
-  :: Iso' TxInfo
-       { txInfoInputs :: Array TxInInfo
-       , txInfoOutputs :: Array TxOut
-       , txInfoFee :: Value
-       , txInfoMint :: Value
-       , txInfoDCert :: Array DCert
-       , txInfoWdrl :: Array (Tuple StakingCredential BigInt)
-       , txInfoValidRange :: Interval POSIXTime
-       , txInfoSignatories :: Array PubKeyHash
-       , txInfoData :: Array (Tuple DatumHash Datum)
-       , txInfoId :: TxId
-       }
-_TxInfo = _Newtype
+
 
 --------------------------------------------------------------------------------
 
-newtype TxInInfo = TxInInfo
-  { txInInfoOutRef :: TxOutRef
-  , txInInfoResolved :: TxOut
-  }
+data TxInInfo = TxInInfo TxOutRef TxOut
 
 derive instance Generic TxInInfo _
 
-derive instance Newtype TxInInfo _
-
 instance HasConstrIndices TxInInfo where
-  constrIndices _ = fromConstr2Index [ Tuple "TxInInfo" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "TxInInfo" 0]
 
 instance ToData TxInInfo where
   toData x = genericToData x
@@ -90,23 +58,16 @@ instance FromData TxInInfo where
 
 --------------------------------------------------------------------------------
 
-_TxInInfo
-  :: Iso' TxInInfo { txInInfoOutRef :: TxOutRef, txInInfoResolved :: TxOut }
-_TxInInfo = _Newtype
+
 
 --------------------------------------------------------------------------------
 
-newtype ScriptContext = ScriptContext
-  { scriptContextTxInfo :: TxInfo
-  , scriptContextPurpose :: ScriptPurpose
-  }
+data ScriptContext = ScriptContext TxInfo ScriptPurpose
 
 derive instance Generic ScriptContext _
 
-derive instance Newtype ScriptContext _
-
 instance HasConstrIndices ScriptContext where
-  constrIndices _ = fromConstr2Index [ Tuple "ScriptContext" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "ScriptContext" 0]
 
 instance ToData ScriptContext where
   toData x = genericToData x
@@ -116,10 +77,7 @@ instance FromData ScriptContext where
 
 --------------------------------------------------------------------------------
 
-_ScriptContext
-  :: Iso' ScriptContext
-       { scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose }
-_ScriptContext = _Newtype
+
 
 --------------------------------------------------------------------------------
 
@@ -132,12 +90,7 @@ data ScriptPurpose
 derive instance Generic ScriptPurpose _
 
 instance HasConstrIndices ScriptPurpose where
-  constrIndices _ = fromConstr2Index
-    [ Tuple "Minting" 0
-    , Tuple "Spending" 1
-    , Tuple "Rewarding" 2
-    , Tuple "Certifying" 3
-    ]
+  constrIndices _ = fromConstr2Index [Tuple "Minting" 0,Tuple "Spending" 1,Tuple "Rewarding" 2,Tuple "Certifying" 3]
 
 instance ToData ScriptPurpose where
   toData x = genericToData x
