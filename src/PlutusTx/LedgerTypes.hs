@@ -36,6 +36,7 @@ import PlutusTx.ConstrIndices ()
 
 -- Ledger type imports
 import Plutus.V1.Ledger.Ada (Ada)
+
 -- import Plutus.V1.Ledger.Address (Address)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
 import Plutus.V1.Ledger.Contexts (ScriptContext, ScriptPurpose, TxInInfo, TxInfo)
@@ -56,6 +57,7 @@ import Plutus.V1.Ledger.Slot (Slot)
 import Plutus.V1.Ledger.Time (DiffMilliSeconds, POSIXTime)
 import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
+import Plutus.V1.Ledger.Value (AssetClass)
 
 -- import Plutus.V1.Ledger.Value (AssetClass, CurrencySymbol, TokenName, Value)
 
@@ -75,9 +77,9 @@ ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
   -- [ extremelyUnsafeMkSumType @Value
   -- , order $ extremelyUnsafeMkSumType @CurrencySymbol
-  -- , order $ extremelyUnsafeMkSumType @AssetClass
   -- , order $ extremelyUnsafeMkSumType @TokenName
-  [ order $ extremelyUnsafeMkSumType @TxId
+  [ order $ extremelyUnsafeMkSumType @AssetClass
+  , order $ extremelyUnsafeMkSumType @TxId
   , extremelyUnsafeMkSumType @TxOut
   , extremelyUnsafeMkSumType @TxOutRef
   , order $ extremelyUnsafeMkSumType @DiffMilliSeconds
@@ -98,8 +100,8 @@ ledgerTypes =
   , extremelyUnsafeMkSumType @TxInInfo
   , extremelyUnsafeMkSumType @ScriptContext
   , extremelyUnsafeMkSumType @LedgerBytes
---  , extremelyUnsafeMkSumType @Address
-  , extremelyUnsafeMkSumType @Ada
+  , --  , extremelyUnsafeMkSumType @Address
+    extremelyUnsafeMkSumType @Ada
   , extremelyUnsafeMkSumType @(Interval A)
   , extremelyUnsafeMkSumType @(LowerBound A)
   , extremelyUnsafeMkSumType @(UpperBound A)
