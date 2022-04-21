@@ -18,25 +18,16 @@ import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 
-newtype Value = Value { getValue :: Map CurrencySymbol (Map TokenName BigInt) }
+newtype Value = Value (Map CurrencySymbol (Map TokenName BigInt))
 
 derive instance Generic Value _
 
 derive instance Newtype Value _
 
-instance HasConstrIndices Value where
-  constrIndices _ = fromConstr2Index [ Tuple "Value" 0 ]
-
-instance ToData Value where
-  toData x = genericToData x
-
-instance FromData Value where
-  fromData pd = genericFromData pd
+derive newtype instance ToData Value
+derive newtype instance FromData Value
 
 --------------------------------------------------------------------------------
-
-_Value :: Iso' Value { getValue :: Map CurrencySymbol (Map TokenName BigInt) }
-_Value = _Newtype
 
 --------------------------------------------------------------------------------
 

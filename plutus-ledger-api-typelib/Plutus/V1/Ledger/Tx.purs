@@ -20,7 +20,7 @@ import Plutus.V1.Ledger.Value (Value)
 import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype TxOut = TxOut
+data TxOut = TxOut
   { txOutAddress :: Address
   , txOutValue :: Value
   , txOutDatumHash :: Maybe DatumHash

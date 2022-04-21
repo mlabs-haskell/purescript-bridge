@@ -175,11 +175,11 @@ let
 
     "cardano-transaction-lib" = pkgs.stdenv.mkDerivation {
       name = "cardano-transaction-lib";
-      version = "bcce372942caf2d99157f28a0a98d66cd9be4560";
+      version = "4604cd9685f085ab12a3055c02188fa2949091ef";
       src = pkgs.fetchgit {
         url = "https://github.com/plutonomicon/cardano-transaction-lib.git";
-        rev = "bcce372942caf2d99157f28a0a98d66cd9be4560";
-        sha256 = "0k8jglq17abg28ah6cza81sw1x2sqd1s6b3s3x3p0xmfr2kmq47y";
+        rev = "4604cd9685f085ab12a3055c02188fa2949091ef";
+        sha256 = "0pvjxq93klvvhrjgna13dgrps05bzwryhf08mf38wnryfmh8p92z";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";
@@ -257,18 +257,6 @@ let
       installPhase = "ln -s $src $out";
     };
 
-    "debug" = pkgs.stdenv.mkDerivation {
-      name = "debug";
-      version = "v5.0.0";
-      src = pkgs.fetchgit {
-        url = "https://github.com/garyb/purescript-debug.git";
-        rev = "144305842dba81169a93b3a3cc75429d5c8389e9";
-        sha256 = "09j69bgrq8nzw1l3aj1hka3y5ycmcsn9dlgf22k5ifrd74iic60y";
-      };
-      phases = "installPhase";
-      installPhase = "ln -s $src $out";
-    };
-
     "distributive" = pkgs.stdenv.mkDerivation {
       name = "distributive";
       version = "v5.0.0";
@@ -300,6 +288,18 @@ let
         url = "https://github.com/purescript/purescript-either.git";
         rev = "c1a1af35684f10eecaf6ac7d38dbf6bd48af2ced";
         sha256 = "18dk159yyv7vs0xsnh9m5fajd7zy6zw5b2mpyd6nqdh3c6bb9wh6";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
+    "encoding" = pkgs.stdenv.mkDerivation {
+      name = "encoding";
+      version = "v0.0.7";
+      src = pkgs.fetchgit {
+        url = "https://github.com/menelaos/purescript-encoding.git";
+        rev = "0a4187136f9ea4ea51ddf635e3b3c2cd2461faac";
+        sha256 = "1rsnn8g2lx24k9wflr1jj12281i0smprb76nfm2f61yqqiwgij4d";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";
@@ -648,6 +648,18 @@ let
         url = "https://github.com/Thimoteus/purescript-mmorph.git";
         rev = "ebe16afbfa16dd600f3379ccedc7529417402393";
         sha256 = "0ds88hray8v0519n9k546qsc4qs8bj1k5h5az7nwfp0gaq0r5wpk";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
+    "monad-logger" = pkgs.stdenv.mkDerivation {
+      name = "monad-logger";
+      version = "v1.3.1";
+      src = pkgs.fetchgit {
+        url = "https://github.com/cprussin/purescript-monad-logger.git";
+        rev = "55441b4caf390bc38078a9c5c865efb105549cef";
+        sha256 = "0r1cp2x6mamjca5r5rm5mp1gidlll72paqrjd3z0j69l7iy7dgas";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";

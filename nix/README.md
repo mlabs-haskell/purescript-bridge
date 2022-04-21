@@ -20,6 +20,7 @@ necessary to perform `spago` upgrades.
 $ cd nix/purescript-bridge-typelib-spago
 $ edit spago.dhall and packages.dhall
 $ make
+$ spago build && echo "should succeed"
 $ git add spago-packages.nix
 $ git commit -m "Upgraded Spago packages for the purescript-bridge-typelib.nix"
 ```
