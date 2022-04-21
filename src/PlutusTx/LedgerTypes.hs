@@ -36,7 +36,7 @@ import PlutusTx.ConstrIndices ()
 
 -- Ledger type imports
 import Plutus.V1.Ledger.Ada (Ada)
-import Plutus.V1.Ledger.Address (Address)
+-- import Plutus.V1.Ledger.Address (Address)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
 import Plutus.V1.Ledger.Contexts (ScriptContext, ScriptPurpose, TxInInfo, TxInfo)
 import Plutus.V1.Ledger.Credential (Credential, StakingCredential)
@@ -56,7 +56,8 @@ import Plutus.V1.Ledger.Slot (Slot)
 import Plutus.V1.Ledger.Time (DiffMilliSeconds, POSIXTime)
 import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
-import Plutus.V1.Ledger.Value (AssetClass, CurrencySymbol, TokenName, Value) --  CurrencySymbol, TokenName, Value)
+
+-- import Plutus.V1.Ledger.Value (AssetClass, CurrencySymbol, TokenName, Value)
 
 import Data.Text (Text)
 
@@ -72,11 +73,11 @@ writeLedgerTypesAnd fp myTypes =
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  [ extremelyUnsafeMkSumType @Value
-  , order $ extremelyUnsafeMkSumType @CurrencySymbol
-  , order $ extremelyUnsafeMkSumType @AssetClass
-  , order $ extremelyUnsafeMkSumType @TokenName
-  , order $ extremelyUnsafeMkSumType @TxId
+  -- [ extremelyUnsafeMkSumType @Value
+  -- , order $ extremelyUnsafeMkSumType @CurrencySymbol
+  -- , order $ extremelyUnsafeMkSumType @AssetClass
+  -- , order $ extremelyUnsafeMkSumType @TokenName
+  [ order $ extremelyUnsafeMkSumType @TxId
   , extremelyUnsafeMkSumType @TxOut
   , extremelyUnsafeMkSumType @TxOutRef
   , order $ extremelyUnsafeMkSumType @DiffMilliSeconds
@@ -97,7 +98,7 @@ ledgerTypes =
   , extremelyUnsafeMkSumType @TxInInfo
   , extremelyUnsafeMkSumType @ScriptContext
   , extremelyUnsafeMkSumType @LedgerBytes
-  , extremelyUnsafeMkSumType @Address
+--  , extremelyUnsafeMkSumType @Address
   , extremelyUnsafeMkSumType @Ada
   , extremelyUnsafeMkSumType @(Interval A)
   , extremelyUnsafeMkSumType @(LowerBound A)
@@ -109,15 +110,19 @@ ledgerTypes =
   , mkSumTypeIndexed @ScriptPurpose
   ]
 
--- I'm leaving this commented b/c I'm not sure what the module structure for the ledger types should be.
--- My assumption was that, like Plutarch, we'd just shove everything into it's respective Plutus.V1.Ledger module
 plutusBridge :: BridgeBuilder PSType
 plutusBridge =
+  -- Primitive types
   cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinByteString" "Types.ByteArray" "ByteArray"
     <|> cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
     <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
     <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
     <|> mapBridge
+    -- ledger-api types
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
+    <|> cbtxBridge "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
 
 cbtxBridge :: Text -> Text -> Text -> Text -> BridgePart
 cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do

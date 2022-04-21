@@ -29,15 +29,7 @@ data DCert
 derive instance Generic DCert _
 
 instance HasConstrIndices DCert where
-  constrIndices _ = fromConstr2Index
-    [ Tuple "DCertDelegRegKey" 0
-    , Tuple "DCertDelegDeRegKey" 1
-    , Tuple "DCertDelegDelegate" 2
-    , Tuple "DCertPoolRegister" 3
-    , Tuple "DCertPoolRetire" 4
-    , Tuple "DCertGenesis" 5
-    , Tuple "DCertMir" 6
-    ]
+  constrIndices _ = fromConstr2Index [Tuple "DCertDelegRegKey" 0,Tuple "DCertDelegDeRegKey" 1,Tuple "DCertDelegDelegate" 2,Tuple "DCertPoolRegister" 3,Tuple "DCertPoolRetire" 4,Tuple "DCertGenesis" 5,Tuple "DCertMir" 6]
 
 instance ToData DCert where
   toData x = genericToData x
@@ -57,19 +49,19 @@ _DCertDelegDeRegKey = prism' DCertDelegDeRegKey case _ of
   (DCertDelegDeRegKey a) -> Just a
   _ -> Nothing
 
-_DCertDelegDelegate :: Prism' DCert { a :: StakingCredential, b :: PubKeyHash }
-_DCertDelegDelegate = prism' (\{ a, b } -> (DCertDelegDelegate a b)) case _ of
-  (DCertDelegDelegate a b) -> Just { a, b }
+_DCertDelegDelegate :: Prism' DCert {a :: StakingCredential, b :: PubKeyHash}
+_DCertDelegDelegate = prism' (\{a, b} -> (DCertDelegDelegate a b)) case _ of
+  (DCertDelegDelegate a b) -> Just {a, b}
   _ -> Nothing
 
-_DCertPoolRegister :: Prism' DCert { a :: PubKeyHash, b :: PubKeyHash }
-_DCertPoolRegister = prism' (\{ a, b } -> (DCertPoolRegister a b)) case _ of
-  (DCertPoolRegister a b) -> Just { a, b }
+_DCertPoolRegister :: Prism' DCert {a :: PubKeyHash, b :: PubKeyHash}
+_DCertPoolRegister = prism' (\{a, b} -> (DCertPoolRegister a b)) case _ of
+  (DCertPoolRegister a b) -> Just {a, b}
   _ -> Nothing
 
-_DCertPoolRetire :: Prism' DCert { a :: PubKeyHash, b :: BigInt }
-_DCertPoolRetire = prism' (\{ a, b } -> (DCertPoolRetire a b)) case _ of
-  (DCertPoolRetire a b) -> Just { a, b }
+_DCertPoolRetire :: Prism' DCert {a :: PubKeyHash, b :: BigInt}
+_DCertPoolRetire = prism' (\{a, b} -> (DCertPoolRetire a b)) case _ of
+  (DCertPoolRetire a b) -> Just {a, b}
   _ -> Nothing
 
 _DCertGenesis :: Prism' DCert Unit

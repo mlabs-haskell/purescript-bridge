@@ -24,7 +24,7 @@ derive instance Generic PubKey _
 derive instance Newtype PubKey _
 
 instance HasConstrIndices PubKey where
-  constrIndices _ = fromConstr2Index [ Tuple "PubKey" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "PubKey" 0]
 
 instance ToData PubKey where
   toData x = genericToData x
@@ -34,7 +34,7 @@ instance FromData PubKey where
 
 --------------------------------------------------------------------------------
 
-_PubKey :: Iso' PubKey { getPubKey :: LedgerBytes }
+_PubKey :: Iso' PubKey {getPubKey :: LedgerBytes}
 _PubKey = _Newtype
 
 --------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ derive instance Generic PubKeyHash _
 derive instance Newtype PubKeyHash _
 
 instance HasConstrIndices PubKeyHash where
-  constrIndices _ = fromConstr2Index [ Tuple "PubKeyHash" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "PubKeyHash" 0]
 
 instance ToData PubKeyHash where
   toData x = genericToData x
@@ -56,7 +56,7 @@ instance FromData PubKeyHash where
 
 --------------------------------------------------------------------------------
 
-_PubKeyHash :: Iso' PubKeyHash { getPubKeyHash :: ByteArray }
+_PubKeyHash :: Iso' PubKeyHash {getPubKeyHash :: ByteArray}
 _PubKeyHash = _Newtype
 
 --------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ derive instance Generic PrivateKey _
 derive instance Newtype PrivateKey _
 
 instance HasConstrIndices PrivateKey where
-  constrIndices _ = fromConstr2Index [ Tuple "PrivateKey" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "PrivateKey" 0]
 
 instance ToData PrivateKey where
   toData x = genericToData x
@@ -78,7 +78,7 @@ instance FromData PrivateKey where
 
 --------------------------------------------------------------------------------
 
-_PrivateKey :: Iso' PrivateKey { getPrivateKey :: LedgerBytes }
+_PrivateKey :: Iso' PrivateKey {getPrivateKey :: LedgerBytes}
 _PrivateKey = _Newtype
 
 --------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ derive instance Generic Signature _
 derive instance Newtype Signature _
 
 instance HasConstrIndices Signature where
-  constrIndices _ = fromConstr2Index [ Tuple "Signature" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "Signature" 0]
 
 instance ToData Signature where
   toData x = genericToData x
@@ -100,5 +100,5 @@ instance FromData Signature where
 
 --------------------------------------------------------------------------------
 
-_Signature :: Iso' Signature { getSignature :: ByteArray }
+_Signature :: Iso' Signature {getSignature :: ByteArray}
 _Signature = _Newtype
