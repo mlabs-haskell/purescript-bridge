@@ -26,11 +26,9 @@ derive instance Newtype PubKey _
 instance HasConstrIndices PubKey where
   constrIndices _ = fromConstr2Index [ Tuple "PubKey" 0 ]
 
-instance ToData PubKey where
-  toData x = genericToData x
+derive newtype instance ToData PubKey
 
-instance FromData PubKey where
-  fromData pd = genericFromData pd
+derive newtype instance FromData PubKey
 
 --------------------------------------------------------------------------------
 
@@ -48,11 +46,9 @@ derive instance Newtype PubKeyHash _
 instance HasConstrIndices PubKeyHash where
   constrIndices _ = fromConstr2Index [ Tuple "PubKeyHash" 0 ]
 
-instance ToData PubKeyHash where
-  toData x = genericToData x
+derive newtype instance ToData PubKeyHash
 
-instance FromData PubKeyHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData PubKeyHash
 
 --------------------------------------------------------------------------------
 
@@ -70,11 +66,9 @@ derive instance Newtype PrivateKey _
 instance HasConstrIndices PrivateKey where
   constrIndices _ = fromConstr2Index [ Tuple "PrivateKey" 0 ]
 
-instance ToData PrivateKey where
-  toData x = genericToData x
+derive newtype instance ToData PrivateKey
 
-instance FromData PrivateKey where
-  fromData pd = genericFromData pd
+derive newtype instance FromData PrivateKey
 
 --------------------------------------------------------------------------------
 
@@ -92,11 +86,9 @@ derive instance Newtype Signature _
 instance HasConstrIndices Signature where
   constrIndices _ = fromConstr2Index [ Tuple "Signature" 0 ]
 
-instance ToData Signature where
-  toData x = genericToData x
+derive newtype instance ToData Signature
 
-instance FromData Signature where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Signature
 
 --------------------------------------------------------------------------------
 

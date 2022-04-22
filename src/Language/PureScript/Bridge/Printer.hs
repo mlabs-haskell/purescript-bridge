@@ -354,16 +354,26 @@ instances st@(SumType t cs is) = go <$> is
       Derive -> mkDerivedInstance _customHead (const _customConstraints)
       DeriveNewtype -> mkDerivedNewtypeInstance _customHead (const _customConstraints)
       Explicit members -> mkInstance _customHead (const _customConstraints) $ memberToMethod <$> members
-    go ToData =
-      mkInstance
-        (mkType "ToData" [t])
-        (constrainWith "ToData")
-        ["toData x = genericToData x"]
-    go FromData =
-      mkInstance
-        (mkType "FromData" [t])
-        (constrainWith "FromData")
-        ["fromData pd = genericFromData pd"]
+    go ToData
+      | isJust . nootype $ map snd cs =
+        mkDerivedNewtypeInstance
+          (mkType "ToData" [t])
+          (constrainWith "ToData")
+      | otherwise =
+        mkInstance
+          (mkType "ToData" [t])
+          (constrainWith "ToData")
+          ["toData x = genericToData x"]
+    go FromData
+      | isJust .nootype $ map snd cs =
+        mkDerivedNewtypeInstance
+          (mkType "FromData" [t])
+          (constrainWith "FromData")
+      | otherwise =
+        mkInstance
+          (mkType "FromData" [t])
+          (constrainWith "FromData")
+          ["fromData pd = genericFromData pd"]
     go HasConstrIndex =
       mkInstance
         (mkType "HasConstrIndices" [t])

@@ -29,11 +29,9 @@ derive instance Newtype DiffMilliSeconds _
 instance HasConstrIndices DiffMilliSeconds where
   constrIndices _ = fromConstr2Index [ Tuple "DiffMilliSeconds" 0 ]
 
-instance ToData DiffMilliSeconds where
-  toData x = genericToData x
+derive newtype instance ToData DiffMilliSeconds
 
-instance FromData DiffMilliSeconds where
-  fromData pd = genericFromData pd
+derive newtype instance FromData DiffMilliSeconds
 
 --------------------------------------------------------------------------------
 
@@ -55,11 +53,9 @@ derive instance Newtype POSIXTime _
 instance HasConstrIndices POSIXTime where
   constrIndices _ = fromConstr2Index [ Tuple "POSIXTime" 0 ]
 
-instance ToData POSIXTime where
-  toData x = genericToData x
+derive newtype instance ToData POSIXTime
 
-instance FromData POSIXTime where
-  fromData pd = genericFromData pd
+derive newtype instance FromData POSIXTime
 
 --------------------------------------------------------------------------------
 

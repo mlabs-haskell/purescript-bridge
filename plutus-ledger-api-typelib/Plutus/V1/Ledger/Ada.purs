@@ -25,11 +25,9 @@ derive instance Newtype Ada _
 instance HasConstrIndices Ada where
   constrIndices _ = fromConstr2Index [ Tuple "Lovelace" 0 ]
 
-instance ToData Ada where
-  toData x = genericToData x
+derive newtype instance ToData Ada
 
-instance FromData Ada where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Ada
 
 --------------------------------------------------------------------------------
 

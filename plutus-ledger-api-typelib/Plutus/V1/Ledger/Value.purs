@@ -27,11 +27,9 @@ derive instance Newtype Value _
 instance HasConstrIndices Value where
   constrIndices _ = fromConstr2Index [ Tuple "Value" 0 ]
 
-instance ToData Value where
-  toData x = genericToData x
+derive newtype instance ToData Value
 
-instance FromData Value where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Value
 
 --------------------------------------------------------------------------------
 
@@ -53,11 +51,9 @@ derive instance Newtype CurrencySymbol _
 instance HasConstrIndices CurrencySymbol where
   constrIndices _ = fromConstr2Index [ Tuple "CurrencySymbol" 0 ]
 
-instance ToData CurrencySymbol where
-  toData x = genericToData x
+derive newtype instance ToData CurrencySymbol
 
-instance FromData CurrencySymbol where
-  fromData pd = genericFromData pd
+derive newtype instance FromData CurrencySymbol
 
 --------------------------------------------------------------------------------
 
@@ -79,11 +75,9 @@ derive instance Newtype AssetClass _
 instance HasConstrIndices AssetClass where
   constrIndices _ = fromConstr2Index [ Tuple "AssetClass" 0 ]
 
-instance ToData AssetClass where
-  toData x = genericToData x
+derive newtype instance ToData AssetClass
 
-instance FromData AssetClass where
-  fromData pd = genericFromData pd
+derive newtype instance FromData AssetClass
 
 --------------------------------------------------------------------------------
 
@@ -105,11 +99,9 @@ derive instance Newtype TokenName _
 instance HasConstrIndices TokenName where
   constrIndices _ = fromConstr2Index [ Tuple "TokenName" 0 ]
 
-instance ToData TokenName where
-  toData x = genericToData x
+derive newtype instance ToData TokenName
 
-instance FromData TokenName where
-  fromData pd = genericFromData pd
+derive newtype instance FromData TokenName
 
 --------------------------------------------------------------------------------
 

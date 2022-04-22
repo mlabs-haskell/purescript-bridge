@@ -26,11 +26,9 @@ derive instance Newtype Redeemer _
 instance HasConstrIndices Redeemer where
   constrIndices _ = fromConstr2Index [ Tuple "Redeemer" 0 ]
 
-instance ToData Redeemer where
-  toData x = genericToData x
+derive newtype instance ToData Redeemer
 
-instance FromData Redeemer where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Redeemer
 
 --------------------------------------------------------------------------------
 
@@ -48,11 +46,9 @@ derive instance Newtype Datum _
 instance HasConstrIndices Datum where
   constrIndices _ = fromConstr2Index [ Tuple "Datum" 0 ]
 
-instance ToData Datum where
-  toData x = genericToData x
+derive newtype instance ToData Datum
 
-instance FromData Datum where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Datum
 
 --------------------------------------------------------------------------------
 
@@ -70,11 +66,9 @@ derive instance Newtype ScriptHash _
 instance HasConstrIndices ScriptHash where
   constrIndices _ = fromConstr2Index [ Tuple "ScriptHash" 0 ]
 
-instance ToData ScriptHash where
-  toData x = genericToData x
+derive newtype instance ToData ScriptHash
 
-instance FromData ScriptHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData ScriptHash
 
 --------------------------------------------------------------------------------
 
@@ -92,11 +86,9 @@ derive instance Newtype ValidatorHash _
 instance HasConstrIndices ValidatorHash where
   constrIndices _ = fromConstr2Index [ Tuple "ValidatorHash" 0 ]
 
-instance ToData ValidatorHash where
-  toData x = genericToData x
+derive newtype instance ToData ValidatorHash
 
-instance FromData ValidatorHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData ValidatorHash
 
 --------------------------------------------------------------------------------
 
@@ -114,11 +106,9 @@ derive instance Newtype DatumHash _
 instance HasConstrIndices DatumHash where
   constrIndices _ = fromConstr2Index [ Tuple "DatumHash" 0 ]
 
-instance ToData DatumHash where
-  toData x = genericToData x
+derive newtype instance ToData DatumHash
 
-instance FromData DatumHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData DatumHash
 
 --------------------------------------------------------------------------------
 
@@ -136,11 +126,9 @@ derive instance Newtype MintingPolicyHash _
 instance HasConstrIndices MintingPolicyHash where
   constrIndices _ = fromConstr2Index [ Tuple "MintingPolicyHash" 0 ]
 
-instance ToData MintingPolicyHash where
-  toData x = genericToData x
+derive newtype instance ToData MintingPolicyHash
 
-instance FromData MintingPolicyHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData MintingPolicyHash
 
 --------------------------------------------------------------------------------
 
@@ -158,11 +146,9 @@ derive instance Newtype StakeValidatorHash _
 instance HasConstrIndices StakeValidatorHash where
   constrIndices _ = fromConstr2Index [ Tuple "StakeValidatorHash" 0 ]
 
-instance ToData StakeValidatorHash where
-  toData x = genericToData x
+derive newtype instance ToData StakeValidatorHash
 
-instance FromData StakeValidatorHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData StakeValidatorHash
 
 --------------------------------------------------------------------------------
 

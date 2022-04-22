@@ -29,11 +29,9 @@ derive instance Newtype Slot _
 instance HasConstrIndices Slot where
   constrIndices _ = fromConstr2Index [ Tuple "Slot" 0 ]
 
-instance ToData Slot where
-  toData x = genericToData x
+derive newtype instance ToData Slot
 
-instance FromData Slot where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Slot
 
 --------------------------------------------------------------------------------
 
