@@ -3,7 +3,7 @@ module Plutus.V1.Ledger.Tx where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, constrIndices, fromConstr2Index)
+import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -11,12 +11,13 @@ import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe, Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
+import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
-import FromData (class FromData, fromData, genericFromData)
+import FromData (class FromData, genericFromData)
 import Plutus.Types.Address (Address)
 import Plutus.V1.Ledger.Scripts (DatumHash)
 import Plutus.V1.Ledger.TxId (TxId)
-import ToData (class ToData, genericToData, toData)
+import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.Value (Value)
 
@@ -26,12 +27,15 @@ newtype TxOut = TxOut
   , txOutDatumHash :: Maybe DatumHash
   }
 
+instance Show TxOut where
+  show a = genericShow a
+
 derive instance Generic TxOut _
 
 derive instance Newtype TxOut _
 
 instance HasConstrIndices TxOut where
-  constrIndices _ = fromConstr2Index [ Tuple "TxOut" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "TxOut" 0]
 
 instance ToData TxOut where
   toData x = genericToData x
@@ -41,12 +45,7 @@ instance FromData TxOut where
 
 --------------------------------------------------------------------------------
 
-_TxOut
-  :: Iso' TxOut
-       { txOutAddress :: Address
-       , txOutValue :: Value
-       , txOutDatumHash :: Maybe DatumHash
-       }
+_TxOut :: Iso' TxOut {txOutAddress :: Address, txOutValue :: Value, txOutDatumHash :: Maybe DatumHash}
 _TxOut = _Newtype
 
 --------------------------------------------------------------------------------
@@ -56,12 +55,15 @@ newtype TxOutRef = TxOutRef
   , txOutRefIdx :: BigInt
   }
 
+instance Show TxOutRef where
+  show a = genericShow a
+
 derive instance Generic TxOutRef _
 
 derive instance Newtype TxOutRef _
 
 instance HasConstrIndices TxOutRef where
-  constrIndices _ = fromConstr2Index [ Tuple "TxOutRef" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "TxOutRef" 0]
 
 instance ToData TxOutRef where
   toData x = genericToData x
@@ -71,5 +73,5 @@ instance FromData TxOutRef where
 
 --------------------------------------------------------------------------------
 
-_TxOutRef :: Iso' TxOutRef { txOutRefId :: TxId, txOutRefIdx :: BigInt }
+_TxOutRef :: Iso' TxOutRef {txOutRefId :: TxId, txOutRefIdx :: BigInt}
 _TxOutRef = _Newtype
