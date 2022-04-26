@@ -16,7 +16,8 @@ import ToData (class ToData, genericToData, toData)
 import Type.Proxy (Proxy(Proxy))
 import Types.Value (CurrencySymbol, TokenName)
 
-newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
+newtype AssetClass = AssetClass
+  { unAssetClass :: Tuple CurrencySymbol TokenName }
 
 derive instance Eq AssetClass
 
@@ -27,7 +28,7 @@ derive instance Generic AssetClass _
 derive instance Newtype AssetClass _
 
 instance HasConstrIndices AssetClass where
-  constrIndices _ = fromConstr2Index [Tuple "AssetClass" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "AssetClass" 0 ]
 
 instance ToData AssetClass where
   toData x = genericToData x
@@ -37,5 +38,6 @@ instance FromData AssetClass where
 
 --------------------------------------------------------------------------------
 
-_AssetClass :: Iso' AssetClass {unAssetClass :: Tuple CurrencySymbol TokenName}
+_AssetClass
+  :: Iso' AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
 _AssetClass = _Newtype

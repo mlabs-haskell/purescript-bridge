@@ -27,7 +27,7 @@ derive instance Generic Slot _
 derive instance Newtype Slot _
 
 instance HasConstrIndices Slot where
-  constrIndices _ = fromConstr2Index [Tuple "Slot" 0]
+  constrIndices _ = fromConstr2Index [ Tuple "Slot" 0 ]
 
 instance ToData Slot where
   toData x = genericToData x
@@ -37,5 +37,5 @@ instance FromData Slot where
 
 --------------------------------------------------------------------------------
 
-_Slot :: Iso' Slot {getSlot :: BigInt}
+_Slot :: Iso' Slot { getSlot :: BigInt }
 _Slot = _Newtype
