@@ -3,74 +3,35 @@ module Plutus.V1.Ledger.Value where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, constrIndices, fromConstr2Index)
-import Data.BigInt (BigInt)
+import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
+import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple, Tuple(Tuple))
-import FromData (class FromData, fromData, genericFromData)
-import PlutusTx.AssocMap (Map)
-import ToData (class ToData, genericToData, toData)
+import FromData (class FromData, genericFromData)
+import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import Types.ByteArray (ByteArray)
+import Types.Value (CurrencySymbol, TokenName)
 
-newtype Value = Value { getValue :: Map CurrencySymbol (Map TokenName BigInt) }
+newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
 
-derive instance Generic Value _
+instance Show AssetClass where
+  show a = genericShow a
 
-derive instance Newtype Value _
+derive instance Eq AssetClass
 
-instance HasConstrIndices Value where
-  constrIndices _ = fromConstr2Index [ Tuple "Value" 0 ]
-
-instance ToData Value where
-  toData x = genericToData x
-
-instance FromData Value where
-  fromData pd = genericFromData pd
-
---------------------------------------------------------------------------------
-
-_Value :: Iso' Value { getValue :: Map CurrencySymbol (Map TokenName BigInt) }
-_Value = _Newtype
-
---------------------------------------------------------------------------------
-
-newtype CurrencySymbol = CurrencySymbol { unCurrencySymbol :: ByteArray }
-
-derive instance Generic CurrencySymbol _
-
-derive instance Newtype CurrencySymbol _
-
-instance HasConstrIndices CurrencySymbol where
-  constrIndices _ = fromConstr2Index [ Tuple "CurrencySymbol" 0 ]
-
-instance ToData CurrencySymbol where
-  toData x = genericToData x
-
-instance FromData CurrencySymbol where
-  fromData pd = genericFromData pd
-
---------------------------------------------------------------------------------
-
-_CurrencySymbol :: Iso' CurrencySymbol { unCurrencySymbol :: ByteArray }
-_CurrencySymbol = _Newtype
-
---------------------------------------------------------------------------------
-
-newtype AssetClass = AssetClass
-  { unAssetClass :: Tuple CurrencySymbol TokenName }
+derive instance Ord AssetClass
 
 derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
 
 instance HasConstrIndices AssetClass where
-  constrIndices _ = fromConstr2Index [ Tuple "AssetClass" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "AssetClass" 0]
 
 instance ToData AssetClass where
   toData x = genericToData x
@@ -80,28 +41,5 @@ instance FromData AssetClass where
 
 --------------------------------------------------------------------------------
 
-_AssetClass
-  :: Iso' AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
+_AssetClass :: Iso' AssetClass {unAssetClass :: Tuple CurrencySymbol TokenName}
 _AssetClass = _Newtype
-
---------------------------------------------------------------------------------
-
-newtype TokenName = TokenName { unTokenName :: ByteArray }
-
-derive instance Generic TokenName _
-
-derive instance Newtype TokenName _
-
-instance HasConstrIndices TokenName where
-  constrIndices _ = fromConstr2Index [ Tuple "TokenName" 0 ]
-
-instance ToData TokenName where
-  toData x = genericToData x
-
-instance FromData TokenName where
-  fromData pd = genericFromData pd
-
---------------------------------------------------------------------------------
-
-_TokenName :: Iso' TokenName { unTokenName :: ByteArray }
-_TokenName = _Newtype

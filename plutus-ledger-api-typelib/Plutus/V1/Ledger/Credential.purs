@@ -3,29 +3,32 @@ module Plutus.V1.Ledger.Credential where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, constrIndices, fromConstr2Index)
+import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
+import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
-import FromData (class FromData, fromData, genericFromData)
+import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import Plutus.V1.Ledger.Scripts (ValidatorHash)
-import ToData (class ToData, genericToData, toData)
+import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 
 data StakingCredential
   = StakingHash Credential
   | StakingPtr BigInt BigInt BigInt
 
+instance Show StakingCredential where
+  show a = genericShow a
+
 derive instance Generic StakingCredential _
 
 instance HasConstrIndices StakingCredential where
-  constrIndices _ = fromConstr2Index
-    [ Tuple "StakingHash" 0, Tuple "StakingPtr" 1 ]
+  constrIndices _ = fromConstr2Index [Tuple "StakingHash" 0,Tuple "StakingPtr" 1]
 
 instance ToData StakingCredential where
   toData x = genericToData x
@@ -40,10 +43,9 @@ _StakingHash = prism' StakingHash case _ of
   (StakingHash a) -> Just a
   _ -> Nothing
 
-_StakingPtr
-  :: Prism' StakingCredential { a :: BigInt, b :: BigInt, c :: BigInt }
-_StakingPtr = prism' (\{ a, b, c } -> (StakingPtr a b c)) case _ of
-  (StakingPtr a b c) -> Just { a, b, c }
+_StakingPtr :: Prism' StakingCredential {a :: BigInt, b :: BigInt, c :: BigInt}
+_StakingPtr = prism' (\{a, b, c} -> (StakingPtr a b c)) case _ of
+  (StakingPtr a b c) -> Just {a, b, c}
   _ -> Nothing
 
 --------------------------------------------------------------------------------
@@ -52,11 +54,13 @@ data Credential
   = PubKeyCredential PubKeyHash
   | ScriptCredential ValidatorHash
 
+instance Show Credential where
+  show a = genericShow a
+
 derive instance Generic Credential _
 
 instance HasConstrIndices Credential where
-  constrIndices _ = fromConstr2Index
-    [ Tuple "PubKeyCredential" 0, Tuple "ScriptCredential" 1 ]
+  constrIndices _ = fromConstr2Index [Tuple "PubKeyCredential" 0,Tuple "ScriptCredential" 1]
 
 instance ToData Credential where
   toData x = genericToData x

@@ -365,16 +365,16 @@ instanceToImportLines Bounded =
     ]
 instanceToImportLines HasConstrIndex =
   importsFromList
-    [ ImportLine "ConstrIndices" $ Set.fromList ["constrIndices", "fromConstr2Index"]
+    [ ImportLine "ConstrIndices" $ Set.fromList ["fromConstr2Index"]
     , ImportLine "Data.Tuple" $ Set.fromList ["Tuple(Tuple)"]
     ]
 instanceToImportLines ToData =
   importsFromList
-    [ ImportLine "ToData" $ Set.fromList ["toData", "genericToData"]
+    [ ImportLine "ToData" $ Set.fromList ["genericToData"]
     ]
 instanceToImportLines FromData =
   importsFromList
-    [ ImportLine "FromData" $ Set.fromList ["fromData", "genericFromData"]
+    [ ImportLine "FromData" $ Set.fromList ["genericFromData"]
     ]
 instanceToImportLines (Custom CustomInstance {_customImplementation = Explicit members}) =
   importsFromList $ concatMap (Map.elems . _memberImportLines) members

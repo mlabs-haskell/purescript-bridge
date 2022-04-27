@@ -17,7 +17,6 @@
 
     # We're reusing inputs from bot-plutus-interface as it's currently the source of nix truth.
     bot-plutus-interface.url = "github:mlabs-haskell/bot-plutus-interface";
-    plutip.url = "github:mlabs-haskell/plutip";
 
     # Our servant-purescript fork
     servant-purescript = {
@@ -49,9 +48,10 @@
 
         easy-ps = import inputs.easy-ps { inherit pkgs; };
 
+        # Haskell.nix project and flake
         # Filter out purescript-bridge
         extraSources' = builtins.filter (e: e.src.rev != "47a1f11825a0f9445e0f98792f79172efef66c00") inputs.bot-plutus-interface.extraSources;
-        # User our servant-purescript fork
+        # Use our servant-purescript fork
         extraSources'' = builtins.map
           (e:
             if e.src.rev == "44e7cacf109f84984cd99cd3faf185d161826963"
@@ -63,13 +63,9 @@
           inputs = inputs.bot-plutus-interface.inputs;
           extraSources = extraSources'';
         };
-
-        bpiInputs = inputs.plutip.inputs.bot-plutus-interface.inputs;
-
-        # Nixpkgs from bot-plutus-interface
-        # inherit (bpiInputs) nixpkgs;
-
         pursBridgeFlake = pursBridgeHsProject.flake { };
+
+        # Code quality
         cq = import ./nix/code-quality.nix { projectName = ""; inherit pkgs easy-ps; };
         fileCheckers = cq.checkers pkgs;
 
@@ -123,6 +119,13 @@
               else v src)
             fileCheckers)
           "touch $out";
+
+        # Purescript and bridge Nix libs
+        lib = {
+          bridgeTypelib = import ./nix/purescript-bridge-typelib.nix;
+          pursFlake = import ./nix/purescript-flake.nix;
+          pursLib = import ./nix/purescript-lib.nix;
+        };
       }
     );
 }

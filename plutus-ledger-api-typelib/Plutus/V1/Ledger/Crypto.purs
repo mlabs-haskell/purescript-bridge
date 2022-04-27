@@ -3,28 +3,32 @@ module Plutus.V1.Ledger.Crypto where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, constrIndices, fromConstr2Index)
+import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
+import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
-import FromData (class FromData, fromData, genericFromData)
+import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
-import ToData (class ToData, genericToData, toData)
+import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 
 newtype PubKey = PubKey { getPubKey :: LedgerBytes }
+
+instance Show PubKey where
+  show a = genericShow a
 
 derive instance Generic PubKey _
 
 derive instance Newtype PubKey _
 
 instance HasConstrIndices PubKey where
-  constrIndices _ = fromConstr2Index [ Tuple "PubKey" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "PubKey" 0]
 
 instance ToData PubKey where
   toData x = genericToData x
@@ -34,19 +38,22 @@ instance FromData PubKey where
 
 --------------------------------------------------------------------------------
 
-_PubKey :: Iso' PubKey { getPubKey :: LedgerBytes }
+_PubKey :: Iso' PubKey {getPubKey :: LedgerBytes}
 _PubKey = _Newtype
 
 --------------------------------------------------------------------------------
 
 newtype PubKeyHash = PubKeyHash { getPubKeyHash :: ByteArray }
 
+instance Show PubKeyHash where
+  show a = genericShow a
+
 derive instance Generic PubKeyHash _
 
 derive instance Newtype PubKeyHash _
 
 instance HasConstrIndices PubKeyHash where
-  constrIndices _ = fromConstr2Index [ Tuple "PubKeyHash" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "PubKeyHash" 0]
 
 instance ToData PubKeyHash where
   toData x = genericToData x
@@ -56,19 +63,22 @@ instance FromData PubKeyHash where
 
 --------------------------------------------------------------------------------
 
-_PubKeyHash :: Iso' PubKeyHash { getPubKeyHash :: ByteArray }
+_PubKeyHash :: Iso' PubKeyHash {getPubKeyHash :: ByteArray}
 _PubKeyHash = _Newtype
 
 --------------------------------------------------------------------------------
 
 newtype PrivateKey = PrivateKey { getPrivateKey :: LedgerBytes }
 
+instance Show PrivateKey where
+  show a = genericShow a
+
 derive instance Generic PrivateKey _
 
 derive instance Newtype PrivateKey _
 
 instance HasConstrIndices PrivateKey where
-  constrIndices _ = fromConstr2Index [ Tuple "PrivateKey" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "PrivateKey" 0]
 
 instance ToData PrivateKey where
   toData x = genericToData x
@@ -78,19 +88,22 @@ instance FromData PrivateKey where
 
 --------------------------------------------------------------------------------
 
-_PrivateKey :: Iso' PrivateKey { getPrivateKey :: LedgerBytes }
+_PrivateKey :: Iso' PrivateKey {getPrivateKey :: LedgerBytes}
 _PrivateKey = _Newtype
 
 --------------------------------------------------------------------------------
 
 newtype Signature = Signature { getSignature :: ByteArray }
 
+instance Show Signature where
+  show a = genericShow a
+
 derive instance Generic Signature _
 
 derive instance Newtype Signature _
 
 instance HasConstrIndices Signature where
-  constrIndices _ = fromConstr2Index [ Tuple "Signature" 0 ]
+  constrIndices _ = fromConstr2Index [Tuple "Signature" 0]
 
 instance ToData Signature where
   toData x = genericToData x
@@ -100,5 +113,5 @@ instance FromData Signature where
 
 --------------------------------------------------------------------------------
 
-_Signature :: Iso' Signature { getSignature :: ByteArray }
+_Signature :: Iso' Signature {getSignature :: ByteArray}
 _Signature = _Newtype

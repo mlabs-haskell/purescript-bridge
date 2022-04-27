@@ -3,8 +3,6 @@
 
 module PlutusTx.LedgerTypes where
 
--- local imports
-
 import Language.PureScript.Bridge (
   BridgeBuilder,
   BridgePart,
@@ -21,14 +19,17 @@ import Language.PureScript.Bridge (
   buildBridge,
   defaultBridge,
   extremelyUnsafeMkSumType,
+  genericShow,
   mkSumTypeIndexed,
+  order,
+  psTypeParameters,
   typeModule,
   typeName,
   writePSTypes,
   (<|>),
   (^==),
  )
-import Language.PureScript.Bridge.TypeParameters (A, B)
+import Language.PureScript.Bridge.TypeParameters (A)
 import PlutusTx.ConstrIndices ()
 
 -- Ledger type imports
@@ -53,11 +54,29 @@ import Plutus.V1.Ledger.Slot (Slot)
 import Plutus.V1.Ledger.Time (DiffMilliSeconds, POSIXTime)
 import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
-import Plutus.V1.Ledger.Value (AssetClass, CurrencySymbol, TokenName, Value)
+import Plutus.V1.Ledger.Value (
+  AssetClass,
+  CurrencySymbol,
+  TokenName,
+  Value,
+ )
 
 import Data.Text (Text)
-import PlutusTx.AssocMap (Map)
 
+{- | Ledger types translation
+ Ledger types exist in several forms and it's useful to formulate a language
+ to differentiate them:
+  - `original` ledger types from the Haskell `github:input-output-hk\/plutus\/plutus-ledger-api` library,
+  - `bridged` ledger types that are Purescript copies of the `originals`,
+  - `ctl native` ledger types that are specified directly in CTL.
+
+ Since `ctl native` ledger types are used in CTL contracts, it's useful for
+ 'user defined' data types , intended to be Plutus Data encoded/decoded, to be
+ `bridged` so they use `ctl native` ledger types where possible. However, to
+ assure compatible Plutus Data representation of `ctl native` ledger type with
+ `originals`, we propose to use this library and perform `ctl native <->
+ bridged <-> plutus data` mapping.
+-}
 writeLedgerTypes :: FilePath -> IO ()
 writeLedgerTypes fp = writeLedgerTypesAnd fp []
 
@@ -65,59 +84,74 @@ writeLedgerTypesAnd :: FilePath -> [SumType 'Haskell] -> IO ()
 writeLedgerTypesAnd fp myTypes =
   writePSTypes
     fp
-    (buildBridge (defaultBridge <|> plutusBridge))
+    (buildBridge (defaultBridge <|> origToCtlNativePrimitivesBridge <|> origToCtlNativeOverriddenBridge))
     (ledgerTypes <> myTypes)
 
-ledgerTypes :: [SumType 'Haskell]
-ledgerTypes =
-  [ extremelyUnsafeMkSumType @Value
-  , extremelyUnsafeMkSumType @CurrencySymbol
-  , extremelyUnsafeMkSumType @AssetClass
-  , extremelyUnsafeMkSumType @TokenName
-  , extremelyUnsafeMkSumType @TxId
-  , extremelyUnsafeMkSumType @TxOut
-  , extremelyUnsafeMkSumType @TxOutRef
-  , extremelyUnsafeMkSumType @DiffMilliSeconds
-  , extremelyUnsafeMkSumType @POSIXTime
-  , extremelyUnsafeMkSumType @Slot
-  , extremelyUnsafeMkSumType @Redeemer
-  , extremelyUnsafeMkSumType @Datum
-  , extremelyUnsafeMkSumType @ScriptHash
-  , extremelyUnsafeMkSumType @ValidatorHash
-  , extremelyUnsafeMkSumType @DatumHash
-  , extremelyUnsafeMkSumType @MintingPolicyHash
-  , extremelyUnsafeMkSumType @StakeValidatorHash
-  , extremelyUnsafeMkSumType @PubKey
-  , extremelyUnsafeMkSumType @PubKeyHash
-  , extremelyUnsafeMkSumType @PrivateKey
-  , extremelyUnsafeMkSumType @Signature
-  , extremelyUnsafeMkSumType @TxInfo
-  , extremelyUnsafeMkSumType @TxInInfo
-  , extremelyUnsafeMkSumType @ScriptContext
-  , extremelyUnsafeMkSumType @LedgerBytes
-  , extremelyUnsafeMkSumType @Address
-  , extremelyUnsafeMkSumType @Ada
-  , extremelyUnsafeMkSumType @(Interval A)
-  , extremelyUnsafeMkSumType @(LowerBound A)
-  , extremelyUnsafeMkSumType @(UpperBound A)
-  , extremelyUnsafeMkSumType @(Map A B)
-  , mkSumTypeIndexed @DCert
-  , mkSumTypeIndexed @(Extended A)
-  , mkSumTypeIndexed @StakingCredential
-  , mkSumTypeIndexed @Credential
-  , mkSumTypeIndexed @ScriptPurpose
-  ]
-
--- I'm leaving this commented b/c I'm not sure what the module structure for the ledger types should be.
--- My assumption was that, like Plutarch, we'd just shove everything into it's respective Plutus.V1.Ledger module
-plutusBridge :: BridgeBuilder PSType
-plutusBridge =
+origToCtlNativePrimitivesBridge :: BridgeBuilder PSType
+origToCtlNativePrimitivesBridge =
+  -- Primitive types
   cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinByteString" "Types.ByteArray" "ByteArray"
     <|> cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
     <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
     <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
+    <|> mapBridge
 
---  <|> assetClassBridge
+mapBridge :: BridgePart
+mapBridge = do
+  typeModule ^== "PlutusTx.AssocMap"
+  typeName ^== "Map"
+  TypeInfo "plutonomicon-cardano-transaction-lib" "Plutus.Types.AssocMap" "Map" <$> psTypeParameters
+
+origToCtlNativeOverriddenBridge :: BridgeBuilder PSType
+origToCtlNativeOverriddenBridge =
+  cbtxBridge "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
+    <|> cbtxBridge "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
+    <|> cbtxBridge "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
+
+_overriddenTypes :: [SumType 'Haskell]
+_overriddenTypes =
+  [ extremelyUnsafeMkSumType @Value
+  , order $ extremelyUnsafeMkSumType @CurrencySymbol
+  , order $ extremelyUnsafeMkSumType @TokenName
+  , extremelyUnsafeMkSumType @Address
+  ]
+
+ledgerTypes :: [SumType 'Haskell]
+ledgerTypes =
+  genericShow
+    <$> [ order $ extremelyUnsafeMkSumType @AssetClass
+        , order $ extremelyUnsafeMkSumType @TxId
+        , extremelyUnsafeMkSumType @TxOut
+        , extremelyUnsafeMkSumType @TxOutRef
+        , order $ extremelyUnsafeMkSumType @DiffMilliSeconds
+        , order $ extremelyUnsafeMkSumType @POSIXTime
+        , order $ extremelyUnsafeMkSumType @Slot
+        , extremelyUnsafeMkSumType @Redeemer
+        , extremelyUnsafeMkSumType @Datum
+        , extremelyUnsafeMkSumType @ScriptHash
+        , extremelyUnsafeMkSumType @ValidatorHash
+        , extremelyUnsafeMkSumType @DatumHash
+        , extremelyUnsafeMkSumType @MintingPolicyHash
+        , extremelyUnsafeMkSumType @StakeValidatorHash
+        , extremelyUnsafeMkSumType @PubKey
+        , extremelyUnsafeMkSumType @PubKeyHash
+        , extremelyUnsafeMkSumType @PrivateKey
+        , extremelyUnsafeMkSumType @Signature
+        , extremelyUnsafeMkSumType @TxInfo
+        , extremelyUnsafeMkSumType @TxInInfo
+        , extremelyUnsafeMkSumType @ScriptContext
+        , extremelyUnsafeMkSumType @LedgerBytes
+        , extremelyUnsafeMkSumType @Ada
+        , extremelyUnsafeMkSumType @(Interval A)
+        , extremelyUnsafeMkSumType @(LowerBound A)
+        , extremelyUnsafeMkSumType @(UpperBound A)
+        , mkSumTypeIndexed @DCert
+        , mkSumTypeIndexed @(Extended A)
+        , mkSumTypeIndexed @StakingCredential
+        , mkSumTypeIndexed @Credential
+        , mkSumTypeIndexed @ScriptPurpose
+        ]
 
 cbtxBridge :: Text -> Text -> Text -> Text -> BridgePart
 cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
@@ -125,22 +159,8 @@ cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
   typeName ^== haskTypeName
   return $
     TypeInfo
-      { _typePackage = "plutonomicon-cardano-browser-tx"
+      { _typePackage = "plutonomicon-cardano-transaction-lib"
       , _typeModule = psTypeModule
       , _typeName = psTypeName
       , _typeParameters = []
       }
-
-{-
-assetClassBridge :: BridgePart
-assetClassBridge = do
-  typeModule ^== "Plutus.V1.Ledger.Value"
-  typeName ^== "AssetClass"
-  return $
-    TypeInfo
-      { _typePackage = "plutonomicon-cardano-browser-tx"
-      , _typeModule = "Data.Tuple"
-      , _typeName = "Tuple"
-      , _typeParameters = [TypeInfo "" "Types.Value" "CurrencySymbol" [], TypeInfo "" "Types.Value" "TokenName" []]
-      }
--}

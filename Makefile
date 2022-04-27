@@ -20,6 +20,12 @@ test-all: test
 build-all:
 	$(NIX_BUILD) .#build-all.${current-system}
 
+build-plutus-ledger-api-typelib:
+	$(NIX_BUILD) .#packages.${current-system}.plutus-ledger-api-typelib
+
+build-plutus-sample-ledger-api-typelib:
+	$(NIX_BUILD) .#packages.${current-system}.sample-plutus-ledger-api-typelib
+
 build-test-all: build-all test-all
 
 # Fix files
@@ -42,3 +48,13 @@ clean:
 	@ rm -rf ./test/RoundTrip/app/.spago    || true
 	@ rm -rf ./test/RoundTrip/app/.psci_modules    || true
 	@ rm -rf ./test/RoundTrip/app/.spago2nix    || true
+	@ rm -rf .spago || true
+	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago2nix || true
+	@ rm -rf ./nix/purescript-bridge-typelib-spago/output || true
+	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago || true
+
+generate-plutus-ledger-api-typelib:
+	@ if [ -d plutus-ledger-api-typelib ]; then git rm -r --cached plutus-ledger-api-typelib; else echo "skip"; fi
+	@ if [ -d plutus-ledger-api-typelib ]; then rm -rf plutus-ledger-api-typelib; else echo "skip 1"; fi
+	@ cabal run cli -- generate-plutus-ledger-api-types
+	@ git add plutus-ledger-api-typelib
