@@ -4,22 +4,15 @@ module Plutus.V1.Ledger.Contexts where
 import Prelude
 
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
-import Control.Lazy (defer)
-import Data.Argonaut.Core (jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple, Tuple(Tuple))
-import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
@@ -32,9 +25,6 @@ import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.Value (CurrencySymbol, Value)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
-import Data.Map as Map
 
 newtype TxInfo = TxInfo
   { txInfoInputs :: Array TxInInfo
@@ -65,34 +55,6 @@ instance ToData TxInfo where
 instance FromData TxInfo where
   fromData pd = genericFromData pd
 
-instance EncodeJson TxInfo where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                   { txInfoInputs: E.value :: _ (Array TxInInfo)
-                                                   , txInfoOutputs: E.value :: _ (Array TxOut)
-                                                   , txInfoFee: E.value :: _ Value
-                                                   , txInfoMint: E.value :: _ Value
-                                                   , txInfoDCert: E.value :: _ (Array DCert)
-                                                   , txInfoWdrl: E.value :: _ (Array (Tuple StakingCredential BigInt))
-                                                   , txInfoValidRange: E.value :: _ (Interval POSIXTime)
-                                                   , txInfoSignatories: E.value :: _ (Array PubKeyHash)
-                                                   , txInfoData: E.value :: _ (Array (Tuple DatumHash Datum))
-                                                   , txInfoId: E.value :: _ TxId
-                                                   })
-
-instance DecodeJson TxInfo where
-  decodeJson = defer \_ -> D.decode $ (TxInfo <$> D.record "TxInfo"
-      { txInfoInputs: D.value :: _ (Array TxInInfo)
-      , txInfoOutputs: D.value :: _ (Array TxOut)
-      , txInfoFee: D.value :: _ Value
-      , txInfoMint: D.value :: _ Value
-      , txInfoDCert: D.value :: _ (Array DCert)
-      , txInfoWdrl: D.value :: _ (Array (Tuple StakingCredential BigInt))
-      , txInfoValidRange: D.value :: _ (Interval POSIXTime)
-      , txInfoSignatories: D.value :: _ (Array PubKeyHash)
-      , txInfoData: D.value :: _ (Array (Tuple DatumHash Datum))
-      , txInfoId: D.value :: _ TxId
-      })
-
 --------------------------------------------------------------------------------
 
 _TxInfo :: Iso' TxInfo {txInfoInputs :: Array TxInInfo, txInfoOutputs :: Array TxOut, txInfoFee :: Value, txInfoMint :: Value, txInfoDCert :: Array DCert, txInfoWdrl :: Array (Tuple StakingCredential BigInt), txInfoValidRange :: Interval POSIXTime, txInfoSignatories :: Array PubKeyHash, txInfoData :: Array (Tuple DatumHash Datum), txInfoId :: TxId}
@@ -120,18 +82,6 @@ instance ToData TxInInfo where
 
 instance FromData TxInInfo where
   fromData pd = genericFromData pd
-
-instance EncodeJson TxInInfo where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                   { txInInfoOutRef: E.value :: _ TxOutRef
-                                                   , txInInfoResolved: E.value :: _ TxOut
-                                                   })
-
-instance DecodeJson TxInInfo where
-  decodeJson = defer \_ -> D.decode $ (TxInInfo <$> D.record "TxInInfo"
-      { txInInfoOutRef: D.value :: _ TxOutRef
-      , txInInfoResolved: D.value :: _ TxOut
-      })
 
 --------------------------------------------------------------------------------
 
@@ -161,18 +111,6 @@ instance ToData ScriptContext where
 instance FromData ScriptContext where
   fromData pd = genericFromData pd
 
-instance EncodeJson ScriptContext where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                   { scriptContextTxInfo: E.value :: _ TxInfo
-                                                   , scriptContextPurpose: E.value :: _ ScriptPurpose
-                                                   })
-
-instance DecodeJson ScriptContext where
-  decodeJson = defer \_ -> D.decode $ (ScriptContext <$> D.record "ScriptContext"
-      { scriptContextTxInfo: D.value :: _ TxInfo
-      , scriptContextPurpose: D.value :: _ ScriptPurpose
-      })
-
 --------------------------------------------------------------------------------
 
 _ScriptContext :: Iso' ScriptContext {scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose}
@@ -199,22 +137,6 @@ instance ToData ScriptPurpose where
 
 instance FromData ScriptPurpose where
   fromData pd = genericFromData pd
-
-instance EncodeJson ScriptPurpose where
-  encodeJson = defer \_ -> case _ of
-    Minting a -> E.encodeTagged "Minting" a E.value
-    Spending a -> E.encodeTagged "Spending" a E.value
-    Rewarding a -> E.encodeTagged "Rewarding" a E.value
-    Certifying a -> E.encodeTagged "Certifying" a E.value
-
-instance DecodeJson ScriptPurpose where
-  decodeJson = defer \_ -> D.decode
-    $ D.sumType "ScriptPurpose" $ Map.fromFoldable
-      [ "Minting" /\ D.content (Minting <$> D.value)
-      , "Spending" /\ D.content (Spending <$> D.value)
-      , "Rewarding" /\ D.content (Rewarding <$> D.value)
-      , "Certifying" /\ D.content (Certifying <$> D.value)
-      ]
 
 --------------------------------------------------------------------------------
 

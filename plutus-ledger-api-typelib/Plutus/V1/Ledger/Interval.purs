@@ -4,27 +4,17 @@ module Plutus.V1.Ledger.Interval where
 import Prelude
 
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
-import Control.Lazy (defer)
-import Data.Argonaut.Core (jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
-import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
-import Data.Map as Map
 
 newtype Interval a = Interval
   { ivFrom :: LowerBound a
@@ -46,18 +36,6 @@ instance (ToData a) => ToData (Interval a) where
 
 instance (FromData a) => FromData (Interval a) where
   fromData pd = genericFromData pd
-
-instance (EncodeJson a) => EncodeJson (Interval a) where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                   { ivFrom: E.value :: _ (LowerBound a)
-                                                   , ivTo: E.value :: _ (UpperBound a)
-                                                   })
-
-instance (DecodeJson a) => DecodeJson (Interval a) where
-  decodeJson = defer \_ -> D.decode $ (Interval <$> D.record "Interval"
-      { ivFrom: D.value :: _ (LowerBound a)
-      , ivTo: D.value :: _ (UpperBound a)
-      })
 
 --------------------------------------------------------------------------------
 
@@ -82,12 +60,6 @@ instance (ToData a) => ToData (LowerBound a) where
 instance (FromData a) => FromData (LowerBound a) where
   fromData pd = genericFromData pd
 
-instance (EncodeJson a) => EncodeJson (LowerBound a) where
-  encodeJson = defer \_ -> E.encode $ (case _ of LowerBound a b -> (a /\ b)) >$< (E.tuple (E.value >/\< E.value))
-
-instance (DecodeJson a) => DecodeJson (LowerBound a) where
-  decodeJson = defer \_ -> D.decode $ (D.tuple $ LowerBound </$\>D.value </*\> D.value)
-
 --------------------------------------------------------------------------------
 
 _LowerBound :: forall a. Iso' (LowerBound a) {a :: Extended a, b :: Boolean}
@@ -110,12 +82,6 @@ instance (ToData a) => ToData (UpperBound a) where
 
 instance (FromData a) => FromData (UpperBound a) where
   fromData pd = genericFromData pd
-
-instance (EncodeJson a) => EncodeJson (UpperBound a) where
-  encodeJson = defer \_ -> E.encode $ (case _ of UpperBound a b -> (a /\ b)) >$< (E.tuple (E.value >/\< E.value))
-
-instance (DecodeJson a) => DecodeJson (UpperBound a) where
-  decodeJson = defer \_ -> D.decode $ (D.tuple $ UpperBound </$\>D.value </*\> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -142,20 +108,6 @@ instance (ToData a) => ToData (Extended a) where
 
 instance (FromData a) => FromData (Extended a) where
   fromData pd = genericFromData pd
-
-instance (EncodeJson a) => EncodeJson (Extended a) where
-  encodeJson = defer \_ -> case _ of
-    NegInf -> encodeJson { tag: "NegInf" }
-    Finite a -> E.encodeTagged "Finite" a E.value
-    PosInf -> encodeJson { tag: "PosInf" }
-
-instance (DecodeJson a) => DecodeJson (Extended a) where
-  decodeJson = defer \_ -> D.decode
-    $ D.sumType "Extended" $ Map.fromFoldable
-      [ "NegInf" /\ pure NegInf
-      , "Finite" /\ D.content (Finite <$> D.value)
-      , "PosInf" /\ pure PosInf
-      ]
 
 --------------------------------------------------------------------------------
 

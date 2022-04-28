@@ -4,29 +4,19 @@ module Plutus.V1.Ledger.Scripts where
 import Prelude
 
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
-import Control.Lazy (defer)
-import Data.Argonaut.Core (jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
-import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 import Types.PlutusData (PlutusData)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
-import Data.Map as Map
 
 newtype Redeemer = Redeemer { getRedeemer :: PlutusData }
 
@@ -45,13 +35,6 @@ instance ToData Redeemer where
 
 instance FromData Redeemer where
   fromData pd = genericFromData pd
-
-instance EncodeJson Redeemer where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                 { getRedeemer: E.value :: _ PlutusData })
-
-instance DecodeJson Redeemer where
-  decodeJson = defer \_ -> D.decode $ (Redeemer <$> D.record "Redeemer" { getRedeemer: D.value :: _ PlutusData })
 
 --------------------------------------------------------------------------------
 
@@ -78,13 +61,6 @@ instance ToData Datum where
 instance FromData Datum where
   fromData pd = genericFromData pd
 
-instance EncodeJson Datum where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                 { getDatum: E.value :: _ PlutusData })
-
-instance DecodeJson Datum where
-  decodeJson = defer \_ -> D.decode $ (Datum <$> D.record "Datum" { getDatum: D.value :: _ PlutusData })
-
 --------------------------------------------------------------------------------
 
 _Datum :: Iso' Datum {getDatum :: PlutusData}
@@ -109,13 +85,6 @@ instance ToData ScriptHash where
 
 instance FromData ScriptHash where
   fromData pd = genericFromData pd
-
-instance EncodeJson ScriptHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                 { getScriptHash: E.value :: _ ByteArray })
-
-instance DecodeJson ScriptHash where
-  decodeJson = defer \_ -> D.decode $ (ScriptHash <$> D.record "ScriptHash" { getScriptHash: D.value :: _ ByteArray })
 
 --------------------------------------------------------------------------------
 
@@ -142,12 +111,6 @@ instance ToData ValidatorHash where
 instance FromData ValidatorHash where
   fromData pd = genericFromData pd
 
-instance EncodeJson ValidatorHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
-
-instance DecodeJson ValidatorHash where
-  decodeJson = defer \_ -> D.decode $ (ValidatorHash <$> D.value)
-
 --------------------------------------------------------------------------------
 
 _ValidatorHash :: Iso' ValidatorHash ByteArray
@@ -172,12 +135,6 @@ instance ToData DatumHash where
 
 instance FromData DatumHash where
   fromData pd = genericFromData pd
-
-instance EncodeJson DatumHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
-
-instance DecodeJson DatumHash where
-  decodeJson = defer \_ -> D.decode $ (DatumHash <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -204,12 +161,6 @@ instance ToData MintingPolicyHash where
 instance FromData MintingPolicyHash where
   fromData pd = genericFromData pd
 
-instance EncodeJson MintingPolicyHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
-
-instance DecodeJson MintingPolicyHash where
-  decodeJson = defer \_ -> D.decode $ (MintingPolicyHash <$> D.value)
-
 --------------------------------------------------------------------------------
 
 _MintingPolicyHash :: Iso' MintingPolicyHash ByteArray
@@ -234,12 +185,6 @@ instance ToData StakeValidatorHash where
 
 instance FromData StakeValidatorHash where
   fromData pd = genericFromData pd
-
-instance EncodeJson StakeValidatorHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
-
-instance DecodeJson StakeValidatorHash where
-  decodeJson = defer \_ -> D.decode $ (StakeValidatorHash <$> D.value)
 
 --------------------------------------------------------------------------------
 

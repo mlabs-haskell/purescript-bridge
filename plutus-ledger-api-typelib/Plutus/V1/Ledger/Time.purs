@@ -4,28 +4,18 @@ module Plutus.V1.Ledger.Time where
 import Prelude
 
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
-import Control.Lazy (defer)
-import Data.Argonaut.Core (jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
-import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
-import Data.Map as Map
 
 newtype DiffMilliSeconds = DiffMilliSeconds BigInt
 
@@ -48,12 +38,6 @@ instance ToData DiffMilliSeconds where
 
 instance FromData DiffMilliSeconds where
   fromData pd = genericFromData pd
-
-instance EncodeJson DiffMilliSeconds where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
-
-instance DecodeJson DiffMilliSeconds where
-  decodeJson = defer \_ -> D.decode $ (DiffMilliSeconds <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -83,13 +67,6 @@ instance ToData POSIXTime where
 
 instance FromData POSIXTime where
   fromData pd = genericFromData pd
-
-instance EncodeJson POSIXTime where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                 { getPOSIXTime: E.value :: _ BigInt })
-
-instance DecodeJson POSIXTime where
-  decodeJson = defer \_ -> D.decode $ (POSIXTime <$> D.record "POSIXTime" { getPOSIXTime: D.value :: _ BigInt })
 
 --------------------------------------------------------------------------------
 
