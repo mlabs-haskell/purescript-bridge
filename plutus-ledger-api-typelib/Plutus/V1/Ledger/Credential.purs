@@ -4,19 +4,30 @@ module Plutus.V1.Ledger.Credential where
 import Prelude
 
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
+import Control.Lazy (defer)
+import Data.Argonaut.Core (jsonNull)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
+import Data.Newtype (unwrap)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import Plutus.V1.Ledger.Scripts (ValidatorHash)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import Data.Argonaut.Decode.Aeson as D
+import Data.Argonaut.Encode.Aeson as E
+import Data.Map as Map
 
 data StakingCredential
   = StakingHash Credential
@@ -35,6 +46,18 @@ instance ToData StakingCredential where
 
 instance FromData StakingCredential where
   fromData pd = genericFromData pd
+
+instance EncodeJson StakingCredential where
+  encodeJson = defer \_ -> case _ of
+    StakingHash a -> E.encodeTagged "StakingHash" a E.value
+    StakingPtr a b c -> E.encodeTagged "StakingPtr" (a /\ b /\ c) (E.tuple (E.value >/\< E.value >/\< E.value))
+
+instance DecodeJson StakingCredential where
+  decodeJson = defer \_ -> D.decode
+    $ D.sumType "StakingCredential" $ Map.fromFoldable
+      [ "StakingHash" /\ D.content (StakingHash <$> D.value)
+      , "StakingPtr" /\ D.content (D.tuple $ StakingPtr </$\>D.value </*\> D.value </*\> D.value)
+      ]
 
 --------------------------------------------------------------------------------
 
@@ -67,6 +90,18 @@ instance ToData Credential where
 
 instance FromData Credential where
   fromData pd = genericFromData pd
+
+instance EncodeJson Credential where
+  encodeJson = defer \_ -> case _ of
+    PubKeyCredential a -> E.encodeTagged "PubKeyCredential" a E.value
+    ScriptCredential a -> E.encodeTagged "ScriptCredential" a E.value
+
+instance DecodeJson Credential where
+  decodeJson = defer \_ -> D.decode
+    $ D.sumType "Credential" $ Map.fromFoldable
+      [ "PubKeyCredential" /\ D.content (PubKeyCredential <$> D.value)
+      , "ScriptCredential" /\ D.content (ScriptCredential <$> D.value)
+      ]
 
 --------------------------------------------------------------------------------
 

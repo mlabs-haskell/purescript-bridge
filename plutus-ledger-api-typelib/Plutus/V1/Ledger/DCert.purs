@@ -4,19 +4,30 @@ module Plutus.V1.Ledger.DCert where
 import Prelude
 
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
+import Control.Lazy (defer)
+import Data.Argonaut.Core (jsonNull)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
+import Data.Newtype (unwrap)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import Data.Argonaut.Decode.Aeson as D
+import Data.Argonaut.Encode.Aeson as E
+import Data.Map as Map
 
 data DCert
   = DCertDelegRegKey StakingCredential
@@ -40,6 +51,28 @@ instance ToData DCert where
 
 instance FromData DCert where
   fromData pd = genericFromData pd
+
+instance EncodeJson DCert where
+  encodeJson = defer \_ -> case _ of
+    DCertDelegRegKey a -> E.encodeTagged "DCertDelegRegKey" a E.value
+    DCertDelegDeRegKey a -> E.encodeTagged "DCertDelegDeRegKey" a E.value
+    DCertDelegDelegate a b -> E.encodeTagged "DCertDelegDelegate" (a /\ b) (E.tuple (E.value >/\< E.value))
+    DCertPoolRegister a b -> E.encodeTagged "DCertPoolRegister" (a /\ b) (E.tuple (E.value >/\< E.value))
+    DCertPoolRetire a b -> E.encodeTagged "DCertPoolRetire" (a /\ b) (E.tuple (E.value >/\< E.value))
+    DCertGenesis -> encodeJson { tag: "DCertGenesis" }
+    DCertMir -> encodeJson { tag: "DCertMir" }
+
+instance DecodeJson DCert where
+  decodeJson = defer \_ -> D.decode
+    $ D.sumType "DCert" $ Map.fromFoldable
+      [ "DCertDelegRegKey" /\ D.content (DCertDelegRegKey <$> D.value)
+      , "DCertDelegDeRegKey" /\ D.content (DCertDelegDeRegKey <$> D.value)
+      , "DCertDelegDelegate" /\ D.content (D.tuple $ DCertDelegDelegate </$\>D.value </*\> D.value)
+      , "DCertPoolRegister" /\ D.content (D.tuple $ DCertPoolRegister </$\>D.value </*\> D.value)
+      , "DCertPoolRetire" /\ D.content (D.tuple $ DCertPoolRetire </$\>D.value </*\> D.value)
+      , "DCertGenesis" /\ pure DCertGenesis
+      , "DCertMir" /\ pure DCertMir
+      ]
 
 --------------------------------------------------------------------------------
 
