@@ -133,8 +133,11 @@ test-suite tests
     , containers
     , directory
     , hspec
+    , hspec-core
     , hspec-expectations
     , HUnit
+    , plutus-ledger-api
+    , plutus-tx
     , process
     , purescript-bridge
     , QuickCheck

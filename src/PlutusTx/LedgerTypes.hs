@@ -1,7 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 
-module PlutusTx.LedgerTypes where
+module PlutusTx.LedgerTypes (writeLedgerTypes, writeLedgerTypesAnd, plutusLedgerApiBridge) where
 
 import Language.PureScript.Bridge (
   BridgeBuilder,
@@ -16,10 +15,12 @@ import Language.PureScript.Bridge (
     _typePackage,
     _typeParameters
   ),
+  argonaut,
   buildBridge,
   defaultBridge,
   extremelyUnsafeMkSumType,
   genericShow,
+  mkSumType,
   mkSumTypeIndexed,
   order,
   psTypeParameters,
@@ -44,10 +45,12 @@ import Plutus.V1.Ledger.Interval (Extended, Interval, LowerBound, UpperBound)
 import Plutus.V1.Ledger.Scripts (
   Datum,
   DatumHash,
+  MintingPolicy,
   MintingPolicyHash,
   Redeemer,
   ScriptHash,
   StakeValidatorHash,
+  Validator,
   ValidatorHash,
  )
 import Plutus.V1.Ledger.Slot (Slot)
@@ -84,16 +87,19 @@ writeLedgerTypesAnd :: FilePath -> [SumType 'Haskell] -> IO ()
 writeLedgerTypesAnd fp myTypes =
   writePSTypes
     fp
-    (buildBridge (defaultBridge <|> origToCtlNativePrimitivesBridge <|> origToCtlNativeOverriddenBridge))
+    (buildBridge plutusLedgerApiBridge)
     (ledgerTypes <> myTypes)
+
+plutusLedgerApiBridge :: BridgeBuilder PSType
+plutusLedgerApiBridge = defaultBridge <|> origToCtlNativePrimitivesBridge <|> origToCtlNativeOverriddenBridge <|> origToCtlNativeScriptsBridge
 
 origToCtlNativePrimitivesBridge :: BridgeBuilder PSType
 origToCtlNativePrimitivesBridge =
   -- Primitive types
-  cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinByteString" "Types.ByteArray" "ByteArray"
-    <|> cbtxBridge "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
-    <|> cbtxBridge "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
-    <|> cbtxBridge "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
+  ctlBridgePart "PlutusTx.Builtins.Internal" "BuiltinByteString" "Types.ByteArray" "ByteArray"
+    <|> ctlBridgePart "PlutusTx.Builtins.Internal" "BuiltinData" "Types.PlutusData" "PlutusData"
+    <|> ctlBridgePart "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
+    <|> ctlBridgePart "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
     <|> mapBridge
 
 mapBridge :: BridgePart
@@ -104,10 +110,15 @@ mapBridge = do
 
 origToCtlNativeOverriddenBridge :: BridgeBuilder PSType
 origToCtlNativeOverriddenBridge =
-  cbtxBridge "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
-    <|> cbtxBridge "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
-    <|> cbtxBridge "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
-    <|> cbtxBridge "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
+  ctlBridgePart "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
+    <|> ctlBridgePart "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
+    <|> ctlBridgePart "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
+    <|> ctlBridgePart "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
+
+origToCtlNativeScriptsBridge :: BridgeBuilder PSType
+origToCtlNativeScriptsBridge =
+  ctlBridgePart "Plutus.V1.Ledger.Scripts" "MintingPolicy" "Types.Scripts" "MintingPolicy"
+    <|> ctlBridgePart "Plutus.V1.Ledger.Scripts" "Validator" "Types.Scripts" "Validator"
 
 _overriddenTypes :: [SumType 'Haskell]
 _overriddenTypes =
@@ -115,6 +126,8 @@ _overriddenTypes =
   , order $ extremelyUnsafeMkSumType @CurrencySymbol
   , order $ extremelyUnsafeMkSumType @TokenName
   , extremelyUnsafeMkSumType @Address
+  , argonaut $ mkSumType @MintingPolicy
+  , argonaut $ mkSumType @Validator
   ]
 
 ledgerTypes :: [SumType 'Haskell]
@@ -153,8 +166,8 @@ ledgerTypes =
         , mkSumTypeIndexed @ScriptPurpose
         ]
 
-cbtxBridge :: Text -> Text -> Text -> Text -> BridgePart
-cbtxBridge haskTypeModule haskTypeName psTypeModule psTypeName = do
+ctlBridgePart :: Text -> Text -> Text -> Text -> BridgePart
+ctlBridgePart haskTypeModule haskTypeName psTypeModule psTypeName = do
   typeModule ^== haskTypeModule
   typeName ^== haskTypeName
   return $
