@@ -128,7 +128,7 @@ cs :: [(Int, DataConstructor 'PureScript)]
 psB :: SumType 'PureScript
 psB@(SumType t cs _) = bridgeSumType (buildBridge defaultBridge) b
 
-data RecordWithPlutusScript = RecordWithPlutusScript
+data RecordWithPlutusScripts = RecordWithPlutusScripts
   { mintingPolicy :: MintingPolicy
   , validator :: Validator
   }

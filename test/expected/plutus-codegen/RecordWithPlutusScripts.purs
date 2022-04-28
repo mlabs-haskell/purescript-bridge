@@ -18,23 +18,23 @@ import Data.Argonaut.Decode.Aeson as D
 import Data.Argonaut.Encode.Aeson as E
 import Data.Map as Map
 
-newtype RecordWithPlutusScript = RecordWithPlutusScript
+newtype RecordWithPlutusScripts = RecordWithPlutusScripts
   { mintingPolicy :: MintingPolicy
   , validator :: Validator
   }
 
-instance EncodeJson RecordWithPlutusScript where
+instance EncodeJson RecordWithPlutusScripts where
   encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
                                                    { mintingPolicy: E.value :: _ MintingPolicy
                                                    , validator: E.value :: _ Validator
                                                    })
 
-instance DecodeJson RecordWithPlutusScript where
-  decodeJson = defer \_ -> D.decode $ (RecordWithPlutusScript <$> D.record "RecordWithPlutusScript"
+instance DecodeJson RecordWithPlutusScripts where
+  decodeJson = defer \_ -> D.decode $ (RecordWithPlutusScripts <$> D.record "RecordWithPlutusScripts"
       { mintingPolicy: D.value :: _ MintingPolicy
       , validator: D.value :: _ Validator
       })
 
-derive instance Generic RecordWithPlutusScript _
+derive instance Generic RecordWithPlutusScripts _
 
-derive instance Newtype RecordWithPlutusScript _
+derive instance Newtype RecordWithPlutusScripts _

@@ -61,7 +61,7 @@ import TestData (
   Bar,
   Foo,
   Func,
-  RecordWithPlutusScript,
+  RecordWithPlutusScripts,
   SingleProduct,
   SingleRecord,
   SingleValueConstr,
@@ -335,13 +335,25 @@ plutusTests = do
            in m `shouldBe` txt
       )
     itWithFile
-      "test/expected/plutus-codegen/RecordWithPlutus.purs"
-      "tests the Plutus.V1.Ledger.Scripts generation"
+      "test/expected/plutus-codegen/RecordWithPlutusScripts.purs"
+      "tests the Plutus.V1.Ledger.Scripts generation without PlutusData"
       ( \txt ->
           let advanced' =
                 bridgeSumType
                   (buildBridge plutusLedgerApiBridge)
-                  (argonaut $ mkSumType @RecordWithPlutusScript)
+                  (argonaut $ mkSumType @RecordWithPlutusScripts)
+              modules = sumTypeToModule advanced'
+              m = head . map (moduleToText settings) . Map.elems $ modules
+           in m `shouldBe` txt
+      )
+    itWithFile
+      "test/expected/plutus-codegen/TwoRecordsWithDataAndJson.purs"
+      "tests the generation with JSON instances"
+      ( \txt ->
+          let advanced' =
+                bridgeSumType
+                  (buildBridge plutusLedgerApiBridge)
+                  (argonaut $ mkSumTypeIndexed @TwoRecords)
               modules = sumTypeToModule advanced'
               m = head . map (moduleToText settings) . Map.elems $ modules
            in m `shouldBe` txt
