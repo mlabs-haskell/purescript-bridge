@@ -50,7 +50,7 @@ import Language.PureScript.Bridge.SumType (
     Functor,
     Generic,
     GenericShow,
-    HasConstrIndex,
+    Plutus,
     Json,
     Newtype,
     Ord,
@@ -90,9 +90,9 @@ import System.FilePath (
   (</>),
  )
 import Text.PrettyPrint.Leijen.Text (
+  align,
   Doc,
   backslash,
-  brackets,
   char,
   colon,
   comma,
@@ -101,7 +101,6 @@ import Text.PrettyPrint.Leijen.Text (
   hang,
   hsep,
   indent,
-  int,
   isEmpty,
   lbrace,
   lbracket,
@@ -120,6 +119,7 @@ import Text.PrettyPrint.Leijen.Text (
   textStrict,
   vsep,
   (<+>),
+  (<$$>),
  )
 
 renderText :: Doc -> Text
@@ -363,24 +363,48 @@ instances st@(SumType t cs is) = go <$> is
         (mkType "FromData" [t])
         (constrainWith "FromData")
         ["fromData pd = genericFromData pd"]
-    go HasConstrIndex =
-      mkInstance
-        (mkType "HasConstrIndices" [t])
-        (const [])
-        ["constrIndices _ = fromConstr2Index " <> prettyIndices cs]
+    go Plutus =
+      text "instance HasPlutusSchema"
+      <+> typeInfoToDoc t
+      <$$> indent 2 (mkPlutusSchema cs)
       where
-        prettyIndices :: [(Int, DataConstructor 'PureScript)] -> Doc
-        prettyIndices [] = error "empty list of indices!"
-        prettyIndices xs = listify (map mkIndex xs)
+        mkPlutusSchema :: [(Int, DataConstructor 'PureScript)] -> Doc
+        mkPlutusSchema [] = text "PNil" -- maybe error out?
+        mkPlutusSchema xs = schemafy (map mkSchemaEntry xs)
           where
+            mkField :: (Doc -> Doc -> Doc) -> Text -> Doc -> Doc
+            mkField f lbl val = quote lbl <+> ":=" `f` val
+
+            pnil :: Doc
+            pnil = text "PNil"
+
+            atIndex :: Doc -> Int -> Doc
+            atIndex d i = align $ d <$$> (text "@@" <+> int2NatDoc i)
+
+            mkSchemaEntry (ix,DataConstructor cname cargs) = case cargs of
+              Record recEntries -> atIndex
+                                       (mkField (<$$>) cname $ indent  2 . mkRecord . NE.toList $ recEntries)
+                                       ix
+              _                 ->  atIndex (mkField (<+>) cname  pnil) ix
+             where
+               mkRecord :: [RecordEntry 'PureScript] -> Doc
+               mkRecord =  schemafy . map rec2Doc
+                 where
+                   rec2Doc :: RecordEntry 'PureScript -> Doc
+                   rec2Doc (RecordEntry lbl val) = mkField (<+>) lbl
+                                                   $ text "I"
+                                                   <+> typeInfoToDoc val
             quote :: Text -> Doc
             quote = dquotes . textStrict
 
-            listify :: [Doc] -> Doc
-            listify txts = brackets $ foldr (\(x :: Doc) (acc :: Doc) -> if isEmpty acc then x else x <> "," <> acc) "" txts
+            schemafy :: [Doc] -> Doc
+            schemafy txts =
+              parens
+              $ foldr (\(x :: Doc) (acc :: Doc) ->
+                         if isEmpty acc
+                         then x <$$> ":+" <+> pnil
+                         else x <$$> ":+" <+> acc) "" txts
 
-            mkIndex :: forall lang. (Int, DataConstructor lang) -> Doc
-            mkIndex (i, DataConstructor name _) = text "Tuple" <+> quote name <+> int i
     go Bounded =
       mkInstance
         (mkType "Bounded" [t])
@@ -804,3 +828,10 @@ encloseVsep left right sp ds =
     [] -> left <> right
     [d] -> left <+> d <+> right
     _ -> nest 2 $ linebreak <> vsep (zipWith (<+>) (left : repeat (hang 2 sp)) ds <> [right])
+
+int2NatDoc :: Int -> Doc
+int2NatDoc = parens . go
+  where
+    go n | n < 0  = error "Indices must be positive!"
+         | n == 0 = text "Z"
+         | otherwise = text "S" <+> int2NatDoc (n-1)

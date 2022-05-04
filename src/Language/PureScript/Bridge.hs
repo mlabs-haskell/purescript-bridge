@@ -326,7 +326,7 @@ bridgeSumType br (SumType t cs is) =
     bridgeInstance Ord = Ord
     bridgeInstance Generic = Generic
     bridgeInstance Newtype = Newtype
-    bridgeInstance HasConstrIndex = HasConstrIndex
+    bridgeInstance Plutus = Plutus
     bridgeInstance ToData = ToData
     bridgeInstance FromData = FromData
 

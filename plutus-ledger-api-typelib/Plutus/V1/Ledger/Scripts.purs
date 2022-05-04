@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Scripts where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -15,6 +14,7 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import Types.ByteArray (ByteArray)
 import Types.PlutusData (PlutusData)
 
@@ -27,8 +27,12 @@ derive instance Generic Redeemer _
 
 derive instance Newtype Redeemer _
 
-instance HasConstrIndices Redeemer where
-  constrIndices _ = fromConstr2Index [Tuple "Redeemer" 0]
+instance HasPlutusSchema Redeemer
+  ("Redeemer" :=
+     ("getRedeemer" := I PlutusData
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData Redeemer where
   toData x = genericToData x
@@ -52,8 +56,12 @@ derive instance Generic Datum _
 
 derive instance Newtype Datum _
 
-instance HasConstrIndices Datum where
-  constrIndices _ = fromConstr2Index [Tuple "Datum" 0]
+instance HasPlutusSchema Datum
+  ("Datum" :=
+     ("getDatum" := I PlutusData
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData Datum where
   toData x = genericToData x
@@ -77,8 +85,12 @@ derive instance Generic ScriptHash _
 
 derive instance Newtype ScriptHash _
 
-instance HasConstrIndices ScriptHash where
-  constrIndices _ = fromConstr2Index [Tuple "ScriptHash" 0]
+instance HasPlutusSchema ScriptHash
+  ("ScriptHash" :=
+     ("getScriptHash" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData ScriptHash where
   toData x = genericToData x
@@ -102,8 +114,10 @@ derive instance Generic ValidatorHash _
 
 derive instance Newtype ValidatorHash _
 
-instance HasConstrIndices ValidatorHash where
-  constrIndices _ = fromConstr2Index [Tuple "ValidatorHash" 0]
+instance HasPlutusSchema ValidatorHash
+  ("ValidatorHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
 instance ToData ValidatorHash where
   toData x = genericToData x
@@ -127,8 +141,10 @@ derive instance Generic DatumHash _
 
 derive instance Newtype DatumHash _
 
-instance HasConstrIndices DatumHash where
-  constrIndices _ = fromConstr2Index [Tuple "DatumHash" 0]
+instance HasPlutusSchema DatumHash
+  ("DatumHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
 instance ToData DatumHash where
   toData x = genericToData x
@@ -152,8 +168,10 @@ derive instance Generic MintingPolicyHash _
 
 derive instance Newtype MintingPolicyHash _
 
-instance HasConstrIndices MintingPolicyHash where
-  constrIndices _ = fromConstr2Index [Tuple "MintingPolicyHash" 0]
+instance HasPlutusSchema MintingPolicyHash
+  ("MintingPolicyHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
 instance ToData MintingPolicyHash where
   toData x = genericToData x
@@ -177,8 +195,10 @@ derive instance Generic StakeValidatorHash _
 
 derive instance Newtype StakeValidatorHash _
 
-instance HasConstrIndices StakeValidatorHash where
-  constrIndices _ = fromConstr2Index [Tuple "StakeValidatorHash" 0]
+instance HasPlutusSchema StakeValidatorHash
+  ("StakeValidatorHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
 instance ToData StakeValidatorHash where
   toData x = genericToData x

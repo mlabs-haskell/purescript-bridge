@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Credential where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -17,6 +16,7 @@ import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import Plutus.V1.Ledger.Scripts (ValidatorHash)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 
 data StakingCredential
   = StakingHash Credential
@@ -27,8 +27,12 @@ instance Show StakingCredential where
 
 derive instance Generic StakingCredential _
 
-instance HasConstrIndices StakingCredential where
-  constrIndices _ = fromConstr2Index [Tuple "StakingHash" 0,Tuple "StakingPtr" 1]
+instance HasPlutusSchema StakingCredential
+  ("StakingHash" := PNil
+   @@ (Z)
+  :+ "StakingPtr" := PNil
+     @@ (S (Z))
+  :+ PNil)
 
 instance ToData StakingCredential where
   toData x = genericToData x
@@ -59,8 +63,12 @@ instance Show Credential where
 
 derive instance Generic Credential _
 
-instance HasConstrIndices Credential where
-  constrIndices _ = fromConstr2Index [Tuple "PubKeyCredential" 0,Tuple "ScriptCredential" 1]
+instance HasPlutusSchema Credential
+  ("PubKeyCredential" := PNil
+   @@ (Z)
+  :+ "ScriptCredential" := PNil
+     @@ (S (Z))
+  :+ PNil)
 
 instance ToData Credential where
   toData x = genericToData x

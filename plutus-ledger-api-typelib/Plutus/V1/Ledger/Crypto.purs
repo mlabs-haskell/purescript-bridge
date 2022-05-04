@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Crypto where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -16,6 +15,7 @@ import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import Types.ByteArray (ByteArray)
 
 newtype PubKey = PubKey { getPubKey :: LedgerBytes }
@@ -27,8 +27,12 @@ derive instance Generic PubKey _
 
 derive instance Newtype PubKey _
 
-instance HasConstrIndices PubKey where
-  constrIndices _ = fromConstr2Index [Tuple "PubKey" 0]
+instance HasPlutusSchema PubKey
+  ("PubKey" :=
+     ("getPubKey" := I LedgerBytes
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData PubKey where
   toData x = genericToData x
@@ -52,8 +56,12 @@ derive instance Generic PubKeyHash _
 
 derive instance Newtype PubKeyHash _
 
-instance HasConstrIndices PubKeyHash where
-  constrIndices _ = fromConstr2Index [Tuple "PubKeyHash" 0]
+instance HasPlutusSchema PubKeyHash
+  ("PubKeyHash" :=
+     ("getPubKeyHash" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData PubKeyHash where
   toData x = genericToData x
@@ -77,8 +85,12 @@ derive instance Generic PrivateKey _
 
 derive instance Newtype PrivateKey _
 
-instance HasConstrIndices PrivateKey where
-  constrIndices _ = fromConstr2Index [Tuple "PrivateKey" 0]
+instance HasPlutusSchema PrivateKey
+  ("PrivateKey" :=
+     ("getPrivateKey" := I LedgerBytes
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData PrivateKey where
   toData x = genericToData x
@@ -102,8 +114,12 @@ derive instance Generic Signature _
 
 derive instance Newtype Signature _
 
-instance HasConstrIndices Signature where
-  constrIndices _ = fromConstr2Index [Tuple "Signature" 0]
+instance HasPlutusSchema Signature
+  ("Signature" :=
+     ("getSignature" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData Signature where
   toData x = genericToData x

@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Time where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -16,6 +15,7 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 
 newtype DiffMilliSeconds = DiffMilliSeconds BigInt
 
@@ -30,8 +30,10 @@ derive instance Generic DiffMilliSeconds _
 
 derive instance Newtype DiffMilliSeconds _
 
-instance HasConstrIndices DiffMilliSeconds where
-  constrIndices _ = fromConstr2Index [Tuple "DiffMilliSeconds" 0]
+instance HasPlutusSchema DiffMilliSeconds
+  ("DiffMilliSeconds" := PNil
+   @@ (Z)
+  :+ PNil)
 
 instance ToData DiffMilliSeconds where
   toData x = genericToData x
@@ -59,8 +61,12 @@ derive instance Generic POSIXTime _
 
 derive instance Newtype POSIXTime _
 
-instance HasConstrIndices POSIXTime where
-  constrIndices _ = fromConstr2Index [Tuple "POSIXTime" 0]
+instance HasPlutusSchema POSIXTime
+  ("POSIXTime" :=
+     ("getPOSIXTime" := I BigInt
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData POSIXTime where
   toData x = genericToData x

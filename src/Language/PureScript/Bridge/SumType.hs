@@ -112,7 +112,7 @@ extremelyUnsafeMkSumType ::
   (Generic t, Typeable t, GDataConstructor (Rep t)) =>
   SumType 'Haskell
 extremelyUnsafeMkSumType = case mkSumType @t of
-  SumType tInfo constructors instances -> SumType tInfo constructors (instances <> [HasConstrIndex, ToData, FromData])
+  SumType tInfo constructors instances -> SumType tInfo constructors (instances <> [Plutus, ToData, FromData])
 
 {- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
    index information.
@@ -122,7 +122,7 @@ mkSumTypeIndexed_ ::
   (Generic t, Typeable t, c t, GDataConstructor (Rep t)) =>
   (forall x. c x => [(Int, String)]) ->
   SumType 'Haskell
-mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : HasConstrIndex : ToData : FromData : maybeToList (nootype . map snd $ constructors))
+mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : Plutus  : ToData : FromData : maybeToList (nootype . map snd $ constructors))
   where
     ixs = M.fromList . map (\(i, t) -> (T.pack t, i)) $ f @t
     constructors =
@@ -160,7 +160,7 @@ data Instance (lang :: Language)
   | Ord
   | Enum
   | Bounded
-  | HasConstrIndex
+  | Plutus
   | ToData
   | FromData
   | Custom (CustomInstance lang)
@@ -325,8 +325,8 @@ instanceToTypes Enum =
 instanceToTypes Bounded =
   pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Bounded" []
 -- fix this later (i don't think it matters now)
-instanceToTypes HasConstrIndex =
-  pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "ConstrIndices" "HasConstrIndices" []
+instanceToTypes Plutus =
+  pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "TypeLevel.DataSchema" "HasPlutusSchema" []
 instanceToTypes ToData =
   pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "ToData" "ToData" []
 instanceToTypes FromData =
@@ -363,9 +363,23 @@ instanceToImportLines Bounded =
   importsFromList
     [ ImportLine "Data.Bounded.Generic" $ Set.fromList ["genericBottom", "genericTop"]
     ]
-instanceToImportLines HasConstrIndex =
+instanceToImportLines Plutus =
   importsFromList
-    [ ImportLine "ConstrIndices" $ Set.fromList ["fromConstr2Index"]
+    [ ImportLine "TypeLevel.DataSchema" $ Set.fromList ["PSchema"
+                                                       ,"PNil"
+                                                       ,"PCons"
+                                                       ,"ApPCons"
+                                                       ,"Id"
+                                                       ,"I"
+                                                       ,"type (:+)"
+                                                       ,"IxK"
+                                                       ,"MkIxK"
+                                                       ,"MkIxK_"
+                                                       ,"type (@@)"
+                                                       ,"Field"
+                                                       ,"MkField"
+                                                       ,"MkField_"
+                                                       ,"type (:=)"]
     , ImportLine "Data.Tuple" $ Set.fromList ["Tuple(Tuple)"]
     ]
 instanceToImportLines ToData =

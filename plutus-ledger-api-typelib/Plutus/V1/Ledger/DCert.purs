@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.DCert where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -17,6 +16,7 @@ import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 
 data DCert
   = DCertDelegRegKey StakingCredential
@@ -32,8 +32,22 @@ instance Show DCert where
 
 derive instance Generic DCert _
 
-instance HasConstrIndices DCert where
-  constrIndices _ = fromConstr2Index [Tuple "DCertDelegRegKey" 0,Tuple "DCertDelegDeRegKey" 1,Tuple "DCertDelegDelegate" 2,Tuple "DCertPoolRegister" 3,Tuple "DCertPoolRetire" 4,Tuple "DCertGenesis" 5,Tuple "DCertMir" 6]
+instance HasPlutusSchema DCert
+  ("DCertDelegRegKey" := PNil
+   @@ (Z)
+  :+ "DCertDelegDeRegKey" := PNil
+     @@ (S (Z))
+  :+ "DCertDelegDelegate" := PNil
+     @@ (S (S (Z)))
+  :+ "DCertPoolRegister" := PNil
+     @@ (S (S (S (Z))))
+  :+ "DCertPoolRetire" := PNil
+     @@ (S (S (S (S (Z)))))
+  :+ "DCertGenesis" := PNil
+     @@ (S (S (S (S (S (Z))))))
+  :+ "DCertMir" := PNil
+     @@ (S (S (S (S (S (S (Z)))))))
+  :+ PNil)
 
 instance ToData DCert where
   toData x = genericToData x
