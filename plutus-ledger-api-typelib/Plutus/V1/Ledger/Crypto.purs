@@ -15,7 +15,24 @@ import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 import Types.ByteArray (ByteArray)
 
 newtype PubKey = PubKey { getPubKey :: LedgerBytes }
@@ -27,12 +44,16 @@ derive instance Generic PubKey _
 
 derive instance Newtype PubKey _
 
-instance HasPlutusSchema PubKey
-  ("PubKey" :=
-     ("getPubKey" := I LedgerBytes
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema PubKey
+    ( "PubKey"
+        :=
+          ( "getPubKey" := I LedgerBytes
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData PubKey where
   toData x = genericToData x
@@ -42,7 +63,7 @@ instance FromData PubKey where
 
 --------------------------------------------------------------------------------
 
-_PubKey :: Iso' PubKey {getPubKey :: LedgerBytes}
+_PubKey :: Iso' PubKey { getPubKey :: LedgerBytes }
 _PubKey = _Newtype
 
 --------------------------------------------------------------------------------
@@ -56,12 +77,16 @@ derive instance Generic PubKeyHash _
 
 derive instance Newtype PubKeyHash _
 
-instance HasPlutusSchema PubKeyHash
-  ("PubKeyHash" :=
-     ("getPubKeyHash" := I ByteArray
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema PubKeyHash
+    ( "PubKeyHash"
+        :=
+          ( "getPubKeyHash" := I ByteArray
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData PubKeyHash where
   toData x = genericToData x
@@ -71,7 +96,7 @@ instance FromData PubKeyHash where
 
 --------------------------------------------------------------------------------
 
-_PubKeyHash :: Iso' PubKeyHash {getPubKeyHash :: ByteArray}
+_PubKeyHash :: Iso' PubKeyHash { getPubKeyHash :: ByteArray }
 _PubKeyHash = _Newtype
 
 --------------------------------------------------------------------------------
@@ -85,12 +110,16 @@ derive instance Generic PrivateKey _
 
 derive instance Newtype PrivateKey _
 
-instance HasPlutusSchema PrivateKey
-  ("PrivateKey" :=
-     ("getPrivateKey" := I LedgerBytes
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema PrivateKey
+    ( "PrivateKey"
+        :=
+          ( "getPrivateKey" := I LedgerBytes
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData PrivateKey where
   toData x = genericToData x
@@ -100,7 +129,7 @@ instance FromData PrivateKey where
 
 --------------------------------------------------------------------------------
 
-_PrivateKey :: Iso' PrivateKey {getPrivateKey :: LedgerBytes}
+_PrivateKey :: Iso' PrivateKey { getPrivateKey :: LedgerBytes }
 _PrivateKey = _Newtype
 
 --------------------------------------------------------------------------------
@@ -114,12 +143,16 @@ derive instance Generic Signature _
 
 derive instance Newtype Signature _
 
-instance HasPlutusSchema Signature
-  ("Signature" :=
-     ("getSignature" := I ByteArray
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema Signature
+    ( "Signature"
+        :=
+          ( "getSignature" := I ByteArray
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData Signature where
   toData x = genericToData x
@@ -129,5 +162,5 @@ instance FromData Signature where
 
 --------------------------------------------------------------------------------
 
-_Signature :: Iso' Signature {getSignature :: ByteArray}
+_Signature :: Iso' Signature { getSignature :: ByteArray }
 _Signature = _Newtype

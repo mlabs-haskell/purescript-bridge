@@ -16,7 +16,24 @@ import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import Plutus.V1.Ledger.Scripts (ValidatorHash)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 
 data StakingCredential
   = StakingHash Credential
@@ -27,12 +44,15 @@ instance Show StakingCredential where
 
 derive instance Generic StakingCredential _
 
-instance HasPlutusSchema StakingCredential
-  ("StakingHash" := PNil
-   @@ (Z)
-  :+ "StakingPtr" := PNil
-     @@ (S (Z))
-  :+ PNil)
+instance
+  HasPlutusSchema StakingCredential
+    ( "StakingHash" := PNil
+        @@ (Z)
+        :+ "StakingPtr"
+        := PNil
+        @@ (S (Z))
+        :+ PNil
+    )
 
 instance ToData StakingCredential where
   toData x = genericToData x
@@ -47,9 +67,10 @@ _StakingHash = prism' StakingHash case _ of
   (StakingHash a) -> Just a
   _ -> Nothing
 
-_StakingPtr :: Prism' StakingCredential {a :: BigInt, b :: BigInt, c :: BigInt}
-_StakingPtr = prism' (\{a, b, c} -> (StakingPtr a b c)) case _ of
-  (StakingPtr a b c) -> Just {a, b, c}
+_StakingPtr
+  :: Prism' StakingCredential { a :: BigInt, b :: BigInt, c :: BigInt }
+_StakingPtr = prism' (\{ a, b, c } -> (StakingPtr a b c)) case _ of
+  (StakingPtr a b c) -> Just { a, b, c }
   _ -> Nothing
 
 --------------------------------------------------------------------------------
@@ -63,12 +84,15 @@ instance Show Credential where
 
 derive instance Generic Credential _
 
-instance HasPlutusSchema Credential
-  ("PubKeyCredential" := PNil
-   @@ (Z)
-  :+ "ScriptCredential" := PNil
-     @@ (S (Z))
-  :+ PNil)
+instance
+  HasPlutusSchema Credential
+    ( "PubKeyCredential" := PNil
+        @@ (Z)
+        :+ "ScriptCredential"
+        := PNil
+        @@ (S (Z))
+        :+ PNil
+    )
 
 instance ToData Credential where
   toData x = genericToData x

@@ -122,7 +122,7 @@ mkSumTypeIndexed_ ::
   (Generic t, Typeable t, c t, GDataConstructor (Rep t)) =>
   (forall x. c x => [(Int, String)]) ->
   SumType 'Haskell
-mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : Plutus  : ToData : FromData : maybeToList (nootype . map snd $ constructors))
+mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : Plutus : ToData : FromData : maybeToList (nootype . map snd $ constructors))
   where
     ixs = M.fromList . map (\(i, t) -> (T.pack t, i)) $ f @t
     constructors =
@@ -365,21 +365,24 @@ instanceToImportLines Bounded =
     ]
 instanceToImportLines Plutus =
   importsFromList
-    [ ImportLine "TypeLevel.DataSchema" $ Set.fromList ["PSchema"
-                                                       ,"PNil"
-                                                       ,"PCons"
-                                                       ,"ApPCons"
-                                                       ,"Id"
-                                                       ,"I"
-                                                       ,"type (:+)"
-                                                       ,"IxK"
-                                                       ,"MkIxK"
-                                                       ,"MkIxK_"
-                                                       ,"type (@@)"
-                                                       ,"Field"
-                                                       ,"MkField"
-                                                       ,"MkField_"
-                                                       ,"type (:=)"]
+    [ ImportLine "TypeLevel.DataSchema" $
+        Set.fromList
+          [ "PSchema"
+          , "PNil"
+          , "PCons"
+          , "ApPCons"
+          , "Id"
+          , "I"
+          , "type (:+)"
+          , "IxK"
+          , "MkIxK"
+          , "MkIxK_"
+          , "type (@@)"
+          , "Field"
+          , "MkField"
+          , "MkField_"
+          , "type (:=)"
+          ]
     , ImportLine "Data.Tuple" $ Set.fromList ["Tuple(Tuple)"]
     ]
 instanceToImportLines ToData =

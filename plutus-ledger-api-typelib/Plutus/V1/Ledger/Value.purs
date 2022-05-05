@@ -14,10 +14,28 @@ import Data.Tuple (Tuple, Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 import Types.Value (CurrencySymbol, TokenName)
 
-newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
+newtype AssetClass = AssetClass
+  { unAssetClass :: Tuple CurrencySymbol TokenName }
 
 instance Show AssetClass where
   show a = genericShow a
@@ -30,12 +48,16 @@ derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
 
-instance HasPlutusSchema AssetClass
-  ("AssetClass" :=
-     ("unAssetClass" := I (Tuple CurrencySymbol TokenName)
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema AssetClass
+    ( "AssetClass"
+        :=
+          ( "unAssetClass" := I (Tuple CurrencySymbol TokenName)
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData AssetClass where
   toData x = genericToData x
@@ -45,5 +67,6 @@ instance FromData AssetClass where
 
 --------------------------------------------------------------------------------
 
-_AssetClass :: Iso' AssetClass {unAssetClass :: Tuple CurrencySymbol TokenName}
+_AssetClass
+  :: Iso' AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
 _AssetClass = _Newtype

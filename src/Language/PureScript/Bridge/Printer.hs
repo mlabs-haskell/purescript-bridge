@@ -50,10 +50,10 @@ import Language.PureScript.Bridge.SumType (
     Functor,
     Generic,
     GenericShow,
-    Plutus,
     Json,
     Newtype,
     Ord,
+    Plutus,
     ToData
   ),
   InstanceImplementation (Derive, DeriveNewtype, Explicit),
@@ -90,8 +90,8 @@ import System.FilePath (
   (</>),
  )
 import Text.PrettyPrint.Leijen.Text (
-  align,
   Doc,
+  align,
   backslash,
   char,
   colon,
@@ -118,8 +118,8 @@ import Text.PrettyPrint.Leijen.Text (
   text,
   textStrict,
   vsep,
-  (<+>),
   (<$$>),
+  (<+>),
  )
 
 renderText :: Doc -> Text
@@ -365,8 +365,8 @@ instances st@(SumType t cs is) = go <$> is
         ["fromData pd = genericFromData pd"]
     go Plutus =
       text "instance HasPlutusSchema"
-      <+> typeInfoToDoc t
-      <$$> indent 2 (mkPlutusSchema cs)
+        <+> typeInfoToDoc t
+        <$$> indent 2 (mkPlutusSchema cs)
       where
         mkPlutusSchema :: [(Int, DataConstructor 'PureScript)] -> Doc
         mkPlutusSchema [] = text "PNil" -- maybe error out?
@@ -381,30 +381,35 @@ instances st@(SumType t cs is) = go <$> is
             atIndex :: Doc -> Int -> Doc
             atIndex d i = align $ d <$$> (text "@@" <+> int2NatDoc i)
 
-            mkSchemaEntry (ix,DataConstructor cname cargs) = case cargs of
-              Record recEntries -> atIndex
-                                       (mkField (<$$>) cname $ indent  2 . mkRecord . NE.toList $ recEntries)
-                                       ix
-              _                 ->  atIndex (mkField (<+>) cname  pnil) ix
-             where
-               mkRecord :: [RecordEntry 'PureScript] -> Doc
-               mkRecord =  schemafy . map rec2Doc
-                 where
-                   rec2Doc :: RecordEntry 'PureScript -> Doc
-                   rec2Doc (RecordEntry lbl val) = mkField (<+>) lbl
-                                                   $ text "I"
-                                                   <+> typeInfoToDoc val
+            mkSchemaEntry (ix, DataConstructor cname cargs) = case cargs of
+              Record recEntries ->
+                atIndex
+                  (mkField (<$$>) cname $ indent 2 . mkRecord . NE.toList $ recEntries)
+                  ix
+              _ -> atIndex (mkField (<+>) cname pnil) ix
+              where
+                mkRecord :: [RecordEntry 'PureScript] -> Doc
+                mkRecord = schemafy . map rec2Doc
+                  where
+                    rec2Doc :: RecordEntry 'PureScript -> Doc
+                    rec2Doc (RecordEntry lbl val) =
+                      mkField (<+>) lbl $
+                        text "I"
+                          <+> typeInfoToDoc val
             quote :: Text -> Doc
             quote = dquotes . textStrict
 
             schemafy :: [Doc] -> Doc
             schemafy txts =
-              parens
-              $ foldr (\(x :: Doc) (acc :: Doc) ->
-                         if isEmpty acc
-                         then x <$$> ":+" <+> pnil
-                         else x <$$> ":+" <+> acc) "" txts
-
+              parens $
+                foldr
+                  ( \(x :: Doc) (acc :: Doc) ->
+                      if isEmpty acc
+                        then x <$$> ":+" <+> pnil
+                        else x <$$> ":+" <+> acc
+                  )
+                  ""
+                  txts
     go Bounded =
       mkInstance
         (mkType "Bounded" [t])
@@ -832,6 +837,7 @@ encloseVsep left right sp ds =
 int2NatDoc :: Int -> Doc
 int2NatDoc = parens . go
   where
-    go n | n < 0  = error "Indices must be positive!"
-         | n == 0 = text "Z"
-         | otherwise = text "S" <+> int2NatDoc (n-1)
+    go n
+      | n < 0 = error "Indices must be positive!"
+      | n == 0 = text "Z"
+      | otherwise = text "S" <+> int2NatDoc (n -1)

@@ -23,7 +23,24 @@ import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 import Types.Value (CurrencySymbol, Value)
 
 newtype TxInfo = TxInfo
@@ -46,21 +63,34 @@ derive instance Generic TxInfo _
 
 derive instance Newtype TxInfo _
 
-instance HasPlutusSchema TxInfo
-  ("TxInfo" :=
-     ("txInfoInputs" := I (Array TxInInfo)
-     :+ "txInfoOutputs" := I (Array TxOut)
-     :+ "txInfoFee" := I Value
-     :+ "txInfoMint" := I Value
-     :+ "txInfoDCert" := I (Array DCert)
-     :+ "txInfoWdrl" := I (Array (Tuple StakingCredential BigInt))
-     :+ "txInfoValidRange" := I (Interval POSIXTime)
-     :+ "txInfoSignatories" := I (Array PubKeyHash)
-     :+ "txInfoData" := I (Array (Tuple DatumHash Datum))
-     :+ "txInfoId" := I TxId
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema TxInfo
+    ( "TxInfo"
+        :=
+          ( "txInfoInputs" := I (Array TxInInfo)
+              :+ "txInfoOutputs"
+              := I (Array TxOut)
+              :+ "txInfoFee"
+              := I Value
+              :+ "txInfoMint"
+              := I Value
+              :+ "txInfoDCert"
+              := I (Array DCert)
+              :+ "txInfoWdrl"
+              := I (Array (Tuple StakingCredential BigInt))
+              :+ "txInfoValidRange"
+              := I (Interval POSIXTime)
+              :+ "txInfoSignatories"
+              := I (Array PubKeyHash)
+              :+ "txInfoData"
+              := I (Array (Tuple DatumHash Datum))
+              :+ "txInfoId"
+              := I TxId
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData TxInfo where
   toData x = genericToData x
@@ -70,7 +100,19 @@ instance FromData TxInfo where
 
 --------------------------------------------------------------------------------
 
-_TxInfo :: Iso' TxInfo {txInfoInputs :: Array TxInInfo, txInfoOutputs :: Array TxOut, txInfoFee :: Value, txInfoMint :: Value, txInfoDCert :: Array DCert, txInfoWdrl :: Array (Tuple StakingCredential BigInt), txInfoValidRange :: Interval POSIXTime, txInfoSignatories :: Array PubKeyHash, txInfoData :: Array (Tuple DatumHash Datum), txInfoId :: TxId}
+_TxInfo
+  :: Iso' TxInfo
+       { txInfoInputs :: Array TxInInfo
+       , txInfoOutputs :: Array TxOut
+       , txInfoFee :: Value
+       , txInfoMint :: Value
+       , txInfoDCert :: Array DCert
+       , txInfoWdrl :: Array (Tuple StakingCredential BigInt)
+       , txInfoValidRange :: Interval POSIXTime
+       , txInfoSignatories :: Array PubKeyHash
+       , txInfoData :: Array (Tuple DatumHash Datum)
+       , txInfoId :: TxId
+       }
 _TxInfo = _Newtype
 
 --------------------------------------------------------------------------------
@@ -87,13 +129,18 @@ derive instance Generic TxInInfo _
 
 derive instance Newtype TxInInfo _
 
-instance HasPlutusSchema TxInInfo
-  ("TxInInfo" :=
-     ("txInInfoOutRef" := I TxOutRef
-     :+ "txInInfoResolved" := I TxOut
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema TxInInfo
+    ( "TxInInfo"
+        :=
+          ( "txInInfoOutRef" := I TxOutRef
+              :+ "txInInfoResolved"
+              := I TxOut
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData TxInInfo where
   toData x = genericToData x
@@ -103,7 +150,8 @@ instance FromData TxInInfo where
 
 --------------------------------------------------------------------------------
 
-_TxInInfo :: Iso' TxInInfo {txInInfoOutRef :: TxOutRef, txInInfoResolved :: TxOut}
+_TxInInfo
+  :: Iso' TxInInfo { txInInfoOutRef :: TxOutRef, txInInfoResolved :: TxOut }
 _TxInInfo = _Newtype
 
 --------------------------------------------------------------------------------
@@ -120,13 +168,18 @@ derive instance Generic ScriptContext _
 
 derive instance Newtype ScriptContext _
 
-instance HasPlutusSchema ScriptContext
-  ("ScriptContext" :=
-     ("scriptContextTxInfo" := I TxInfo
-     :+ "scriptContextPurpose" := I ScriptPurpose
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema ScriptContext
+    ( "ScriptContext"
+        :=
+          ( "scriptContextTxInfo" := I TxInfo
+              :+ "scriptContextPurpose"
+              := I ScriptPurpose
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData ScriptContext where
   toData x = genericToData x
@@ -136,7 +189,9 @@ instance FromData ScriptContext where
 
 --------------------------------------------------------------------------------
 
-_ScriptContext :: Iso' ScriptContext {scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose}
+_ScriptContext
+  :: Iso' ScriptContext
+       { scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose }
 _ScriptContext = _Newtype
 
 --------------------------------------------------------------------------------
@@ -152,16 +207,21 @@ instance Show ScriptPurpose where
 
 derive instance Generic ScriptPurpose _
 
-instance HasPlutusSchema ScriptPurpose
-  ("Minting" := PNil
-   @@ (Z)
-  :+ "Spending" := PNil
-     @@ (S (Z))
-  :+ "Rewarding" := PNil
-     @@ (S (S (Z)))
-  :+ "Certifying" := PNil
-     @@ (S (S (S (Z))))
-  :+ PNil)
+instance
+  HasPlutusSchema ScriptPurpose
+    ( "Minting" := PNil
+        @@ (Z)
+        :+ "Spending"
+        := PNil
+        @@ (S (Z))
+        :+ "Rewarding"
+        := PNil
+        @@ (S (S (Z)))
+        :+ "Certifying"
+        := PNil
+        @@ (S (S (S (Z))))
+        :+ PNil
+    )
 
 instance ToData ScriptPurpose where
   toData x = genericToData x
