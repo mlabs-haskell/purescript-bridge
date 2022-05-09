@@ -14,24 +14,7 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import Types.ByteArray (ByteArray)
 
 newtype TxId = TxId { getTxId :: ByteArray }
@@ -47,24 +30,18 @@ derive instance Generic TxId _
 
 derive instance Newtype TxId _
 
-instance
-  HasPlutusSchema TxId
-    ( "TxId"
-        :=
-          ( "getTxId" := I ByteArray
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema TxId
+  ("TxId" :=
+     ("getTxId" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
-instance ToData TxId where
-  toData x = genericToData x
+derive newtype instance ToData TxId
 
-instance FromData TxId where
-  fromData pd = genericFromData pd
+derive newtype instance FromData TxId
 
 --------------------------------------------------------------------------------
 
-_TxId :: Iso' TxId { getTxId :: ByteArray }
+_TxId :: Iso' TxId {getTxId :: ByteArray}
 _TxId = _Newtype

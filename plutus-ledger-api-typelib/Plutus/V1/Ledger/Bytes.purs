@@ -14,24 +14,7 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import Types.ByteArray (ByteArray)
 
 newtype LedgerBytes = LedgerBytes { getLedgerBytes :: ByteArray }
@@ -43,24 +26,18 @@ derive instance Generic LedgerBytes _
 
 derive instance Newtype LedgerBytes _
 
-instance
-  HasPlutusSchema LedgerBytes
-    ( "LedgerBytes"
-        :=
-          ( "getLedgerBytes" := I ByteArray
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema LedgerBytes
+  ("LedgerBytes" :=
+     ("getLedgerBytes" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
-instance ToData LedgerBytes where
-  toData x = genericToData x
+derive newtype instance ToData LedgerBytes
 
-instance FromData LedgerBytes where
-  fromData pd = genericFromData pd
+derive newtype instance FromData LedgerBytes
 
 --------------------------------------------------------------------------------
 
-_LedgerBytes :: Iso' LedgerBytes { getLedgerBytes :: ByteArray }
+_LedgerBytes :: Iso' LedgerBytes {getLedgerBytes :: ByteArray}
 _LedgerBytes = _Newtype

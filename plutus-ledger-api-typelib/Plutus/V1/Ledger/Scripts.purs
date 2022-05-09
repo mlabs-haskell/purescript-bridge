@@ -14,24 +14,7 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import Types.ByteArray (ByteArray)
 import Types.PlutusData (PlutusData)
 
@@ -44,26 +27,20 @@ derive instance Generic Redeemer _
 
 derive instance Newtype Redeemer _
 
-instance
-  HasPlutusSchema Redeemer
-    ( "Redeemer"
-        :=
-          ( "getRedeemer" := I PlutusData
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema Redeemer
+  ("Redeemer" :=
+     ("getRedeemer" := I PlutusData
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
-instance ToData Redeemer where
-  toData x = genericToData x
+derive newtype instance ToData Redeemer
 
-instance FromData Redeemer where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Redeemer
 
 --------------------------------------------------------------------------------
 
-_Redeemer :: Iso' Redeemer { getRedeemer :: PlutusData }
+_Redeemer :: Iso' Redeemer {getRedeemer :: PlutusData}
 _Redeemer = _Newtype
 
 --------------------------------------------------------------------------------
@@ -77,26 +54,20 @@ derive instance Generic Datum _
 
 derive instance Newtype Datum _
 
-instance
-  HasPlutusSchema Datum
-    ( "Datum"
-        :=
-          ( "getDatum" := I PlutusData
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema Datum
+  ("Datum" :=
+     ("getDatum" := I PlutusData
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
-instance ToData Datum where
-  toData x = genericToData x
+derive newtype instance ToData Datum
 
-instance FromData Datum where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Datum
 
 --------------------------------------------------------------------------------
 
-_Datum :: Iso' Datum { getDatum :: PlutusData }
+_Datum :: Iso' Datum {getDatum :: PlutusData}
 _Datum = _Newtype
 
 --------------------------------------------------------------------------------
@@ -110,26 +81,20 @@ derive instance Generic ScriptHash _
 
 derive instance Newtype ScriptHash _
 
-instance
-  HasPlutusSchema ScriptHash
-    ( "ScriptHash"
-        :=
-          ( "getScriptHash" := I ByteArray
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema ScriptHash
+  ("ScriptHash" :=
+     ("getScriptHash" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
-instance ToData ScriptHash where
-  toData x = genericToData x
+derive newtype instance ToData ScriptHash
 
-instance FromData ScriptHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData ScriptHash
 
 --------------------------------------------------------------------------------
 
-_ScriptHash :: Iso' ScriptHash { getScriptHash :: ByteArray }
+_ScriptHash :: Iso' ScriptHash {getScriptHash :: ByteArray}
 _ScriptHash = _Newtype
 
 --------------------------------------------------------------------------------
@@ -143,18 +108,14 @@ derive instance Generic ValidatorHash _
 
 derive instance Newtype ValidatorHash _
 
-instance
-  HasPlutusSchema ValidatorHash
-    ( "ValidatorHash" := PNil
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema ValidatorHash
+  ("ValidatorHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
-instance ToData ValidatorHash where
-  toData x = genericToData x
+derive newtype instance ToData ValidatorHash
 
-instance FromData ValidatorHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData ValidatorHash
 
 --------------------------------------------------------------------------------
 
@@ -172,18 +133,14 @@ derive instance Generic DatumHash _
 
 derive instance Newtype DatumHash _
 
-instance
-  HasPlutusSchema DatumHash
-    ( "DatumHash" := PNil
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema DatumHash
+  ("DatumHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
-instance ToData DatumHash where
-  toData x = genericToData x
+derive newtype instance ToData DatumHash
 
-instance FromData DatumHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData DatumHash
 
 --------------------------------------------------------------------------------
 
@@ -201,18 +158,14 @@ derive instance Generic MintingPolicyHash _
 
 derive instance Newtype MintingPolicyHash _
 
-instance
-  HasPlutusSchema MintingPolicyHash
-    ( "MintingPolicyHash" := PNil
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema MintingPolicyHash
+  ("MintingPolicyHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
-instance ToData MintingPolicyHash where
-  toData x = genericToData x
+derive newtype instance ToData MintingPolicyHash
 
-instance FromData MintingPolicyHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData MintingPolicyHash
 
 --------------------------------------------------------------------------------
 
@@ -230,18 +183,14 @@ derive instance Generic StakeValidatorHash _
 
 derive instance Newtype StakeValidatorHash _
 
-instance
-  HasPlutusSchema StakeValidatorHash
-    ( "StakeValidatorHash" := PNil
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema StakeValidatorHash
+  ("StakeValidatorHash" := PNil
+   @@ (Z)
+  :+ PNil)
 
-instance ToData StakeValidatorHash where
-  toData x = genericToData x
+derive newtype instance ToData StakeValidatorHash
 
-instance FromData StakeValidatorHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData StakeValidatorHash
 
 --------------------------------------------------------------------------------
 
