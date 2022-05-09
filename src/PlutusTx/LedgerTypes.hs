@@ -108,12 +108,19 @@ mapBridge = do
   typeName ^== "Map"
   TypeInfo "plutonomicon-cardano-transaction-lib" "Plutus.Types.AssocMap" "Map" <$> psTypeParameters
 
+intervalBridge :: BridgePart
+intervalBridge = do
+  typeModule ^== "Plutus.V1.Ledger.Interval"
+  typeName ^== "Interval"
+  TypeInfo "plutonomicon-cardano-transaction-lib" "Types.Interval" "Interval" <$> psTypeParameters
+
 origToCtlNativeOverriddenBridge :: BridgeBuilder PSType
 origToCtlNativeOverriddenBridge =
   ctlBridgePart "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
     <|> ctlBridgePart "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
     <|> ctlBridgePart "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
     <|> ctlBridgePart "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
+    <|> intervalBridge
 
 origToCtlNativeScriptsBridge :: BridgeBuilder PSType
 origToCtlNativeScriptsBridge =
@@ -128,6 +135,9 @@ _overriddenTypes =
   , extremelyUnsafeMkSumType @Address
   , argonaut $ mkSumType @MintingPolicy
   , argonaut $ mkSumType @Validator
+  , extremelyUnsafeMkSumType @(Interval A)
+  , extremelyUnsafeMkSumType @(LowerBound A)
+  , extremelyUnsafeMkSumType @(UpperBound A)
   ]
 
 ledgerTypes :: [SumType 'Haskell]
@@ -156,9 +166,6 @@ ledgerTypes =
         , extremelyUnsafeMkSumType @ScriptContext
         , extremelyUnsafeMkSumType @LedgerBytes
         , extremelyUnsafeMkSumType @Ada
-        , extremelyUnsafeMkSumType @(Interval A)
-        , extremelyUnsafeMkSumType @(LowerBound A)
-        , extremelyUnsafeMkSumType @(UpperBound A)
         , mkSumTypeIndexed @DCert
         , mkSumTypeIndexed @(Extended A)
         , mkSumTypeIndexed @StakingCredential
