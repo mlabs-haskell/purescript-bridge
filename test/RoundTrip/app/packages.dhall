@@ -3,7 +3,7 @@ let upstream =
         sha256:2ec351f17be14b3f6421fbba36f4f01d1681e5c7f46e0c981465c4cf222de5be
 
 let additions =
-      {cardano-transaction-lib =
+      { cardano-transaction-lib =
         { dependencies =
           [ "aff"
           , "aff-promise"
@@ -70,39 +70,37 @@ let additions =
         , version = "06773f0bce72ba415f258f4bb66651101646261f"
         }
       , json-helpers =
-          { dependencies =
-            [ "aff"
-            , "argonaut-codecs"
-            , "argonaut-core"
-            , "arrays"
-            , "bifunctors"
-            , "contravariant"
-            , "control"
-            , "effect"
-            , "either"
-            , "enums"
-            , "foldable-traversable"
-            , "foreign-object"
-            , "maybe"
-            , "newtype"
-            , "ordered-collections"
-            , "prelude"
-            , "profunctor"
-            , "psci-support"
-            , "quickcheck"
-            , "record"
-            , "spec"
-            , "spec-quickcheck"
-            , "transformers"
-            , "tuples"
-            , "typelevel-prelude"
-            ]
-          , repo =
-              "https://github.com/input-output-hk/purescript-bridge-json-helpers.git"
-          , version = "60615c36abaee16d8dbe09cdd0e772e6d523d024"
-          }
+        { dependencies =
+          [ "aff"
+          , "argonaut-codecs"
+          , "argonaut-core"
+          , "arrays"
+          , "bifunctors"
+          , "contravariant"
+          , "control"
+          , "effect"
+          , "either"
+          , "enums"
+          , "foldable-traversable"
+          , "foreign-object"
+          , "maybe"
+          , "newtype"
+          , "ordered-collections"
+          , "prelude"
+          , "profunctor"
+          , "psci-support"
+          , "quickcheck"
+          , "record"
+          , "spec"
+          , "spec-quickcheck"
+          , "transformers"
+          , "tuples"
+          , "typelevel-prelude"
+          ]
+        , repo =
+            "https://github.com/input-output-hk/purescript-bridge-json-helpers.git"
+        , version = "60615c36abaee16d8dbe09cdd0e772e6d523d024"
         }
+      }
 
-
-in      upstream
-    //  additions
+in  upstream // additions

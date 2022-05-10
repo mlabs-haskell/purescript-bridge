@@ -150,7 +150,9 @@ class
   , Pos y
   ) <=
   DivModP x y q r cmp
-  | x y cmp -> q r, q r cmp y -> x, q r cmp x -> y
+  | x y cmp -> q r
+  , q r cmp y -> x
+  , q r cmp x -> y
 
 instance divModPD0Nat :: (Nat x, Pos y) => DivModP x y D0 x LT
 instance divModPD0D1 :: (Nat x, Pos y) => DivModP x y D1 D0 EQ
