@@ -21,12 +21,11 @@ instance ordRatio :: (Ord a, EuclideanRing a) => Ord (Ratio a) where
   compare x y =
     case x - y of
       Ratio n d ->
-        if n == zero
-          then EQ
-          else case n > zero, d > zero of
-            true, true -> GT
-            false, false -> GT
-            _, _ -> LT
+        if n == zero then EQ
+        else case n > zero, d > zero of
+          true, true -> GT
+          false, false -> GT
+          _, _ -> LT
 
 instance semiringRatio :: (Ord a, EuclideanRing a) => Semiring (Ratio a) where
   one = Ratio one one
@@ -37,9 +36,17 @@ instance semiringRatio :: (Ord a, EuclideanRing a) => Semiring (Ratio a) where
 instance ringRatio :: (Ord a, EuclideanRing a) => Ring (Ratio a) where
   sub (Ratio a b) (Ratio c d) = reduce ((a * d) - (b * c)) (b * d)
 
-instance commutativeRingRatio :: (Ord a, EuclideanRing a) => CommutativeRing (Ratio a)
+instance commutativeRingRatio ::
+  ( Ord a
+  , EuclideanRing a
+  ) =>
+  CommutativeRing (Ratio a)
 
-instance euclideanRingRatio :: (Ord a, EuclideanRing a) => EuclideanRing (Ratio a) where
+instance euclideanRingRatio ::
+  ( Ord a
+  , EuclideanRing a
+  ) =>
+  EuclideanRing (Ratio a) where
   degree _ = 1
   div (Ratio a b) (Ratio c d) = reduce (a * d) (b * c)
   mod _ _ = zero

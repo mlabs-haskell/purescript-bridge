@@ -19,9 +19,8 @@ filterLevel
   -> LogLevel
   -> LogFilter m
 filterLevel op level logger message =
-  if message.level `op` level
-     then logger message
-     else pure unit
+  if message.level `op` level then logger message
+  else pure unit
 
 minimumLevel :: forall m. MonadEffect m => LogLevel -> LogFilter m
 minimumLevel = filterLevel (>=)

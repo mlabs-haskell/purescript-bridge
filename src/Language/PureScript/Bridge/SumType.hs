@@ -383,6 +383,7 @@ instanceToImportLines Plutus =
           , "MkField_"
           , "type (:=)"
           ]
+    , ImportLine "TypeLevel.Nat" $ Set.fromList ["S", "Z"]
     , ImportLine "Data.Tuple" $ Set.fromList ["Tuple(Tuple)"]
     ]
 instanceToImportLines ToData =

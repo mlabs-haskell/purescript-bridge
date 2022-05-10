@@ -15,7 +15,24 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 import TypeLevel.Nat (S, Z)
 
 newtype Ada = Lovelace { getLovelace :: BigInt }
@@ -27,18 +44,24 @@ derive instance Generic Ada _
 
 derive instance Newtype Ada _
 
-instance HasPlutusSchema Ada
-  ("Lovelace" :=
-     ("getLovelace" := I BigInt
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema Ada
+    ( "Lovelace"
+        :=
+          ( "getLovelace" := I BigInt
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
-derive newtype instance ToData Ada
+instance ToData Ada where
+  toData x = genericToData x
 
-derive newtype instance FromData Ada
+instance FromData Ada where
+  fromData pd = genericFromData pd
 
 --------------------------------------------------------------------------------
 
-_Lovelace :: Iso' Ada {getLovelace :: BigInt}
+_Lovelace :: Iso' Ada { getLovelace :: BigInt }
 _Lovelace = _Newtype

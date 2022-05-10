@@ -40,7 +40,11 @@ instance monadLoggerListT :: MonadLogger m => MonadLogger (ListT m) where
 instance monadLoggerMaybeT :: MonadLogger m => MonadLogger (MaybeT m) where
   log = lift <<< log
 
-instance monadLoggerRWST :: (Monoid w, MonadLogger m) => MonadLogger (RWST r w s m) where
+instance monadLoggerRWST ::
+  ( Monoid w
+  , MonadLogger m
+  ) =>
+  MonadLogger (RWST r w s m) where
   log = lift <<< log
 
 instance monadLoggerReaderT :: MonadLogger m => MonadLogger (ReaderT a m) where
@@ -49,7 +53,11 @@ instance monadLoggerReaderT :: MonadLogger m => MonadLogger (ReaderT a m) where
 instance monadLoggerStateT :: MonadLogger m => MonadLogger (StateT a m) where
   log = lift <<< log
 
-instance monadLoggerWriterT :: (Monoid w, MonadLogger m) => MonadLogger (WriterT w m) where
+instance monadLoggerWriterT ::
+  ( Monoid w
+  , MonadLogger m
+  ) =>
+  MonadLogger (WriterT w m) where
   log = lift <<< log
 
 log' :: forall m. MonadLogger m => LogLevel -> TagSet -> String -> m Unit

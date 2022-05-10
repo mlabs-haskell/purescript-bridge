@@ -18,7 +18,24 @@ import Plutus.V1.Ledger.Scripts (DatumHash)
 import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 import TypeLevel.Nat (S, Z)
 import Types.Value (Value)
 
@@ -35,22 +52,35 @@ derive instance Generic TxOut _
 
 derive instance Newtype TxOut _
 
-instance HasPlutusSchema TxOut
-  ("TxOut" :=
-     ("txOutAddress" := I Address
-     :+ "txOutValue" := I Value
-     :+ "txOutDatumHash" := I (Maybe DatumHash)
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema TxOut
+    ( "TxOut"
+        :=
+          ( "txOutAddress" := I Address
+              :+ "txOutValue"
+              := I Value
+              :+ "txOutDatumHash"
+              := I (Maybe DatumHash)
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
-derive newtype instance ToData TxOut
+instance ToData TxOut where
+  toData x = genericToData x
 
-derive newtype instance FromData TxOut
+instance FromData TxOut where
+  fromData pd = genericFromData pd
 
 --------------------------------------------------------------------------------
 
-_TxOut :: Iso' TxOut {txOutAddress :: Address, txOutValue :: Value, txOutDatumHash :: Maybe DatumHash}
+_TxOut
+  :: Iso' TxOut
+       { txOutAddress :: Address
+       , txOutValue :: Value
+       , txOutDatumHash :: Maybe DatumHash
+       }
 _TxOut = _Newtype
 
 --------------------------------------------------------------------------------
@@ -67,19 +97,26 @@ derive instance Generic TxOutRef _
 
 derive instance Newtype TxOutRef _
 
-instance HasPlutusSchema TxOutRef
-  ("TxOutRef" :=
-     ("txOutRefId" := I TxId
-     :+ "txOutRefIdx" := I BigInt
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema TxOutRef
+    ( "TxOutRef"
+        :=
+          ( "txOutRefId" := I TxId
+              :+ "txOutRefIdx"
+              := I BigInt
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
-derive newtype instance ToData TxOutRef
+instance ToData TxOutRef where
+  toData x = genericToData x
 
-derive newtype instance FromData TxOutRef
+instance FromData TxOutRef where
+  fromData pd = genericFromData pd
 
 --------------------------------------------------------------------------------
 
-_TxOutRef :: Iso' TxOutRef {txOutRefId :: TxId, txOutRefIdx :: BigInt}
+_TxOutRef :: Iso' TxOutRef { txOutRefId :: TxId, txOutRefIdx :: BigInt }
 _TxOutRef = _Newtype

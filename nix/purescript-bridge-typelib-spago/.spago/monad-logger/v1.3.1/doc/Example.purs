@@ -40,15 +40,17 @@ getTags :: forall m. MonadEffect m => m TagSet
 getTags = do
   now' <- liftEffect now
   pure $
-    tag "foo" "bar" <>
-    intTag "baz" 0 <>
-    booleanTag "isTrue" true <>
-    jsDateTag "starting time" now' <>
-    tagSetTag "extra tags" (
-      tag "sub foo" "bar" <>
-      intTag "sub baz" 1 <>
-      tagSetTag "sub sub tags" (
-        tag "sub sub foo" "bar" <>
-        intTag "sub sub baz" 2
-      )
-    )
+    tag "foo" "bar"
+      <> intTag "baz" 0
+      <> booleanTag "isTrue" true
+      <> jsDateTag "starting time" now'
+      <>
+        tagSetTag "extra tags"
+          ( tag "sub foo" "bar"
+              <> intTag "sub baz" 1
+              <>
+                tagSetTag "sub sub tags"
+                  ( tag "sub sub foo" "bar" <>
+                      intTag "sub sub baz" 2
+                  )
+          )

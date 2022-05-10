@@ -18,7 +18,9 @@ import Type.Proxy (Proxy(Proxy))
 
 newtype TestRational = TestRational Rational
 
-derive newtype instance commutativeRingTestRational :: CommutativeRing TestRational
+derive newtype instance commutativeRingTestRational ::
+  CommutativeRing TestRational
+
 derive newtype instance eqTestRational :: Eq TestRational
 derive newtype instance euclideanRingTestRational :: EuclideanRing TestRational
 derive newtype instance ordTestRational :: Ord TestRational
@@ -53,9 +55,14 @@ newtype TestRatNonZero = TestRatNonZero Rational
 derive newtype instance eqTestRatNonZero :: Eq TestRatNonZero
 derive newtype instance semiringTestRatNonZero :: Semiring TestRatNonZero
 derive newtype instance ringTestRatNonZero :: Ring TestRatNonZero
-derive newtype instance commutativeRingTestRatNonZero :: CommutativeRing TestRatNonZero
-derive newtype instance euclideanRingTestRatNonZero :: EuclideanRing TestRatNonZero
-derive newtype instance divisionRingTestRatNonZero :: DivisionRing TestRatNonZero
+derive newtype instance commutativeRingTestRatNonZero ::
+  CommutativeRing TestRatNonZero
+
+derive newtype instance euclideanRingTestRatNonZero ::
+  EuclideanRing TestRatNonZero
+
+derive newtype instance divisionRingTestRatNonZero ::
+  DivisionRing TestRatNonZero
 
 instance arbitraryTestRatNonZero :: Arbitrary TestRatNonZero where
   arbitrary = compose TestRatNonZero <<< (%) <$> nonZeroInt <*> nonZeroInt
@@ -79,11 +86,14 @@ main = checkLaws "Rational" do
   log "Checking `reduce`"
   quickCheck' 1000 reducing
 
-    where
+  where
 
-    remainder :: TestRatNonZero -> TestRatNonZero -> Result
-    remainder (TestRatNonZero a) (TestRatNonZero b) = a / b * b + (a `mod` b) === a
+  remainder :: TestRatNonZero -> TestRatNonZero -> Result
+  remainder (TestRatNonZero a) (TestRatNonZero b) = a / b * b + (a `mod` b) ===
+    a
 
-    reducing :: NonZeroInt -> NonZeroInt -> SmallInt -> NonZeroInt -> Result
-    reducing (NonZeroInt a) (NonZeroInt b) (SmallInt n) (NonZeroInt d)
-      = (a * n) % (a * d) === (b * n) % (b * d)
+  reducing :: NonZeroInt -> NonZeroInt -> SmallInt -> NonZeroInt -> Result
+  reducing (NonZeroInt a) (NonZeroInt b) (SmallInt n) (NonZeroInt d) = (a * n)
+    % (a * d)
+    === (b * n)
+    % (b * d)

@@ -4,8 +4,7 @@ module Data.Natural
   , natToInt
   , minus
   , (+-)
-  )
-  where
+  ) where
 
 import Prelude
 
@@ -19,7 +18,7 @@ newtype Natural =
 -- | If the integer is less than 0, then the result will be 0 (nat)
 intToNat :: Int -> Natural
 intToNat i | i >= 0 = UnsafeMakeNatural i
-intToNat _          = UnsafeMakeNatural 0
+intToNat _ = UnsafeMakeNatural 0
 
 -- | Convert a natural number back to an integer
 natToInt :: Natural -> Int

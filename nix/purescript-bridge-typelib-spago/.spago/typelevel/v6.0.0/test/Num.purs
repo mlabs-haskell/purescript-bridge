@@ -2,13 +2,46 @@ module Test.Num where
 
 import Prelude hiding (eq, add, sub, mul)
 import Data.Tuple (Tuple(..))
-import Data.Typelevel.Num (eq, gteq, gt, lteq, lt, d7, d6, d4, d1, d0, d9, d3, trich, mul, sub, d24, type (:*), D4, D3, D2, toInt, toInt', d8, divMod, d2, d5, div10, d23, divMod10, add, pred, succ)
+import Data.Typelevel.Num
+  ( eq
+  , gteq
+  , gt
+  , lteq
+  , lt
+  , d7
+  , d6
+  , d4
+  , d1
+  , d0
+  , d9
+  , d3
+  , trich
+  , mul
+  , sub
+  , d24
+  , type (:*)
+  , D4
+  , D3
+  , D2
+  , toInt
+  , toInt'
+  , d8
+  , divMod
+  , d2
+  , d5
+  , div10
+  , d23
+  , divMod10
+  , add
+  , pred
+  , succ
+  )
 import Data.Typelevel.Undefined (undefined)
 import Type.Proxy (Proxy(..))
 import Test.Unit (TestSuite, suite, test)
 import Test.Unit.Assert (equal)
 
-d234 :: (D2:*D3):*D4
+d234 :: (D2 :* D3) :* D4
 d234 = undefined
 
 tests :: TestSuite
@@ -36,7 +69,7 @@ tests = suite "base 10 nats" do
       equal 9 $ toInt d9
   suite "toInt'" do
     test "toInt' (Proxy :: Proxy D2)" do
-       equal 2 $ toInt' (Proxy :: Proxy D2)
+      equal 2 $ toInt' (Proxy :: Proxy D2)
   suite "succ" do
     test "succ 2" do
       equal 3 $ toInt $ succ d2
@@ -51,8 +84,8 @@ tests = suite "base 10 nats" do
       equal 22 $ toInt $ pred d23
     test "pred 234" do
       equal 233 $ toInt $ pred d234
-    -- This one should fail type checking:
-    -- equal 0 $ toInt $ pred d0
+  -- This one should fail type checking:
+  -- equal 0 $ toInt $ pred d0
   suite "trich" do
     test "2 < 3" do
       equal "LT" $ show $ trich d2 d3
@@ -91,8 +124,8 @@ tests = suite "base 10 nats" do
       equal 5 $ toInt $ sub d8 d3
     test "23 - 8" do
       equal 15 $ toInt $ sub d23 d8
-    -- This one should fail type checking:
-    -- equal 0 $ toInt $ sub d2 d3
+  -- This one should fail type checking:
+  -- equal 0 $ toInt $ sub d2 d3
   suite "mul" do
     test "2 * 3" do
       equal 6 $ toInt $ mul d2 d3
@@ -108,14 +141,14 @@ tests = suite "base 10 nats" do
     test "23 / 3" do
       case d23 `divMod` d3 of
         (Tuple a b) → equal (Tuple 7 2) (Tuple (toInt a) (toInt b))
-    -- dividing large numbers type checks VERY SLOWLY, uncomment these tests
-    -- only if you're very serious about testing divMod!
-    -- test "234 / 3" do
-    --   case d234 `divMod` d3 of
-    --     (Tuple a b) → equal (Tuple 78 0) (Tuple (toInt a) (toInt b))
-    -- test "234 / 2" do
-    --   case d234 `divMod` d2 of
-    --     (Tuple a b) → equal (Tuple 78 0) (Tuple (toInt a) (toInt b))
+  -- dividing large numbers type checks VERY SLOWLY, uncomment these tests
+  -- only if you're very serious about testing divMod!
+  -- test "234 / 3" do
+  --   case d234 `divMod` d3 of
+  --     (Tuple a b) → equal (Tuple 78 0) (Tuple (toInt a) (toInt b))
+  -- test "234 / 2" do
+  --   case d234 `divMod` d2 of
+  --     (Tuple a b) → equal (Tuple 78 0) (Tuple (toInt a) (toInt b))
   suite "divMod10" do
     test "8 / 10" do
       case divMod10 d8 of

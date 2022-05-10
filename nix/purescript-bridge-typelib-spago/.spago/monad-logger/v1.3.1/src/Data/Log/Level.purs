@@ -5,5 +5,6 @@ module Data.Log.Level
 import Prelude
 
 data LogLevel = Trace | Debug | Info | Warn | Error
+
 derive instance eqLogLevel :: Eq LogLevel
 derive instance ordLogLevel :: Ord LogLevel

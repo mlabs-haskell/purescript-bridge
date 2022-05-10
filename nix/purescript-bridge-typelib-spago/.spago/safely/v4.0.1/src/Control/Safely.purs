@@ -44,19 +44,22 @@ safely
    . MonadRec m
   => (forall safe. MonadRec safe => (m ~> safe) -> (safe ~> m) -> safe a)
   -> m a
-safely f = lower (f lift lower) where
+safely f = lower (f lift lower)
+  where
   lower :: forall f. MonadRec f => FreeT Identity f ~> f
   lower = runFreeT (pure <<< unwrap)
 
 -- | Safely replicate an action N times.
 replicateM_ :: forall m a. MonadRec m => Int -> m a -> m Unit
-replicateM_ n x = tailRecM step n where
+replicateM_ n x = tailRecM step n
+  where
   step :: Int -> m (Step Int Unit)
   step 0 = pure (Done unit)
   step m = x $> Loop (m - 1)
 
 -- | Safely traverse a foldable container.
-traverse_ :: forall f m a. Foldable f => MonadRec m => (a -> m Unit) -> f a -> m Unit
+traverse_
+  :: forall f m a. Foldable f => MonadRec m => (a -> m Unit) -> f a -> m Unit
 traverse_ f xs = safely \lift _ -> Foldable.traverse_ (f >>> lift) xs
 
 -- | Safely traverse a foldable container.
@@ -65,7 +68,8 @@ for_ = flip traverse_
 
 -- | Perform a monadic fold, safely.
 foldM :: forall m a b. MonadRec m => (a -> b -> m a) -> a -> List b -> m a
-foldM f = tailRecM2 step where
+foldM f = tailRecM2 step
+  where
   step :: a -> List b -> m (Step { a :: a, b :: List b } a)
   step a Nil = pure (Done a)
   step a (b : bs) = do
