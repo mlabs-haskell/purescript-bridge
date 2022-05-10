@@ -26,7 +26,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
 import Data.Map qualified as M
 import Data.Map qualified as Map
-import Data.Maybe (isJust, maybeToList)
+import Data.Maybe (maybeToList)
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Text (Text)
@@ -49,7 +49,7 @@ import Generics.Deriving (
  )
 import Language.PureScript.Bridge.TypeInfo (
   Language (Haskell, PureScript),
-  TypeInfo (TypeInfo),
+  TypeInfo (TypeInfo, _typeName),
   flattenTypeInfo,
   mkTypeInfo,
   typeName,
@@ -107,51 +107,53 @@ mkSumType = SumType (mkTypeInfo @t) constructors (Generic : maybeToList (nootype
    3) You are not able to generate a HasConstrIndices (or equivalent) instance, probably because the type you are
    trying to translate to purescript is defined in a plutus-tx library.
 -}
-extremelyUnsafeMkSumType ::
+unsafeMkPlutusDataType ::
   forall t.
   (Generic t, Typeable t, GDataConstructor (Rep t)) =>
   SumType 'Haskell
-extremelyUnsafeMkSumType = case mkSumType @t of
+unsafeMkPlutusDataType = case mkSumType @t of
   SumType tInfo constructors instances ->
-    let constructors' = fixRecNewtypes constructors
-     in SumType tInfo constructors' (instances <> [Plutus, ToData, FromData])
+    SumType tInfo constructors (instances <> [PlutusData, ToData, FromData])
+
+mkPlutusNewtype ::
+  forall t.
+  (Generic t, Typeable t, GDataConstructor (Rep t)) =>
+  SumType 'Haskell
+mkPlutusNewtype = case mkSumType @t of
+  SumType tInfo cs is -> case cs of
+    [(0, DataConstructor sc (Record [RecordEntry _ ti]))] ->
+      SumType tInfo [(0, DataConstructor sc (Normal [ti]))] (is <> [PlutusNewtype, ToData, FromData])
+    [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [PlutusNewtype, ToData, FromData])
+    _ ->
+      error $
+        "Cannot generate a PureScript newtype for type "
+          <> T.unpack (_typeName tInfo)
 
 {- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
    index information.
 -}
-mkSumTypeIndexed_ ::
+mkPlutusDataType_ ::
   forall (c :: Type -> Constraint) t.
   (Generic t, Typeable t, c t, GDataConstructor (Rep t)) =>
   (forall x. c x => [(Int, String)]) ->
   SumType 'Haskell
-mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : Plutus : ToData : FromData : maybeToList (nootype . map snd $ constructors))
+mkPlutusDataType_ f = SumType (mkTypeInfo @t) constructors (Generic : PlutusData : ToData : FromData : maybeToList (nootype . map snd $ constructors))
   where
     ixs = M.fromList . map (\(i, t) -> (T.pack t, i)) $ f @t
     constructors =
-      fixRecNewtypes $
-        foldr
-          ( \dcon@(DataConstructor name _) acc -> case M.lookup name ixs of
-              -- we want to error here
-              Nothing -> error . T.unpack $ "Constructor \"" <> name <> "\" does not have a specified index!"
-              Just i -> (i, dcon) : acc
-          )
-          []
-          $ gToConstructors (from (undefined :: t))
-
-fixRecNewtypes :: [(Int, DataConstructor lang)] -> [(Int, DataConstructor lang)]
-fixRecNewtypes cs = case cs of
-  [(n, DataConstructor sc (Record [RecordEntry _ ti]))] -> [(n, DataConstructor sc (Normal [ti]))]
-  other -> other
-
-isWrappedRecord :: [(Int, DataConstructor lang)] -> Bool
-isWrappedRecord cs = case map snd cs of
-  [DataConstructor _ (Record _)] -> True
-  _ -> False
+      foldr
+        ( \dcon@(DataConstructor name _) acc -> case M.lookup name ixs of
+            -- we want to error here
+            Nothing -> error . T.unpack $ "Constructor \"" <> name <> "\" does not have a specified index!"
+            Just i -> (i, dcon) : acc
+        )
+        []
+        $ gToConstructors (from (undefined :: t))
 
 {-  | Variant of @mkSumType@ which constructs a SumType using the HasConstrIndices class. Meant to be used with the template haskell
     hooks from the PlutusTx.Aux module in this project.
 -}
-mkSumTypeIndexed ::
+mkPlutusDataType ::
   forall (t :: Type).
   ( Generic t
   , Typeable t
@@ -159,7 +161,7 @@ mkSumTypeIndexed ::
   , HasConstrIndices t
   ) =>
   SumType 'Haskell
-mkSumTypeIndexed = mkSumTypeIndexed_ @HasConstrIndices @t (getConstrIndices @t)
+mkPlutusDataType = mkPlutusDataType_ @HasConstrIndices @t (getConstrIndices @t)
 
 -- | Purescript typeclass instances that can be generated for your Haskell types.
 data Instance (lang :: Language)
@@ -173,7 +175,8 @@ data Instance (lang :: Language)
   | Ord
   | Enum
   | Bounded
-  | Plutus
+  | PlutusData
+  | PlutusNewtype
   | ToData
   | FromData
   | Custom (CustomInstance lang)
@@ -211,8 +214,8 @@ nootype [DataConstructor _ (Record _)] = Just Newtype
 nootype [DataConstructor _ (Normal [_])] = Just Newtype
 nootype _ = Nothing
 
-isNewtype :: [(Int, DataConstructor lang)] -> Bool
-isNewtype = isJust . nootype . map snd
+isPlutusNewtype :: SumType lang -> Bool
+isPlutusNewtype (SumType _ _ is) = PlutusNewtype `elem` is
 
 -- | Ensure that aeson-compatible `EncodeJson` and `DecodeJson` instances are generated for your type.
 argonaut :: SumType t -> SumType t
@@ -341,8 +344,9 @@ instanceToTypes Enum =
 instanceToTypes Bounded =
   pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Bounded" []
 -- fix this later (i don't think it matters now)
-instanceToTypes Plutus =
+instanceToTypes PlutusData =
   pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "TypeLevel.DataSchema" "HasPlutusSchema" []
+instanceToTypes PlutusNewtype = instanceToTypes Newtype
 instanceToTypes ToData =
   pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "ToData" "ToData" []
 instanceToTypes FromData =
@@ -379,7 +383,7 @@ instanceToImportLines Bounded =
   importsFromList
     [ ImportLine "Data.Bounded.Generic" $ Set.fromList ["genericBottom", "genericTop"]
     ]
-instanceToImportLines Plutus =
+instanceToImportLines PlutusData =
   importsFromList
     [ ImportLine "TypeLevel.DataSchema" $
         Set.fromList

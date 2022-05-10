@@ -41,7 +41,7 @@ import Language.PureScript.Bridge (
 import Language.PureScript.Bridge.CodeGenSwitches (
   getSettings,
  )
-import Language.PureScript.Bridge.SumType (mkSumTypeIndexed)
+import Language.PureScript.Bridge.SumType (mkPlutusDataType)
 import Language.PureScript.Bridge.TypeParameters (A, B, C, M1)
 import RoundTrip.Spec (roundtripSpec)
 import Test.Hspec (
@@ -312,7 +312,7 @@ allTests = do
       let advanced' =
             bridgeSumType
               (buildBridge defaultBridge)
-              (mkSumTypeIndexed @TwoRecords)
+              (mkPlutusDataType @TwoRecords)
           modules = sumTypeToModule advanced'
           m = head . map (moduleToText settings) . Map.elems $ modules
           txt =

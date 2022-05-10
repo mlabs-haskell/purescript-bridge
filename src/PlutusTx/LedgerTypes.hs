@@ -18,13 +18,14 @@ import Language.PureScript.Bridge (
   ),
   buildBridge,
   defaultBridge,
-  extremelyUnsafeMkSumType,
   genericShow,
-  mkSumTypeIndexed,
+  mkPlutusDataType,
+  mkPlutusNewtype,
   order,
   psTypeParameters,
   typeModule,
   typeName,
+  unsafeMkPlutusDataType,
   writePSTypes,
   (<|>),
   (^==),
@@ -88,11 +89,10 @@ writeLedgerTypesAnd fp myTypes =
     (ledgerTypes <> myTypes)
 
 writePlutusTypes :: FilePath -> [SumType 'Haskell] -> IO ()
-writePlutusTypes fp myTypes =
+writePlutusTypes fp =
   writePSTypes
     fp
     (buildBridge (defaultBridge <|> origToCtlNativePrimitivesBridge <|> origToCtlNativeOverriddenBridge))
-    myTypes
 
 origToCtlNativePrimitivesBridge :: BridgeBuilder PSType
 origToCtlNativePrimitivesBridge =
@@ -118,46 +118,46 @@ origToCtlNativeOverriddenBridge =
 
 _overriddenTypes :: [SumType 'Haskell]
 _overriddenTypes =
-  [ extremelyUnsafeMkSumType @Value
-  , order $ extremelyUnsafeMkSumType @CurrencySymbol
-  , order $ extremelyUnsafeMkSumType @TokenName
-  , extremelyUnsafeMkSumType @Address
+  [ mkPlutusNewtype @Value
+  , order $ mkPlutusNewtype @CurrencySymbol
+  , order $ mkPlutusNewtype @TokenName
+  , unsafeMkPlutusDataType @Address
   ]
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
   genericShow
-    <$> [ order $ extremelyUnsafeMkSumType @AssetClass
-        , order $ extremelyUnsafeMkSumType @TxId
-        , extremelyUnsafeMkSumType @TxOut
-        , extremelyUnsafeMkSumType @TxOutRef
-        , order $ extremelyUnsafeMkSumType @DiffMilliSeconds
-        , order $ extremelyUnsafeMkSumType @POSIXTime
-        , order $ extremelyUnsafeMkSumType @Slot
-        , extremelyUnsafeMkSumType @Redeemer
-        , extremelyUnsafeMkSumType @Datum
-        , extremelyUnsafeMkSumType @ScriptHash
-        , extremelyUnsafeMkSumType @ValidatorHash
-        , extremelyUnsafeMkSumType @DatumHash
-        , extremelyUnsafeMkSumType @MintingPolicyHash
-        , extremelyUnsafeMkSumType @StakeValidatorHash
-        , extremelyUnsafeMkSumType @PubKey
-        , extremelyUnsafeMkSumType @PubKeyHash
-        , extremelyUnsafeMkSumType @PrivateKey
-        , extremelyUnsafeMkSumType @Signature
-        , extremelyUnsafeMkSumType @TxInfo
-        , extremelyUnsafeMkSumType @TxInInfo
-        , extremelyUnsafeMkSumType @ScriptContext
-        , extremelyUnsafeMkSumType @LedgerBytes
-        , extremelyUnsafeMkSumType @Ada
-        , extremelyUnsafeMkSumType @(Interval A)
-        , extremelyUnsafeMkSumType @(LowerBound A)
-        , extremelyUnsafeMkSumType @(UpperBound A)
-        , mkSumTypeIndexed @DCert
-        , mkSumTypeIndexed @(Extended A)
-        , mkSumTypeIndexed @StakingCredential
-        , mkSumTypeIndexed @Credential
-        , mkSumTypeIndexed @ScriptPurpose
+    <$> [ order $ mkPlutusNewtype @AssetClass -- this might be a type synonym in the version of Plutus we're using at Cardax?
+        , order $ unsafeMkPlutusDataType @TxId
+        , unsafeMkPlutusDataType @TxOut
+        , unsafeMkPlutusDataType @TxOutRef
+        , order $ mkPlutusNewtype @DiffMilliSeconds
+        , order $ mkPlutusNewtype @POSIXTime
+        , order $ mkPlutusNewtype @Slot
+        , mkPlutusNewtype @Redeemer
+        , mkPlutusNewtype @Datum
+        , mkPlutusNewtype @ScriptHash
+        , mkPlutusNewtype @ValidatorHash
+        , mkPlutusNewtype @DatumHash
+        , mkPlutusNewtype @MintingPolicyHash
+        , mkPlutusNewtype @StakeValidatorHash
+        , mkPlutusNewtype @PubKey
+        , mkPlutusNewtype @PubKeyHash
+        , mkPlutusNewtype @PrivateKey
+        , mkPlutusNewtype @Signature
+        , unsafeMkPlutusDataType @TxInfo
+        , unsafeMkPlutusDataType @TxInInfo
+        , unsafeMkPlutusDataType @ScriptContext
+        , mkPlutusNewtype @LedgerBytes
+        , mkPlutusNewtype @Ada
+        , unsafeMkPlutusDataType @(Interval A)
+        , unsafeMkPlutusDataType @(LowerBound A)
+        , unsafeMkPlutusDataType @(UpperBound A)
+        , mkPlutusDataType @DCert
+        , mkPlutusDataType @(Extended A)
+        , mkPlutusDataType @StakingCredential
+        , mkPlutusDataType @Credential
+        , mkPlutusDataType @ScriptPurpose
         ]
 
 cbtxBridge :: Text -> Text -> Text -> Text -> BridgePart
