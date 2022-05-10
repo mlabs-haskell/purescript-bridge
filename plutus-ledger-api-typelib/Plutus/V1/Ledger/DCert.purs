@@ -16,24 +16,7 @@ import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import TypeLevel.Nat (S, Z)
 
 data DCert
@@ -50,36 +33,28 @@ instance Show DCert where
 
 derive instance Generic DCert _
 
-instance
-  HasPlutusSchema DCert
-    ( "DCertDelegRegKey" := PNil
-        @@ (Z)
-        :+ "DCertDelegDeRegKey"
-        := PNil
-        @@ (S (Z))
-        :+ "DCertDelegDelegate"
-        := PNil
-        @@ (S (S (Z)))
-        :+ "DCertPoolRegister"
-        := PNil
-        @@ (S (S (S (Z))))
-        :+ "DCertPoolRetire"
-        := PNil
-        @@ (S (S (S (S (Z)))))
-        :+ "DCertGenesis"
-        := PNil
-        @@ (S (S (S (S (S (Z))))))
-        :+ "DCertMir"
-        := PNil
-        @@ (S (S (S (S (S (S (Z)))))))
-        :+ PNil
-    )
+instance HasPlutusSchema DCert
+  ("DCertDelegRegKey" := PNil
+   @@ (Z)
+  :+ "DCertDelegDeRegKey" := PNil
+     @@ (S (Z))
+  :+ "DCertDelegDelegate" := PNil
+     @@ (S (S (Z)))
+  :+ "DCertPoolRegister" := PNil
+     @@ (S (S (S (Z))))
+  :+ "DCertPoolRetire" := PNil
+     @@ (S (S (S (S (Z)))))
+  :+ "DCertGenesis" := PNil
+     @@ (S (S (S (S (S (Z))))))
+  :+ "DCertMir" := PNil
+     @@ (S (S (S (S (S (S (Z)))))))
+  :+ PNil)
 
 instance ToData DCert where
   toData x = genericToData x
 
 instance FromData DCert where
-  fromData pd = genericFromData pd
+  fromData x = genericFromData x
 
 --------------------------------------------------------------------------------
 
@@ -93,19 +68,19 @@ _DCertDelegDeRegKey = prism' DCertDelegDeRegKey case _ of
   (DCertDelegDeRegKey a) -> Just a
   _ -> Nothing
 
-_DCertDelegDelegate :: Prism' DCert { a :: StakingCredential, b :: PubKeyHash }
-_DCertDelegDelegate = prism' (\{ a, b } -> (DCertDelegDelegate a b)) case _ of
-  (DCertDelegDelegate a b) -> Just { a, b }
+_DCertDelegDelegate :: Prism' DCert {a :: StakingCredential, b :: PubKeyHash}
+_DCertDelegDelegate = prism' (\{a, b} -> (DCertDelegDelegate a b)) case _ of
+  (DCertDelegDelegate a b) -> Just {a, b}
   _ -> Nothing
 
-_DCertPoolRegister :: Prism' DCert { a :: PubKeyHash, b :: PubKeyHash }
-_DCertPoolRegister = prism' (\{ a, b } -> (DCertPoolRegister a b)) case _ of
-  (DCertPoolRegister a b) -> Just { a, b }
+_DCertPoolRegister :: Prism' DCert {a :: PubKeyHash, b :: PubKeyHash}
+_DCertPoolRegister = prism' (\{a, b} -> (DCertPoolRegister a b)) case _ of
+  (DCertPoolRegister a b) -> Just {a, b}
   _ -> Nothing
 
-_DCertPoolRetire :: Prism' DCert { a :: PubKeyHash, b :: BigInt }
-_DCertPoolRetire = prism' (\{ a, b } -> (DCertPoolRetire a b)) case _ of
-  (DCertPoolRetire a b) -> Just { a, b }
+_DCertPoolRetire :: Prism' DCert {a :: PubKeyHash, b :: BigInt}
+_DCertPoolRetire = prism' (\{a, b} -> (DCertPoolRetire a b)) case _ of
+  (DCertPoolRetire a b) -> Just {a, b}
   _ -> Nothing
 
 _DCertGenesis :: Prism' DCert Unit

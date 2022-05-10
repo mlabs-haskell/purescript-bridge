@@ -26,7 +26,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
 import Data.Map qualified as M
 import Data.Map qualified as Map
-import Data.Maybe (maybeToList)
+import Data.Maybe (isJust, maybeToList)
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Text (Text)
@@ -112,7 +112,9 @@ extremelyUnsafeMkSumType ::
   (Generic t, Typeable t, GDataConstructor (Rep t)) =>
   SumType 'Haskell
 extremelyUnsafeMkSumType = case mkSumType @t of
-  SumType tInfo constructors instances -> SumType tInfo constructors (instances <> [Plutus, ToData, FromData])
+  SumType tInfo constructors instances ->
+    let constructors' = fixRecNewtypes constructors
+     in SumType tInfo constructors' (instances <> [Plutus, ToData, FromData])
 
 {- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
    index information.
@@ -126,14 +128,25 @@ mkSumTypeIndexed_ f = SumType (mkTypeInfo @t) constructors (Generic : Plutus : T
   where
     ixs = M.fromList . map (\(i, t) -> (T.pack t, i)) $ f @t
     constructors =
-      foldr
-        ( \dcon@(DataConstructor name _) acc -> case M.lookup name ixs of
-            -- we want to error here
-            Nothing -> error . T.unpack $ "Constructor \"" <> name <> "\" does not have a specified index!"
-            Just i -> (i, dcon) : acc
-        )
-        []
-        $ gToConstructors (from (undefined :: t))
+      fixRecNewtypes $
+        foldr
+          ( \dcon@(DataConstructor name _) acc -> case M.lookup name ixs of
+              -- we want to error here
+              Nothing -> error . T.unpack $ "Constructor \"" <> name <> "\" does not have a specified index!"
+              Just i -> (i, dcon) : acc
+          )
+          []
+          $ gToConstructors (from (undefined :: t))
+
+fixRecNewtypes :: [(Int, DataConstructor lang)] -> [(Int, DataConstructor lang)]
+fixRecNewtypes cs = case cs of
+  [(n, DataConstructor sc (Record [RecordEntry _ ti]))] -> [(n, DataConstructor sc (Normal [ti]))]
+  other -> other
+
+isWrappedRecord :: [(Int, DataConstructor lang)] -> Bool
+isWrappedRecord cs = case map snd cs of
+  [DataConstructor _ (Record _)] -> True
+  _ -> False
 
 {-  | Variant of @mkSumType@ which constructs a SumType using the HasConstrIndices class. Meant to be used with the template haskell
     hooks from the PlutusTx.Aux module in this project.
@@ -197,6 +210,9 @@ nootype :: [DataConstructor lang] -> Maybe (Instance lang)
 nootype [DataConstructor _ (Record _)] = Just Newtype
 nootype [DataConstructor _ (Normal [_])] = Just Newtype
 nootype _ = Nothing
+
+isNewtype :: [(Int, DataConstructor lang)] -> Bool
+isNewtype = isJust . nootype . map snd
 
 -- | Ensure that aeson-compatible `EncodeJson` and `DecodeJson` instances are generated for your type.
 argonaut :: SumType t -> SumType t

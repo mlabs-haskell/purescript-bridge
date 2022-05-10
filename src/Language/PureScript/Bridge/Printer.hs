@@ -64,6 +64,8 @@ import Language.PureScript.Bridge.SumType (
   getUsedTypes,
   importsFromList,
   instanceToImportLines,
+  isNewtype,
+  isWrappedRecord,
   nootype,
   recLabel,
   recValue,
@@ -353,20 +355,32 @@ instances st@(SumType t cs is) = go <$> is
       Derive -> mkDerivedInstance _customHead (const _customConstraints)
       DeriveNewtype -> mkDerivedNewtypeInstance _customHead (const _customConstraints)
       Explicit members -> mkInstance _customHead (const _customConstraints) $ memberToMethod <$> members
-    go ToData =
-      mkInstance
-        (mkType "ToData" [t])
-        (constrainWith "ToData")
-        ["toData x = genericToData x"]
-    go FromData =
-      mkInstance
-        (mkType "FromData" [t])
-        (constrainWith "FromData")
-        ["fromData pd = genericFromData pd"]
-    go Plutus =
-      text "instance HasPlutusSchema"
-        <+> typeInfoToDoc t
-        <$$> indent 2 (mkPlutusSchema cs)
+    go ToData
+      | isNewtype cs && not (isWrappedRecord cs) =
+        mkDerivedNewtypeInstance
+          (mkType "ToData" [t])
+          (constrainWith "ToData")
+      | otherwise =
+        mkInstance
+          (mkType "ToData" [t])
+          (constrainWith "ToData")
+          ["toData x = genericToData x"]
+    go FromData
+      | isNewtype cs && not (isWrappedRecord cs) =
+        mkDerivedNewtypeInstance
+          (mkType "FromData" [t])
+          (constrainWith "FromData")
+      | otherwise =
+        mkInstance
+          (mkType "FromData" [t])
+          (constrainWith "FromData")
+          ["fromData x = genericFromData x"]
+    go Plutus
+      | isNewtype cs && not (isWrappedRecord cs) = mempty
+      | otherwise =
+        text "instance HasPlutusSchema"
+          <+> typeInfoToDoc t
+          <$$> indent 2 (mkPlutusSchema cs)
       where
         mkPlutusSchema :: [(Int, DataConstructor 'PureScript)] -> Doc
         mkPlutusSchema [] = text "PNil" -- maybe error out?

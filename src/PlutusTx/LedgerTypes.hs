@@ -87,6 +87,13 @@ writeLedgerTypesAnd fp myTypes =
     (buildBridge (defaultBridge <|> origToCtlNativePrimitivesBridge <|> origToCtlNativeOverriddenBridge))
     (ledgerTypes <> myTypes)
 
+writePlutusTypes :: FilePath -> [SumType 'Haskell] -> IO ()
+writePlutusTypes fp myTypes =
+  writePSTypes
+    fp
+    (buildBridge (defaultBridge <|> origToCtlNativePrimitivesBridge <|> origToCtlNativeOverriddenBridge))
+    myTypes
+
 origToCtlNativePrimitivesBridge :: BridgeBuilder PSType
 origToCtlNativePrimitivesBridge =
   -- Primitive types

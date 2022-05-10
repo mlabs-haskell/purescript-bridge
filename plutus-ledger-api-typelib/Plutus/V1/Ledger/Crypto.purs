@@ -15,28 +15,11 @@ import FromData (class FromData, genericFromData)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import TypeLevel.Nat (S, Z)
 import Types.ByteArray (ByteArray)
 
-newtype PubKey = PubKey { getPubKey :: LedgerBytes }
+newtype PubKey = PubKey LedgerBytes
 
 instance Show PubKey where
   show a = genericShow a
@@ -45,31 +28,20 @@ derive instance Generic PubKey _
 
 derive instance Newtype PubKey _
 
-instance
-  HasPlutusSchema PubKey
-    ( "PubKey"
-        :=
-          ( "getPubKey" := I LedgerBytes
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
 
-instance ToData PubKey where
-  toData x = genericToData x
 
-instance FromData PubKey where
-  fromData pd = genericFromData pd
+derive newtype instance ToData PubKey
+
+derive newtype instance FromData PubKey
 
 --------------------------------------------------------------------------------
 
-_PubKey :: Iso' PubKey { getPubKey :: LedgerBytes }
+_PubKey :: Iso' PubKey LedgerBytes
 _PubKey = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype PubKeyHash = PubKeyHash { getPubKeyHash :: ByteArray }
+newtype PubKeyHash = PubKeyHash ByteArray
 
 instance Show PubKeyHash where
   show a = genericShow a
@@ -78,31 +50,20 @@ derive instance Generic PubKeyHash _
 
 derive instance Newtype PubKeyHash _
 
-instance
-  HasPlutusSchema PubKeyHash
-    ( "PubKeyHash"
-        :=
-          ( "getPubKeyHash" := I ByteArray
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
 
-instance ToData PubKeyHash where
-  toData x = genericToData x
 
-instance FromData PubKeyHash where
-  fromData pd = genericFromData pd
+derive newtype instance ToData PubKeyHash
+
+derive newtype instance FromData PubKeyHash
 
 --------------------------------------------------------------------------------
 
-_PubKeyHash :: Iso' PubKeyHash { getPubKeyHash :: ByteArray }
+_PubKeyHash :: Iso' PubKeyHash ByteArray
 _PubKeyHash = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype PrivateKey = PrivateKey { getPrivateKey :: LedgerBytes }
+newtype PrivateKey = PrivateKey LedgerBytes
 
 instance Show PrivateKey where
   show a = genericShow a
@@ -111,31 +72,20 @@ derive instance Generic PrivateKey _
 
 derive instance Newtype PrivateKey _
 
-instance
-  HasPlutusSchema PrivateKey
-    ( "PrivateKey"
-        :=
-          ( "getPrivateKey" := I LedgerBytes
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
 
-instance ToData PrivateKey where
-  toData x = genericToData x
 
-instance FromData PrivateKey where
-  fromData pd = genericFromData pd
+derive newtype instance ToData PrivateKey
+
+derive newtype instance FromData PrivateKey
 
 --------------------------------------------------------------------------------
 
-_PrivateKey :: Iso' PrivateKey { getPrivateKey :: LedgerBytes }
+_PrivateKey :: Iso' PrivateKey LedgerBytes
 _PrivateKey = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype Signature = Signature { getSignature :: ByteArray }
+newtype Signature = Signature ByteArray
 
 instance Show Signature where
   show a = genericShow a
@@ -144,24 +94,13 @@ derive instance Generic Signature _
 
 derive instance Newtype Signature _
 
-instance
-  HasPlutusSchema Signature
-    ( "Signature"
-        :=
-          ( "getSignature" := I ByteArray
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
 
-instance ToData Signature where
-  toData x = genericToData x
 
-instance FromData Signature where
-  fromData pd = genericFromData pd
+derive newtype instance ToData Signature
+
+derive newtype instance FromData Signature
 
 --------------------------------------------------------------------------------
 
-_Signature :: Iso' Signature { getSignature :: ByteArray }
+_Signature :: Iso' Signature ByteArray
 _Signature = _Newtype

@@ -15,24 +15,7 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import TypeLevel.Nat (S, Z)
 
 newtype DiffMilliSeconds = DiffMilliSeconds BigInt
@@ -48,18 +31,11 @@ derive instance Generic DiffMilliSeconds _
 
 derive instance Newtype DiffMilliSeconds _
 
-instance
-  HasPlutusSchema DiffMilliSeconds
-    ( "DiffMilliSeconds" := PNil
-        @@ (Z)
-        :+ PNil
-    )
 
-instance ToData DiffMilliSeconds where
-  toData x = genericToData x
 
-instance FromData DiffMilliSeconds where
-  fromData pd = genericFromData pd
+derive newtype instance ToData DiffMilliSeconds
+
+derive newtype instance FromData DiffMilliSeconds
 
 --------------------------------------------------------------------------------
 
@@ -68,7 +44,7 @@ _DiffMilliSeconds = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype POSIXTime = POSIXTime { getPOSIXTime :: BigInt }
+newtype POSIXTime = POSIXTime BigInt
 
 instance Show POSIXTime where
   show a = genericShow a
@@ -81,24 +57,13 @@ derive instance Generic POSIXTime _
 
 derive instance Newtype POSIXTime _
 
-instance
-  HasPlutusSchema POSIXTime
-    ( "POSIXTime"
-        :=
-          ( "getPOSIXTime" := I BigInt
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
 
-instance ToData POSIXTime where
-  toData x = genericToData x
 
-instance FromData POSIXTime where
-  fromData pd = genericFromData pd
+derive newtype instance ToData POSIXTime
+
+derive newtype instance FromData POSIXTime
 
 --------------------------------------------------------------------------------
 
-_POSIXTime :: Iso' POSIXTime { getPOSIXTime :: BigInt }
+_POSIXTime :: Iso' POSIXTime BigInt
 _POSIXTime = _Newtype
