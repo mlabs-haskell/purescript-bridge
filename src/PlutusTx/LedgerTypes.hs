@@ -110,9 +110,9 @@ mapBridge = do
 
 origToCtlNativeOverriddenBridge :: BridgeBuilder PSType
 origToCtlNativeOverriddenBridge =
-  ctlBridgePart "Plutus.V1.Ledger.Value" "Value" "Types.Value" "Value"
-    <|> ctlBridgePart "Plutus.V1.Ledger.Value" "CurrencySymbol" "Types.Value" "CurrencySymbol"
-    <|> ctlBridgePart "Plutus.V1.Ledger.Value" "TokenName" "Types.Value" "TokenName"
+  ctlBridgePart "Plutus.V1.Ledger.Value" "Value" "Plutus.Types.Value" "Value"
+    <|> ctlBridgePart "Plutus.V1.Ledger.Value" "CurrencySymbol" "Cardano.Types.Value" "CurrencySymbol"
+    <|> ctlBridgePart "Plutus.V1.Ledger.Value" "TokenName" "Types.TokenName" "TokenName"
     <|> ctlBridgePart "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
 
 origToCtlNativeScriptsBridge :: BridgeBuilder PSType

@@ -15,11 +15,11 @@ import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import Plutus.Types.Address (Address)
+import Plutus.Types.Value (Value)
 import Plutus.V1.Ledger.Scripts (DatumHash)
 import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import Types.Value (Value)
 
 newtype TxOut = TxOut
   { txOutAddress :: Address
