@@ -2,8 +2,74 @@ let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20211005/packages.dhall
         sha256:2ec351f17be14b3f6421fbba36f4f01d1681e5c7f46e0c981465c4cf222de5be
 
-in      upstream
-    //  { json-helpers =
+let additions =
+      {cardano-transaction-lib =
+        { dependencies =
+          [ "aff"
+          , "aff-promise"
+          , "affjax"
+          , "argonaut"
+          , "argonaut-codecs"
+          , "argonaut-core"
+          , "arraybuffer-types"
+          , "arrays"
+          , "bifunctors"
+          , "bigints"
+          , "console"
+          , "const"
+          , "control"
+          , "effect"
+          , "either"
+          , "encoding"
+          , "enums"
+          , "exceptions"
+          , "foldable-traversable"
+          , "foreign"
+          , "foreign-object"
+          , "gen"
+          , "identity"
+          , "integers"
+          , "js-date"
+          , "lattice"
+          , "lists"
+          , "maybe"
+          , "medea"
+          , "monad-logger"
+          , "mote"
+          , "newtype"
+          , "node-buffer"
+          , "node-fs"
+          , "node-fs-aff"
+          , "node-path"
+          , "nonempty"
+          , "ordered-collections"
+          , "partial"
+          , "prelude"
+          , "profunctor"
+          , "profunctor-lenses"
+          , "quickcheck"
+          , "quickcheck-laws"
+          , "rationals"
+          , "record"
+          , "refs"
+          , "spec"
+          , "strings"
+          , "tailrec"
+          , "these"
+          , "transformers"
+          , "tuples"
+          , "typelevel"
+          , "typelevel-prelude"
+          , "uint"
+          , "undefined"
+          , "unfoldable"
+          , "unsafe-coerce"
+          , "untagged-union"
+          ]
+        , repo = "https://github.com/gnumonik/cardano-transaction-lib.git"
+        , version = "06773f0bce72ba415f258f4bb66651101646261f"
+        }
+      , json-helpers =
           { dependencies =
             [ "aff"
             , "argonaut-codecs"
@@ -36,3 +102,7 @@ in      upstream
           , version = "60615c36abaee16d8dbe09cdd0e772e6d523d024"
           }
         }
+
+
+in      upstream
+    //  additions
