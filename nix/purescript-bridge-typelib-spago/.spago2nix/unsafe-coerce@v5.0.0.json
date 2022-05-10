@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-unsafe-coerce.git","sha256":"0l2agnm1k910v4yp1hz19wrsrywsr5scb397762y7pigm3frzs8r","rev":"ee24f0d3b94bf925d9c50fcc2b449579580178c0"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-unsafe-coerce.git"},"packageName":"unsafe-coerce"}}}

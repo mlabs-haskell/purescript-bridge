@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-orders.git","sha256":"0wwy3ycjll0s590ra35zf5gjvs86w97rln09bj428axhg7cvfl0a","rev":"c25b7075426cf82bcb960495f28d2541c9a75510"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-orders.git"},"packageName":"orders"}}}

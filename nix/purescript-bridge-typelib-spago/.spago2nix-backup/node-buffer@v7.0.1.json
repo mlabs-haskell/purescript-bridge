@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-node/purescript-node-buffer.git","sha256":"14bf3llsa20ivkwp5hlyk8v8zfzpzhhsni9pd8rfqdyzp6zrdx3b","rev":"0721f1e8d768df48ae429547c8c60b121ca120cb"},"package":{"version":"v7.0.1","repo":{"tag":"Remote","contents":"https://github.com/purescript-node/purescript-node-buffer.git"},"packageName":"node-buffer"}}}

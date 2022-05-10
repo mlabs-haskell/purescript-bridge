@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-parallel.git","sha256":"0x8mvhgs8ygqj34xgyhk6gixqm32p2ymm00zg0zdw13g3lil9p4x","rev":"16b38a2e148639b04ae67e0ce63cc220da8857f7"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-parallel.git"},"packageName":"parallel"}}}

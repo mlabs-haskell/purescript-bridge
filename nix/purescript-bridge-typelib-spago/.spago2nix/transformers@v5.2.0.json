@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-transformers.git","sha256":"0lggimnq016v98ib6h68gnciraambxrfqm2s033wm34srcy8xs06","rev":"1e5d4193b38c613c97ea1ebdb721c6b94cd8c50a"},"package":{"version":"v5.2.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-transformers.git"},"packageName":"transformers"}}}

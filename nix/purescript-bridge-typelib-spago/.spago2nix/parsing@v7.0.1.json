@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-parsing.git","sha256":"15yx51khg3niqiryc6qdii6lwdvni77ak7dkbf9w5zw4h1y51p9a","rev":"a3e82c26ce2c74b5fa38ff7814d7c35bf9233af5"},"package":{"version":"v7.0.1","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-parsing.git"},"packageName":"parsing"}}}

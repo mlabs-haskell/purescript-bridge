@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-fork.git","sha256":"1hyvaixza8151zbylk2kv859x48yyhla536lcjghcwd62vzfwmdn","rev":"153cc29e6e51fb1108368efc622d41d9f80bd707"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-fork.git"},"packageName":"fork"}}}

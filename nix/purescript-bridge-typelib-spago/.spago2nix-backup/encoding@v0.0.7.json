@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/menelaos/purescript-encoding.git","sha256":"1rsnn8g2lx24k9wflr1jj12281i0smprb76nfm2f61yqqiwgij4d","rev":"0a4187136f9ea4ea51ddf635e3b3c2cd2461faac"},"package":{"version":"v0.0.7","repo":{"tag":"Remote","contents":"https://github.com/menelaos/purescript-encoding.git"},"packageName":"encoding"}}}

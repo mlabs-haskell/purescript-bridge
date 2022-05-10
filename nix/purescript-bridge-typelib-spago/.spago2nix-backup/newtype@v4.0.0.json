@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-newtype.git","sha256":"1fgzbxslckva2psn0sia30hfakx8xchz3wx2kkh3w8rr4nn2py8v","rev":"7b292fcd2ac7c4a25d7a7a8d3387d0ee7de89b13"},"package":{"version":"v4.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-newtype.git"},"packageName":"newtype"}}}

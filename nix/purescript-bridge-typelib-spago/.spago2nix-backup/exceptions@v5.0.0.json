@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-exceptions.git","sha256":"1yjbrx34a0rnxgpvywb63n9jzhkdgb2q2acyzbwh290mrrggc95x","rev":"410d0b8813592bda3c25028540eeb2cda312ddc9"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-exceptions.git"},"packageName":"exceptions"}}}

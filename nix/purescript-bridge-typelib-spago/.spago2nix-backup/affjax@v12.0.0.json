@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-affjax.git","sha256":"1f2snaimnl9ry8f3kankfcyy50wkba54vvin4wsrglahqgs1nrgb","rev":"5be197edc213fbededb8da908f77b69908eaa6f8"},"package":{"version":"v12.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-affjax.git"},"packageName":"affjax"}}}

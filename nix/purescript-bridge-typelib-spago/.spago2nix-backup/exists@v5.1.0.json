@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-exists.git","sha256":"15qp52cpp2yvxihkzfmn6gabyvx5s6iz5lafvqhyfgp4wfnz0bds","rev":"c34820f8b2d15be29abdd5097c3d636f5df8f28c"},"package":{"version":"v5.1.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-exists.git"},"packageName":"exists"}}}

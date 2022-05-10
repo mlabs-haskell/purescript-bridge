@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-identity.git","sha256":"0a58y71ihvb5b7plnn2sxsbphqzd9nzfafak4d5a576agn76q0ql","rev":"5c150ac5ee4fa6f145932f6322a1020463dae8e9"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-identity.git"},"packageName":"identity"}}}

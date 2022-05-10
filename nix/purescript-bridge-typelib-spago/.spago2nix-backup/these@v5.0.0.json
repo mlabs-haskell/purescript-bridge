@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-these.git","sha256":"0d6yg3lwgralh1kcm5cd4myyz66k9qzld61hc5dg3z92d96zbvlr","rev":"38dcf86a9bd772091e1153f2f1c13223703599b7"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-these.git"},"packageName":"these"}}}

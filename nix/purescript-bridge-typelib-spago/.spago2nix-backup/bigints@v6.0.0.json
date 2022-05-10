@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/sharkdp/purescript-bigints.git","sha256":"0x8s6d6q2rpfkk56bmayg57a7hl2h7sq9ljrxfc8sjnwd7mfs193","rev":"d5151e04db7e18641fbb2b5892f4198b1cab5907"},"package":{"version":"v6.0.0","repo":{"tag":"Remote","contents":"https://github.com/sharkdp/purescript-bigints.git"},"packageName":"bigints"}}}

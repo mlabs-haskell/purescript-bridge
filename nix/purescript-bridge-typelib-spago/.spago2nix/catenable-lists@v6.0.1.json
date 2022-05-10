@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-catenable-lists.git","sha256":"1lz06fx0za5sl65wccn5fl37mw3x4jnvrriz1gg0aqsmm9lag7ss","rev":"ee03395f2c5d59a7fd8529a0faac6ec1ebcbb682"},"package":{"version":"v6.0.1","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-catenable-lists.git"},"packageName":"catenable-lists"}}}

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/bodil/purescript-typelevel.git","sha256":"0gxj926ppx6d8inir589x0a30iv29hqc2y6vsa1n1c2vlcqv2zgd","rev":"c7917aa6d43440608e6e04332e4c916a45976313"},"package":{"version":"v6.0.0","repo":{"tag":"Remote","contents":"https://github.com/bodil/purescript-typelevel.git"},"packageName":"typelevel"}}}

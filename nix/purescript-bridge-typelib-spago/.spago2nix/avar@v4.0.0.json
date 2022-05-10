@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-avar.git","sha256":"005046wl61w6r5v3qwd16srhcx82vdz3yvp4xzad2xaasb6iq55l","rev":"ac3cbbb8d4b71ff19a78a3178355c089e44d3b4d"},"package":{"version":"v4.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-avar.git"},"packageName":"avar"}}}

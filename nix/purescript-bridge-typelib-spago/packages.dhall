@@ -172,8 +172,8 @@ let additions =
           , "unsafe-coerce"
           , "untagged-union"
           ]
-        , repo = "https://github.com/plutonomicon/cardano-transaction-lib.git"
-        , version = "4604cd9685f085ab12a3055c02188fa2949091ef"
+        , repo = "https://github.com/gnumonik/cardano-transaction-lib.git"
+        , version = "06773f0bce72ba415f258f4bb66651101646261f"
         }
       , properties =
         { dependencies = [ "prelude", "console" ]

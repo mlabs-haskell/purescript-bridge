@@ -1,0 +1,25 @@
+{
+  "name": "purescript-naturals",
+  "homepage": "https://github.com/LiamGoodacre/purescript-naturals",
+  "description": "Natural numbers",
+  "author": "Liam Goodacre",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/LiamGoodacre/purescript-naturals.git"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-enums": "^4.0.0",
+    "purescript-maybe": "^4.0.0",
+    "purescript-prelude": "^4.0.1"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^4.0.0"
+  }
+}

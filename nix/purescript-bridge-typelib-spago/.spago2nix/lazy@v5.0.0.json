@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-lazy.git","sha256":"1wxfx019911gbkifq266hgn67zwm89pxhi83bai77mva5n9j3f6l","rev":"2f73f61e7ac1ae1cfe05564112e3313530e673ff"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-lazy.git"},"packageName":"lazy"}}}

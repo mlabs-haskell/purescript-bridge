@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-unfoldable.git","sha256":"1v3bz04wj6hj7s6mcf49hajylg6w58n78q54sqi2ra2zq8h99kpw","rev":"bbcc2b062b9b7d3d61f123cfb32cc8c7fb811aa6"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-unfoldable.git"},"packageName":"unfoldable"}}}

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-contravariant.git","sha256":"029hb8i3n4759x4gc06wkfgr7wim5x1w5jy2bsiy42n0g731h5qc","rev":"ae1a765f7ddbfd96ae1f12e399e46d554d8e3b38"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-contravariant.git"},"packageName":"contravariant"}}}

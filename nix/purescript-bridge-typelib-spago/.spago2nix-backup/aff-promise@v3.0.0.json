@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/nwolverson/purescript-aff-promise.git","sha256":"12fnlwcrj5p6kc5rls7qxwg53zd83gkdpklpmp8jyav945hlgbj2","rev":"45cfba7f663fce12fe69285fe5acaa4ff025144c"},"package":{"version":"v3.0.0","repo":{"tag":"Remote","contents":"https://github.com/nwolverson/purescript-aff-promise.git"},"packageName":"aff-promise"}}}

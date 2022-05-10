@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/cprussin/purescript-monad-logger.git","sha256":"0r1cp2x6mamjca5r5rm5mp1gidlll72paqrjd3z0j69l7iy7dgas","rev":"55441b4caf390bc38078a9c5c865efb105549cef"},"package":{"version":"v1.3.1","repo":{"tag":"Remote","contents":"https://github.com/cprussin/purescript-monad-logger.git"},"packageName":"monad-logger"}}}

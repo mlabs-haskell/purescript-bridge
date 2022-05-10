@@ -1,0 +1,22 @@
+{
+  "name": "purescript-quickcheck-combinators",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/athanclark/purescript-quickcheck-combinators.git"
+  },
+  "dependencies": {
+    "purescript-prelude": "^4.1.1",
+    "purescript-quickcheck": "^6.1.0",
+    "purescript-typelevel": "^6.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^4.0.0"
+  }
+}

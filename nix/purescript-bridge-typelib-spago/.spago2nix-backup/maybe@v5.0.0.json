@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-maybe.git","sha256":"0vyk3r9gklvv7awzpph7ra53zxxbin1ngmqflb5vvr2365v5xyqy","rev":"8e96ca0187208e78e8df6a464c281850e5c9400c"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-maybe.git"},"packageName":"maybe"}}}

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-partial.git","sha256":"0acxf686hvaj793hyb7kfn9lf96kv3nk0lls2p9j095ylp55sldb","rev":"2f0a5239efab68179a684603263bcec8f1489b08"},"package":{"version":"v3.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-partial.git"},"packageName":"partial"}}}

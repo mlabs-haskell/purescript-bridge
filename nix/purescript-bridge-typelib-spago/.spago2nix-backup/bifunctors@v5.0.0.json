@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-bifunctors.git","sha256":"0xc2hf8ccdgqw3m9qcmr38kmzv05fsxvakd07wyrqshvkzg3xn0d","rev":"a31d0fc4bbebf19d5e9b21b65493c28b8d3fba62"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-bifunctors.git"},"packageName":"bifunctors"}}}

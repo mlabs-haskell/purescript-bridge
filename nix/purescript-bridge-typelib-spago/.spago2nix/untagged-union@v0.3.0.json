@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/jvliwanag/purescript-untagged-union.git","sha256":"06013431acz8xry9dish8p2qyj18bi505fgfikpjiblxgjazl9zx","rev":"364e172e759ebe722bd7ec12a599d532b527c0ef"},"package":{"version":"v0.3.0","repo":{"tag":"Remote","contents":"https://github.com/jvliwanag/purescript-untagged-union.git"},"packageName":"untagged-union"}}}

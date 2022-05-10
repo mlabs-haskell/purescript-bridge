@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-freet.git","sha256":"0f5bibw604sd9ffmp51b3jppka88r54mh7sdz91zy5b92wgsy5yr","rev":"507c2edd9173cda5ad44dd0638133edd69fd9acd"},"package":{"version":"v6.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-freet.git"},"packageName":"freet"}}}

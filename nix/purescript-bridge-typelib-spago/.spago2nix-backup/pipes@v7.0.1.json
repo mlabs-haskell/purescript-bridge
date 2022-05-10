@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/felixschl/purescript-pipes.git","sha256":"0jzgzi34wqqdcfgznbpfv4b8al2prd36yshnndlvkqfv70smx3kh","rev":"42e43f0961ad0fc3f1cef6986fe23ca9f48f6dda"},"package":{"version":"v7.0.1","repo":{"tag":"Remote","contents":"https://github.com/felixschl/purescript-pipes.git"},"packageName":"pipes"}}}

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-web/purescript-web-events.git","sha256":"1dxwrl2r39vazb3g1ka4dkpy6idyi17aq4hf9vvdsmcwf2jjwbn9","rev":"c8a50893f04f54e2a59be7f885d25caef3589c57"},"package":{"version":"v3.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-web/purescript-web-events.git"},"packageName":"web-events"}}}

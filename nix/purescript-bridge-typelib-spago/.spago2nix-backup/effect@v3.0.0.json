@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-effect.git","sha256":"1n9qr85knvpm4i0qhm8xbgfk46v9y843p76j278phfs9l6aywzsn","rev":"985d97bd5721ddcc41304c55a7ca2bb0c0bfdc2a"},"package":{"version":"v3.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-effect.git"},"packageName":"effect"}}}

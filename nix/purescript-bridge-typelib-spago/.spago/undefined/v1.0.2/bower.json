@@ -1,0 +1,26 @@
+{
+  "name": "purescript-undefined",
+  "homepage": "https://github.com/bklaric/purescript-undefined",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bklaric/purescript-undefined.git"
+  },
+  "authors": [
+    "Branimir Klarić <branimir.klaric.bk@gmail.com>"
+  ],
+  "description": "Package containing the undefined value.",
+  "main": "",
+  "keywords": [
+    "purescript",
+    "javascript",
+    "undefined"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

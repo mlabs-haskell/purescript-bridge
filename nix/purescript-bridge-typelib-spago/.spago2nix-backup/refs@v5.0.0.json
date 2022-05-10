@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-refs.git","sha256":"1jhc2v784jy8bvkqy4zsh2z7pnqrhwa8n5kx98xhxx73n1bf38sg","rev":"f66d3cdf6a6bf4510e5181b3fac215054d8f1e2e"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-refs.git"},"packageName":"refs"}}}

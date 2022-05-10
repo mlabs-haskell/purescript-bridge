@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-integers.git","sha256":"1rrygw0ai61brnvgap7dfhdzacyhg5439pz6yrmmyg32cvf0znhv","rev":"8a783f2d92596c43afca53066ac18eb389d15981"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-integers.git"},"packageName":"integers"}}}

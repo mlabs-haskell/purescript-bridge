@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-js-uri.git","sha256":"1q34ir93cqbcl9g49vv1qfj8jxbbdj7f85a14y4mzd7yjq0a042g","rev":"6145d5e631be3d57d8a4a9cf976ae140713dee35"},"package":{"version":"v2.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-js-uri.git"},"packageName":"js-uri"}}}

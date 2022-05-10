@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-distributive.git","sha256":"0788znmdyh6b1c9pln624ah397l88xmd3fxlxiy3z1qy8bzr4r54","rev":"11f3f87ca5720899e1739cedb58dd6227cae6ad5"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-distributive.git"},"packageName":"distributive"}}}

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-functions.git","sha256":"1gnk6xh5x04zcahn82gwp49qpglxd5jkfqn0i58m27jfihvblaxd","rev":"691b3345bc2feaf914e5299796c606b6a6bf9ca9"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-functions.git"},"packageName":"functions"}}}

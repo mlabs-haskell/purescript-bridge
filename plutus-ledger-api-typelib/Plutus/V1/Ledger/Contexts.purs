@@ -24,6 +24,7 @@ import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.Nat (S, Z)
 import Types.Value (CurrencySymbol, Value)
 
 newtype TxInfo = TxInfo

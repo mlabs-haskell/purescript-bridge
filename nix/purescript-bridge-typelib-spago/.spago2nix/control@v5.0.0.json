@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-control.git","sha256":"06dc06yli4g5yr8fb9sdpqbhiaff37g977qcsbds9q2mlhnjgfx9","rev":"18d582e311f1f8523f9eb55fb93c91bd21e22837"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-control.git"},"packageName":"control"}}}

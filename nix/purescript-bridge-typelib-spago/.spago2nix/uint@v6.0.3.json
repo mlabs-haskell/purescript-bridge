@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-uint.git","sha256":"1lwbkwc3yj0d5qmw7gni924wj47npgy1aqbc0ika4phc4q0shw8d","rev":"17fda2aff989ad7fa9f29171bf4c1196ca9ed504"},"package":{"version":"v6.0.3","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-uint.git"},"packageName":"uint"}}}

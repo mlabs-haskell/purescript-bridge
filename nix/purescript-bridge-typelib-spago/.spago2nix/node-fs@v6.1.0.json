@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-node/purescript-node-fs.git","sha256":"1w97m2afn7yn757niknkbk7w6nyg4n5dabxr7gzfz368z1nkf45s","rev":"09a2b71a3a86f0cd19c46f4b6c40310cc1648909"},"package":{"version":"v6.1.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-node/purescript-node-fs.git"},"packageName":"node-fs"}}}

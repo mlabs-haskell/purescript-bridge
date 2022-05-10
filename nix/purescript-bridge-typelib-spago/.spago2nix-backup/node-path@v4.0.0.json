@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-node/purescript-node-path.git","sha256":"1384qyf4v84wbahafzvqdxjllqy8qkd5dpkhsl3js444vsm2aplr","rev":"a2d7cf05e40b607ef7d048a3684cda788cd42890"},"package":{"version":"v4.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-node/purescript-node-path.git"},"packageName":"node-path"}}}

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-web/purescript-web-xhr.git","sha256":"0hzmqga8l24l20kyd98bcpd8bmz7by14vl311m9yfdg5mjkjg42g","rev":"997b87caa6dcdf66b6db22f29f522d722559956b"},"package":{"version":"v4.1.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-web/purescript-web-xhr.git"},"packageName":"web-xhr"}}}

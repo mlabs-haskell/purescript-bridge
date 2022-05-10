@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-assert.git","sha256":"0r1l7j67an8dy1w4xdpr8nc30lsxv31xwqph9mkfh3nd49jlyyd3","rev":"71a3b1f3b9917c23691fdbb1858de171be871a10"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-assert.git"},"packageName":"assert"}}}

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-tuples.git","sha256":"0s2ar2gih4r34km8r8dqngh21s8899yb93mb7mips08ndy3ajq3a","rev":"d4fe8ffe9e8c512111ee0bc18a6ba0fd056a6773"},"package":{"version":"v6.0.1","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-tuples.git"},"packageName":"tuples"}}}
