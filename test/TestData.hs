@@ -41,6 +41,7 @@ import Language.PureScript.Bridge (
   (^==),
  )
 import Language.PureScript.Bridge.PSTypes (psString)
+import Plutus.V1.Ledger.Scripts (MintingPolicy, Validator)
 import PlutusTx.Aux (mkIndicesDefault)
 import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
 
@@ -126,3 +127,9 @@ t :: TypeInfo 'PureScript
 cs :: [(Int, DataConstructor 'PureScript)]
 psB :: SumType 'PureScript
 psB@(SumType t cs _) = bridgeSumType (buildBridge defaultBridge) b
+
+data RecordWithPlutusScripts = RecordWithPlutusScripts
+  { mintingPolicy :: MintingPolicy
+  , validator :: Validator
+  }
+  deriving stock (Generic, Typeable, Show)

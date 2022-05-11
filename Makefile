@@ -23,7 +23,7 @@ build-all:
 build-plutus-ledger-api-typelib:
 	$(NIX_BUILD) .#packages.${current-system}.plutus-ledger-api-typelib
 
-build-plutus-sample-ledger-api-typelib:
+build-sample-plutus-ledger-api-typelib:
 	$(NIX_BUILD) .#packages.${current-system}.sample-plutus-ledger-api-typelib
 
 build-test-all: build-all test-all

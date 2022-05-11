@@ -3,6 +3,7 @@ module Plutus.V1.Ledger.Value where
 
 import Prelude
 
+import Cardano.Types.Value (CurrencySymbol)
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -15,7 +16,7 @@ import Data.Tuple (Tuple, Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import Types.Value (CurrencySymbol, TokenName)
+import Types.TokenName (TokenName)
 
 newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
 

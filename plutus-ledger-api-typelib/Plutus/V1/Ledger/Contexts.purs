@@ -3,6 +3,7 @@ module Plutus.V1.Ledger.Contexts where
 
 import Prelude
 
+import Cardano.Types.Value (CurrencySymbol)
 import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
@@ -14,6 +15,7 @@ import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple, Tuple(Tuple))
 import FromData (class FromData, genericFromData)
+import Plutus.Types.Value (Value)
 import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import Plutus.V1.Ledger.DCert (DCert)
@@ -24,7 +26,6 @@ import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import Types.Value (CurrencySymbol, Value)
 
 newtype TxInfo = TxInfo
   { txInfoInputs :: Array TxInInfo
