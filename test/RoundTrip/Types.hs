@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wno-missing-export-lists #-}
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
@@ -13,6 +14,9 @@ import Data.Map (Map)
 import Data.Set (Set)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..), chooseEnum, oneof, resize, sized)
+import qualified PlutusTx as P
+import PlutusTx.Aux
+import PlutusTx.ConstrIndices
 
 data TestData
   = Maybe (Maybe TestSum)
@@ -198,3 +202,58 @@ instance ToJSON MyUnit
 
 instance Arbitrary MyUnit where
   arbitrary = pure U
+
+newtype ANewtype = ANewtype Bool
+  deriving stock (Show, Eq, Generic)
+  deriving newtype (P.ToData,P.FromData,P.UnsafeFromData)
+
+instance FromJSON ANewtype
+
+instance ToJSON ANewtype
+
+instance Arbitrary ANewtype where
+  arbitrary = ANewtype <$> arbitrary
+
+newtype ANewtypeRec = ANewtypeRec {ntrec :: ANewtype}
+  deriving stock (Show, Eq, Generic)
+  deriving newtype (P.ToData, P.FromData,P.UnsafeFromData)
+
+instance Arbitrary ANewtypeRec where
+  arbitrary = ANewtypeRec <$> arbitrary
+
+instance FromJSON ANewtypeRec
+
+instance ToJSON ANewtypeRec
+
+data ARecord = ARecord {
+    field1 :: Bool,
+    field2 :: Either Bool [Bool],
+    field3 :: Maybe Bool
+  } deriving stock (Show, Eq, Generic)
+
+instance Arbitrary ARecord where
+  arbitrary = ARecord <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance FromJSON ARecord
+
+instance ToJSON ARecord
+
+data ASum
+  = ASumNT ANewtype
+  | ASumNTRec ANewtypeRec
+  | ASumRec ARecord
+  deriving stock (Show, Eq, Generic)
+
+instance FromJSON ASum
+
+instance ToJSON ASum
+
+instance Arbitrary ASum where
+  arbitrary
+    = oneof
+      [ ASumNT <$> arbitrary
+      , ASumNTRec <$> arbitrary
+      , ASumRec <$> arbitrary]
+
+unstableMakeIsData ''ARecord
+unstableMakeIsData ''ASum

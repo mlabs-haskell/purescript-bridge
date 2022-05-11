@@ -14,18 +14,20 @@ import Data.Either (Either(Left, Right))
 import Effect (Effect)
 import Effect.Class.Console (error, log)
 import Node.ReadLine (createConsoleInterface, noCompletion, question)
-import RoundTrip.Types (TestData)
+import RoundTrip.Types (ASum)
+import ToData(toData)
+import Data.BigInt
 
 main :: Effect Unit
 main = do
   interface <- createConsoleInterface noCompletion
-  log "ready"
+  --log "ready"
   go interface
   where
   go interface =
     interface # question "" \input -> do
       let
-        parsed :: Either JsonDecodeError TestData
+        parsed :: Either JsonDecodeError ASum
         parsed = decodeJson =<< parseJson input
       case parsed of
         Left err -> do
@@ -34,6 +36,6 @@ main = do
           log ""
         Right testData -> do
           error ""
-          log $ stringify $ encodeJson testData
+          log $ show (toData testData)
       go interface
 

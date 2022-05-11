@@ -2,11 +2,12 @@
 , dependencies =
   [ "argonaut-codecs"
   , "argonaut-core"
+  , "bigints"
+  , "cardano-transaction-lib"
   , "console"
   , "control"
   , "effect"
   , "either"
-  , "enums"
   , "json-helpers"
   , "maybe"
   , "newtype"
