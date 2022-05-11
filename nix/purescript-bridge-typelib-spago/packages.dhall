@@ -174,7 +174,7 @@ let additions =
           , "variant"
           ]
         , repo = "https://github.com/plutonomicon/cardano-transaction-lib.git"
-        , version = "39b52219e364fee0dceefa9af690cb3d93dc85d1"
+        , version = "db550096e67bfb5ab3ce54134fcdde9cc34f7784"
         }
       , properties =
         { dependencies = [ "prelude", "console" ]
