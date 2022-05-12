@@ -8,6 +8,7 @@
   , "control"
   , "effect"
   , "either"
+  , "enums"
   , "json-helpers"
   , "maybe"
   , "newtype"

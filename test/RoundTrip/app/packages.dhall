@@ -121,16 +121,17 @@ let additions =
           , "arrays"
           , "bifunctors"
           , "bigints"
+          , "checked-exceptions"
           , "console"
           , "const"
           , "control"
+          , "debug"
           , "effect"
           , "either"
           , "encoding"
           , "enums"
           , "exceptions"
           , "foldable-traversable"
-          , "foreign"
           , "foreign-object"
           , "gen"
           , "identity"
@@ -169,11 +170,11 @@ let additions =
           , "uint"
           , "undefined"
           , "unfoldable"
-          , "unsafe-coerce"
           , "untagged-union"
+          , "variant"
           ]
         , repo = "https://github.com/gnumonik/cardano-transaction-lib.git"
-        , version = "06773f0bce72ba415f258f4bb66651101646261f"
+        , version = "01c2c0e62ae596e2f3850e486e1d3f5842dc39d3"
         }
       , properties =
         { dependencies = [ "prelude", "console" ]

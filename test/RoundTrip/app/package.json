@@ -1,0 +1,16 @@
+{
+  "author": "",
+  "dependencies": {
+    "big-integer": "^1.6.51"
+  },
+  "description": "",
+  "devDependencies": {},
+  "directories": {
+    "test": "test"
+  },
+  "license": "ISC",
+  "main": "js/api.js",
+  "name": "purescript-bridge-rountrip-test",
+  "scripts": {},
+  "version": "1.0.0"
+}

@@ -126,7 +126,7 @@ roundtripSpec = do
         defaultSwitch
         "src"
         (buildBridge myBridge)
-        myTypes
+        (myTypes <> myPlutusTypes)
 
 myPlutusTypes :: [SumType 'Haskell]
 myPlutusTypes =
