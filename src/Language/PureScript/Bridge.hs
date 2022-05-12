@@ -167,7 +167,6 @@ import Language.PureScript.Bridge.SumType as Bridge (
   customImplementation,
   equal,
   equal1,
-  extremelyUnsafeMkSumType,
   functor,
   genericShow,
   getUsedTypes,
@@ -180,8 +179,9 @@ import Language.PureScript.Bridge.SumType as Bridge (
   memberDependencies,
   memberImportLines,
   memberName,
+  mkPlutusDataType,
+  mkPlutusNewtype,
   mkSumType,
-  mkSumTypeIndexed,
   nootype,
   order,
   recLabel,
@@ -190,6 +190,7 @@ import Language.PureScript.Bridge.SumType as Bridge (
   sigValues,
   sumTypeConstructors,
   sumTypeInfo,
+  unsafeMkPlutusDataType,
  )
 import Language.PureScript.Bridge.Tuple as Bridge (
   TupleParserState (..),
@@ -326,7 +327,8 @@ bridgeSumType br (SumType t cs is) =
     bridgeInstance Ord = Ord
     bridgeInstance Generic = Generic
     bridgeInstance Newtype = Newtype
-    bridgeInstance HasConstrIndex = HasConstrIndex
+    bridgeInstance PlutusData = PlutusData
+    bridgeInstance PlutusNewtype = PlutusNewtype
     bridgeInstance ToData = ToData
     bridgeInstance FromData = FromData
 

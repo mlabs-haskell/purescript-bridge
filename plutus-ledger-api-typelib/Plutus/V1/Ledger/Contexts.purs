@@ -3,8 +3,6 @@ module Plutus.V1.Ledger.Contexts where
 
 import Prelude
 
-import Cardano.Types.Value (CurrencySymbol)
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -15,6 +13,7 @@ import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple, Tuple(Tuple))
 import FromData (class FromData, genericFromData)
+import Plutus.Types.CurrencySymbol (CurrencySymbol)
 import Plutus.Types.Value (Value)
 import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
@@ -26,6 +25,25 @@ import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
 import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
+import TypeLevel.Nat (S, Z)
 
 newtype TxInfo = TxInfo
   { txInfoInputs :: Array TxInInfo
@@ -47,18 +65,56 @@ derive instance Generic TxInfo _
 
 derive instance Newtype TxInfo _
 
-instance HasConstrIndices TxInfo where
-  constrIndices _ = fromConstr2Index [Tuple "TxInfo" 0]
+instance
+  HasPlutusSchema TxInfo
+    ( "TxInfo"
+        :=
+          ( "txInfoInputs" := I (Array TxInInfo)
+              :+ "txInfoOutputs"
+              := I (Array TxOut)
+              :+ "txInfoFee"
+              := I Value
+              :+ "txInfoMint"
+              := I Value
+              :+ "txInfoDCert"
+              := I (Array DCert)
+              :+ "txInfoWdrl"
+              := I (Array (Tuple StakingCredential BigInt))
+              :+ "txInfoValidRange"
+              := I (Interval POSIXTime)
+              :+ "txInfoSignatories"
+              := I (Array PubKeyHash)
+              :+ "txInfoData"
+              := I (Array (Tuple DatumHash Datum))
+              :+ "txInfoId"
+              := I TxId
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData TxInfo where
   toData x = genericToData x
 
 instance FromData TxInfo where
-  fromData pd = genericFromData pd
+  fromData x = genericFromData x
 
 --------------------------------------------------------------------------------
 
-_TxInfo :: Iso' TxInfo {txInfoInputs :: Array TxInInfo, txInfoOutputs :: Array TxOut, txInfoFee :: Value, txInfoMint :: Value, txInfoDCert :: Array DCert, txInfoWdrl :: Array (Tuple StakingCredential BigInt), txInfoValidRange :: Interval POSIXTime, txInfoSignatories :: Array PubKeyHash, txInfoData :: Array (Tuple DatumHash Datum), txInfoId :: TxId}
+_TxInfo
+  :: Iso' TxInfo
+       { txInfoInputs :: Array TxInInfo
+       , txInfoOutputs :: Array TxOut
+       , txInfoFee :: Value
+       , txInfoMint :: Value
+       , txInfoDCert :: Array DCert
+       , txInfoWdrl :: Array (Tuple StakingCredential BigInt)
+       , txInfoValidRange :: Interval POSIXTime
+       , txInfoSignatories :: Array PubKeyHash
+       , txInfoData :: Array (Tuple DatumHash Datum)
+       , txInfoId :: TxId
+       }
 _TxInfo = _Newtype
 
 --------------------------------------------------------------------------------
@@ -75,18 +131,29 @@ derive instance Generic TxInInfo _
 
 derive instance Newtype TxInInfo _
 
-instance HasConstrIndices TxInInfo where
-  constrIndices _ = fromConstr2Index [Tuple "TxInInfo" 0]
+instance
+  HasPlutusSchema TxInInfo
+    ( "TxInInfo"
+        :=
+          ( "txInInfoOutRef" := I TxOutRef
+              :+ "txInInfoResolved"
+              := I TxOut
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData TxInInfo where
   toData x = genericToData x
 
 instance FromData TxInInfo where
-  fromData pd = genericFromData pd
+  fromData x = genericFromData x
 
 --------------------------------------------------------------------------------
 
-_TxInInfo :: Iso' TxInInfo {txInInfoOutRef :: TxOutRef, txInInfoResolved :: TxOut}
+_TxInInfo
+  :: Iso' TxInInfo { txInInfoOutRef :: TxOutRef, txInInfoResolved :: TxOut }
 _TxInInfo = _Newtype
 
 --------------------------------------------------------------------------------
@@ -103,18 +170,30 @@ derive instance Generic ScriptContext _
 
 derive instance Newtype ScriptContext _
 
-instance HasConstrIndices ScriptContext where
-  constrIndices _ = fromConstr2Index [Tuple "ScriptContext" 0]
+instance
+  HasPlutusSchema ScriptContext
+    ( "ScriptContext"
+        :=
+          ( "scriptContextTxInfo" := I TxInfo
+              :+ "scriptContextPurpose"
+              := I ScriptPurpose
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData ScriptContext where
   toData x = genericToData x
 
 instance FromData ScriptContext where
-  fromData pd = genericFromData pd
+  fromData x = genericFromData x
 
 --------------------------------------------------------------------------------
 
-_ScriptContext :: Iso' ScriptContext {scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose}
+_ScriptContext
+  :: Iso' ScriptContext
+       { scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose }
 _ScriptContext = _Newtype
 
 --------------------------------------------------------------------------------
@@ -130,14 +209,27 @@ instance Show ScriptPurpose where
 
 derive instance Generic ScriptPurpose _
 
-instance HasConstrIndices ScriptPurpose where
-  constrIndices _ = fromConstr2Index [Tuple "Minting" 0,Tuple "Spending" 1,Tuple "Rewarding" 2,Tuple "Certifying" 3]
+instance
+  HasPlutusSchema ScriptPurpose
+    ( "Minting" := PNil
+        @@ (Z)
+        :+ "Spending"
+        := PNil
+        @@ (S (Z))
+        :+ "Rewarding"
+        := PNil
+        @@ (S (S (Z)))
+        :+ "Certifying"
+        := PNil
+        @@ (S (S (S (Z))))
+        :+ PNil
+    )
 
 instance ToData ScriptPurpose where
   toData x = genericToData x
 
 instance FromData ScriptPurpose where
-  fromData pd = genericFromData pd
+  fromData x = genericFromData x
 
 --------------------------------------------------------------------------------
 

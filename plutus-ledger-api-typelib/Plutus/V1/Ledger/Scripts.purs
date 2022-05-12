@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Scripts where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -11,14 +10,13 @@ import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
-import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 import Types.PlutusData (PlutusData)
 
-newtype Redeemer = Redeemer { getRedeemer :: PlutusData }
+newtype Redeemer = Redeemer PlutusData
 
 instance Show Redeemer where
   show a = genericShow a
@@ -27,23 +25,18 @@ derive instance Generic Redeemer _
 
 derive instance Newtype Redeemer _
 
-instance HasConstrIndices Redeemer where
-  constrIndices _ = fromConstr2Index [Tuple "Redeemer" 0]
+derive newtype instance ToData Redeemer
 
-instance ToData Redeemer where
-  toData x = genericToData x
-
-instance FromData Redeemer where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Redeemer
 
 --------------------------------------------------------------------------------
 
-_Redeemer :: Iso' Redeemer {getRedeemer :: PlutusData}
+_Redeemer :: Iso' Redeemer PlutusData
 _Redeemer = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype Datum = Datum { getDatum :: PlutusData }
+newtype Datum = Datum PlutusData
 
 instance Show Datum where
   show a = genericShow a
@@ -52,23 +45,18 @@ derive instance Generic Datum _
 
 derive instance Newtype Datum _
 
-instance HasConstrIndices Datum where
-  constrIndices _ = fromConstr2Index [Tuple "Datum" 0]
+derive newtype instance ToData Datum
 
-instance ToData Datum where
-  toData x = genericToData x
-
-instance FromData Datum where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Datum
 
 --------------------------------------------------------------------------------
 
-_Datum :: Iso' Datum {getDatum :: PlutusData}
+_Datum :: Iso' Datum PlutusData
 _Datum = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype ScriptHash = ScriptHash { getScriptHash :: ByteArray }
+newtype ScriptHash = ScriptHash ByteArray
 
 instance Show ScriptHash where
   show a = genericShow a
@@ -77,18 +65,13 @@ derive instance Generic ScriptHash _
 
 derive instance Newtype ScriptHash _
 
-instance HasConstrIndices ScriptHash where
-  constrIndices _ = fromConstr2Index [Tuple "ScriptHash" 0]
+derive newtype instance ToData ScriptHash
 
-instance ToData ScriptHash where
-  toData x = genericToData x
-
-instance FromData ScriptHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData ScriptHash
 
 --------------------------------------------------------------------------------
 
-_ScriptHash :: Iso' ScriptHash {getScriptHash :: ByteArray}
+_ScriptHash :: Iso' ScriptHash ByteArray
 _ScriptHash = _Newtype
 
 --------------------------------------------------------------------------------
@@ -102,14 +85,9 @@ derive instance Generic ValidatorHash _
 
 derive instance Newtype ValidatorHash _
 
-instance HasConstrIndices ValidatorHash where
-  constrIndices _ = fromConstr2Index [Tuple "ValidatorHash" 0]
+derive newtype instance ToData ValidatorHash
 
-instance ToData ValidatorHash where
-  toData x = genericToData x
-
-instance FromData ValidatorHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData ValidatorHash
 
 --------------------------------------------------------------------------------
 
@@ -127,14 +105,9 @@ derive instance Generic DatumHash _
 
 derive instance Newtype DatumHash _
 
-instance HasConstrIndices DatumHash where
-  constrIndices _ = fromConstr2Index [Tuple "DatumHash" 0]
+derive newtype instance ToData DatumHash
 
-instance ToData DatumHash where
-  toData x = genericToData x
-
-instance FromData DatumHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData DatumHash
 
 --------------------------------------------------------------------------------
 
@@ -152,14 +125,9 @@ derive instance Generic MintingPolicyHash _
 
 derive instance Newtype MintingPolicyHash _
 
-instance HasConstrIndices MintingPolicyHash where
-  constrIndices _ = fromConstr2Index [Tuple "MintingPolicyHash" 0]
+derive newtype instance ToData MintingPolicyHash
 
-instance ToData MintingPolicyHash where
-  toData x = genericToData x
-
-instance FromData MintingPolicyHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData MintingPolicyHash
 
 --------------------------------------------------------------------------------
 
@@ -177,14 +145,9 @@ derive instance Generic StakeValidatorHash _
 
 derive instance Newtype StakeValidatorHash _
 
-instance HasConstrIndices StakeValidatorHash where
-  constrIndices _ = fromConstr2Index [Tuple "StakeValidatorHash" 0]
+derive newtype instance ToData StakeValidatorHash
 
-instance ToData StakeValidatorHash where
-  toData x = genericToData x
-
-instance FromData StakeValidatorHash where
-  fromData pd = genericFromData pd
+derive newtype instance FromData StakeValidatorHash
 
 --------------------------------------------------------------------------------
 

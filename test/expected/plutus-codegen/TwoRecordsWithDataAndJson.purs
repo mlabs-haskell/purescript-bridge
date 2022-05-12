@@ -3,7 +3,6 @@ module TestData where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Control.Lazy (defer)
 import Data.Argonaut.Core (jsonNull)
 import Data.Argonaut.Decode (class DecodeJson, decodeJson)
@@ -17,6 +16,8 @@ import Data.Tuple (Tuple(Tuple))
 import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.Nat (S, Z)
 import Data.Argonaut.Decode.Aeson as D
 import Data.Argonaut.Encode.Aeson as E
 import Data.Map as Map
@@ -59,11 +60,21 @@ instance DecodeJson TwoRecords where
 
 derive instance Generic TwoRecords _
 
-instance HasConstrIndices TwoRecords where
-  constrIndices _ = fromConstr2Index [Tuple "FirstRecord" 0,Tuple "SecondRecord" 1]
+instance HasPlutusSchema TwoRecords
+  ("FirstRecord" :=
+     ("_fra" := I String
+     :+ "_frb" := I Int
+     :+ PNil)
+   @@ (Z)
+  :+ "SecondRecord" :=
+       ("_src" := I Int
+       :+ "_srd" := I (Array Int)
+       :+ PNil)
+     @@ (S (Z))
+  :+ PNil)
 
 instance ToData TwoRecords where
   toData x = genericToData x
 
 instance FromData TwoRecords where
-  fromData pd = genericFromData pd
+  fromData x = genericFromData x

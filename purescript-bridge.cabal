@@ -20,7 +20,9 @@ common common-lang
     -Wno-partial-type-signatures -Wmissing-export-lists
     -Wincomplete-record-updates -Wmissing-deriving-strategies
     -Wno-name-shadowing -Wunused-foralls -fprint-explicit-foralls
-    -fprint-explicit-kinds -fwarn-missing-import-lists -Werror
+    -fprint-explicit-kinds -fwarn-missing-import-lists -threaded
+
+  -- -Werror
 
   build-depends:      base
   default-extensions:

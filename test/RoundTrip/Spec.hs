@@ -4,10 +4,11 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
-module RoundTrip.Spec (roundtripSpec) where
+module RoundTrip.Spec (roundtripSpec, stupidTest) where
 
+import Control.Concurrent (forkIO, threadDelay)
 import Control.Exception (bracket)
-import Control.Monad (guard, unless)
+import Control.Monad
 import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
 import Data.List (isInfixOf)
@@ -22,12 +23,20 @@ import Language.PureScript.Bridge (
   equal,
   functor,
   genericShow,
+  mkPlutusNewtype,
   mkSumType,
   order,
+  unsafeMkPlutusDataType,
   writePSTypesWith,
  )
 import Language.PureScript.Bridge.TypeParameters (A)
+import PlutusTx
+import PlutusTx.LedgerTypes
 import RoundTrip.Types (
+  ANewtype,
+  ANewtypeRec,
+  ARecord,
+  ASum,
   MyUnit,
   TestData,
   TestEnum,
@@ -50,6 +59,7 @@ import System.Process (
  )
 import Test.HUnit (assertBool, assertEqual)
 import Test.Hspec (Spec, around, aroundAll_, describe, it)
+import Test.QuickCheck (arbitrary, generate)
 import Test.QuickCheck.Property (Testable (property))
 
 myBridge :: BridgePart
@@ -117,3 +127,44 @@ roundtripSpec = do
         "src"
         (buildBridge myBridge)
         myTypes
+
+myPlutusTypes :: [SumType 'Haskell]
+myPlutusTypes =
+  [ equal . genericShow . argonaut $ mkPlutusNewtype @ANewtype
+  , equal . genericShow . argonaut $ mkPlutusNewtype @ANewtypeRec
+  , equal . genericShow . argonaut $ unsafeMkPlutusDataType @ARecord
+  , equal . genericShow . argonaut $ unsafeMkPlutusDataType @ASum
+  ]
+
+stupidTest :: IO ()
+stupidTest = do
+  putStrLn "writing plutus types...\n"
+  withCurrentDirectory "test/RoundTrip/app" $ writePlutusTypes "src" myPlutusTypes
+
+  aSum <- generate $ arbitrary @ASum
+
+  let input = toString $ encode @ASum aSum
+
+  putStrLn "Generated ASum:\n"
+  print aSum
+  putStrLn "\nPlutus Data:"
+  print (toData aSum)
+  putStrLn "\nJSON:"
+  putStrLn input
+
+  putStrLn "\nstarting PureScript process..."
+  (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
+  mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
+  threadDelay 2000000
+  --err <- hGetLine herr
+  --unless (null err) $ putStrLn err
+
+  forkIO $ putStrLn "\nSending ASum to PureScript...\n"
+  let input = toString $ encode @ASum aSum
+  forkIO $ hPutStrLn hin input
+  --err' <- hGetLine herr
+  --unless (null err') $ putStrLn err
+
+  output <- hGetLine hout
+  putStrLn "\npurescript output:"
+  putStrLn output
