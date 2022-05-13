@@ -131,6 +131,7 @@ test-suite tests
   build-depends:
     , aeson
     , base
+    , base16-bytestring
     , bytestring
     , containers
     , directory
@@ -138,11 +139,13 @@ test-suite tests
     , hspec-core
     , hspec-expectations
     , HUnit
+    , plutus-core
     , plutus-ledger-api
     , plutus-tx
     , process
     , purescript-bridge
     , QuickCheck
+    , serialise
     , text
     , utf8-string
     , wl-pprint-text

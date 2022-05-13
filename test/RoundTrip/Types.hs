@@ -23,6 +23,8 @@ module RoundTrip.Types (
   TestRecursiveB (..),
   TestSum (..),
   TestTwoFields (..),
+  TestPlutusData (..),
+  TestPlutusDataSum (..),
 ) where
 
 import Data.Aeson (FromJSON, ToJSON)
@@ -279,3 +281,26 @@ data Response = RespParseJson String | RespParsePlutusData String
 
 instance FromJSON Response
 instance ToJSON Response
+
+data TestPlutusData
+  = PdMaybe (Maybe TestPlutusDataSum)
+  | PdEither (Either (Maybe Bool) (Maybe Bool))
+  deriving stock (Show, Eq, Generic)
+
+instance Arbitrary TestPlutusData where
+  arbitrary =
+    oneof
+      [ PdMaybe <$> arbitrary
+      , PdEither <$> arbitrary
+      ]
+
+data TestPlutusDataSum = A deriving stock (Show, Eq, Generic)
+
+instance Arbitrary TestPlutusDataSum where
+  arbitrary =
+    oneof
+      [ pure A
+      ]
+
+unstableMakeIsData ''TestPlutusData
+unstableMakeIsData ''TestPlutusDataSum

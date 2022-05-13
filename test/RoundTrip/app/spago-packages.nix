@@ -149,6 +149,18 @@ let
       installPhase = "ln -s $src $out";
     };
 
+    "b64" = pkgs.stdenv.mkDerivation {
+      name = "b64";
+      version = "v0.0.7";
+      src = pkgs.fetchgit {
+        url = "https://github.com/menelaos/purescript-b64.git";
+        rev = "3aa40575e916de51d6655c35c26a92f33b10a1ef";
+        sha256 = "0xrizr7lcyjzhsrzg3jdqvk44d9ghp3jaqqkjfcqchvdhgypwpp3";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
     "bifunctors" = pkgs.stdenv.mkDerivation {
       name = "bifunctors";
       version = "v5.0.0";

@@ -17,7 +17,8 @@
   , "prelude"
   , "profunctor-lenses"
   , "tuples"
+  , "b64"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs" ]
+, sources = [ "src/**/*.purs", "generated/**/*.purs" ]
 }

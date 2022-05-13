@@ -5,13 +5,15 @@
 
 module RoundTrip.Spec (roundtripSpec, stupidTest) where
 
+import Codec.Serialise qualified as Cbor
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (guard, unless)
 import Data.Aeson (eitherDecode, encode)
+import Data.ByteString.Base16 qualified as Base16
+import Data.ByteString.Lazy (fromStrict, toStrict)
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
 import Data.List (isInfixOf)
 import Language.PureScript.Bridge (
-  BridgePart,
   Language (Haskell),
   SumType,
   argonaut,
@@ -29,20 +31,23 @@ import Language.PureScript.Bridge (
  )
 import Language.PureScript.Bridge.TypeParameters (A)
 import PlutusTx (toData)
-import PlutusTx.LedgerTypes (writePlutusTypes)
+import PlutusTx.IsData.Class (fromData)
+import PlutusTx.LedgerTypes (plutusLedgerApiBridge, writePlutusTypes)
 import RoundTrip.Types (
   ANewtype,
   ANewtypeRec,
   ARecord,
   ASum,
   MyUnit,
-  Request (ReqParseJson),
+  Request (ReqParseJson, ReqParsePlutusData),
   Response (RespParseJson, RespParsePlutusData),
   TestData,
   TestEnum,
   TestMultiInlineRecords,
   TestNewtype,
   TestNewtypeRecord,
+  TestPlutusData,
+  TestPlutusDataSum,
   TestRecord,
   TestRecursiveA,
   TestRecursiveB,
@@ -75,7 +80,7 @@ roundtripSpec = do
         (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
         assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
 
-  (hin, hout, herr, hproc) <- runIO startPurescript
+  (hin, hout, herr, hproc) <- runIO $ startPurescript defaultBridge myTypes
   describe "Round trip tests (Purescript <-> Haskell)" do
     it "should have a Purescript process running" $ do
       mayPid <- getPid hproc
@@ -84,7 +89,7 @@ roundtripSpec = do
         (\_ -> return ())
         mayPid
 
-    it "should produce aeson-compatible argonaut instances" $ do
+    it "should produce Aeson-compatible representations" $ do
       property $
         \testData ->
           do
@@ -112,9 +117,62 @@ roundtripSpec = do
               (Right testData)
               (eitherDecode @TestData (fromString jsonResp))
   runIO $ stopPurescript hproc
+  (hin, hout, herr, hproc) <- runIO $ startPurescript plutusLedgerApiBridge myPlutusTypes
+  describe
+    "Round trip tests (Purescript <-> Haskell) with ledger bridge"
+    do
+      it "should have a Purescript process running" $ do
+        mayPid <- getPid hproc
+        maybe
+          (assertFailure "No process running")
+          (\_ -> return ())
+          mayPid
+      it "should produce PlutusData compatible representations" $ do
+        property $
+          \testPlutusData ->
+            do
+              -- Prepare request
+              let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
+                  req = toString $ encode @Request (ReqParsePlutusData payload)
+              -- IPC
+              hPutStrLn hin req
+              err <- hGetLine herr
+              output <- hGetLine hout
+              -- Assert response
+              resp <-
+                either
+                  (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
+                  return
+                  (eitherDecode @Response $ fromString output)
+              pdResp <-
+                response
+                  return
+                  (\json -> assertFailure $ "hs> Wanted RespParsePlutusData got RespParseJson: " <> json)
+                  resp
+              cbor <-
+                either
+                  (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
+                  return
+                  (decodeBase16 pdResp)
+              pd <-
+                either
+                  (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
+                  return
+                  (Cbor.deserialiseOrFail cbor)
+              assertEqual "hs> Purescript shouldn't report an error" "" err
+              assertEqual
+                "hs> Round trip for payload should be ok"
+                (Just testPlutusData)
+                (fromData @TestPlutusData pd)
+  runIO $ stopPurescript hproc
   where
     response js _ (RespParseJson payload) = js payload
     response _ pd (RespParsePlutusData payload) = pd payload
+
+    encodeBase16 = toString . fromStrict . Base16.encode . toStrict
+    decodeBase16 str = do
+      bs <- Base16.decode $ toStrict . fromString $ str
+      return $ fromStrict bs
 
     spagoRun = do
       (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
@@ -131,44 +189,46 @@ roundtripSpec = do
 
     stopPurescript = terminateProcess
 
-    startPurescript = do
+    startPurescript bridge types = do
       withCurrentDirectory "test/RoundTrip/app" do
-        generateBridgedFiles
+        generateBridgedFiles bridge types
         spagoRun
 
-    generateBridgedFiles = do
+    generateBridgedFiles bridge types = do
       writePSTypesWith
         defaultSwitch
-        "src"
-        (buildBridge myBridge)
-        (myTypes <> myPlutusTypes)
-
-myBridge :: BridgePart
-myBridge = defaultBridge
+        "generated"
+        (buildBridge bridge)
+        types
 
 myTypes :: [SumType 'Haskell]
 myTypes =
-  [ equal . genericShow . order . argonaut $ mkSumType @TestData
-  , equal . genericShow . order . argonaut $ mkSumType @TestSum
-  , equal . genericShow . order . argonaut $ mkSumType @TestRecursiveA
-  , equal . genericShow . order . argonaut $ mkSumType @TestRecursiveB
-  , functor . equal . genericShow . order . argonaut $ mkSumType @(TestRecord A)
-  , equal . genericShow . order . argonaut $ mkSumType @TestNewtype
-  , equal . genericShow . order . argonaut $ mkSumType @TestNewtypeRecord
-  , equal . genericShow . order . argonaut $ mkSumType @TestMultiInlineRecords
-  , equal . genericShow . order . argonaut $ mkSumType @TestTwoFields
-  , equal . genericShow . order . argonaut $ mkSumType @TestEnum
-  , equal . genericShow . order . argonaut $ mkSumType @MyUnit
-  , equal . genericShow . order . argonaut $ mkSumType @Request
-  , equal . genericShow . order . argonaut $ mkSumType @Response
-  ]
+  argonaut
+    <$> [ equal . genericShow . order $ mkSumType @TestData
+        , equal . genericShow . order $ mkSumType @TestSum
+        , equal . genericShow . order $ mkSumType @TestRecursiveA
+        , equal . genericShow . order $ mkSumType @TestRecursiveB
+        , functor . equal . genericShow . order $ mkSumType @(TestRecord A)
+        , equal . genericShow . order $ mkSumType @TestNewtype
+        , equal . genericShow . order $ mkSumType @TestNewtypeRecord
+        , equal . genericShow . order $ mkSumType @TestMultiInlineRecords
+        , equal . genericShow . order $ mkSumType @TestTwoFields
+        , equal . genericShow . order $ mkSumType @TestEnum
+        , equal . genericShow . order $ mkSumType @MyUnit
+        , equal . genericShow . order $ mkSumType @Request
+        , equal . genericShow . order $ mkSumType @Response
+        , equal . genericShow . order $ mkSumType @TestPlutusData
+        , equal . genericShow . order $ mkSumType @TestPlutusDataSum
+        ]
 
 myPlutusTypes :: [SumType 'Haskell]
 myPlutusTypes =
-  [ equal . genericShow . argonaut $ mkPlutusNewtype @ANewtype
-  , equal . genericShow . argonaut $ mkPlutusNewtype @ANewtypeRec
-  , equal . genericShow . argonaut $ unsafeMkPlutusDataType @ARecord
-  , equal . genericShow . argonaut $ unsafeMkPlutusDataType @ASum
+  [ equal . genericShow $ mkPlutusNewtype @ANewtype
+  , equal . genericShow $ mkPlutusNewtype @ANewtypeRec
+  , equal . genericShow $ unsafeMkPlutusDataType @ARecord
+  , equal . genericShow $ unsafeMkPlutusDataType @ASum
+  , equal . genericShow . order $ unsafeMkPlutusDataType @TestPlutusData
+  , equal . genericShow . order $ unsafeMkPlutusDataType @TestPlutusDataSum
   ]
 
 stupidTest :: IO ()
@@ -188,7 +248,7 @@ stupidTest = do
   putStrLn input
 
   putStrLn "\nstarting PureScript process..."
-  (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
+  (hin, hout, herr, _) <- runInteractiveCommand "spago run"
   mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
   threadDelay 2000000
   --err <- hGetLine herr

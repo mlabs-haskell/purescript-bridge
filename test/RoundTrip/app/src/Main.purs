@@ -2,7 +2,19 @@ module Main
   ( main
   ) where
 
-import Prelude (Unit, bind, discard, pure, unit, (#), ($), (<>), (=<<))
+import Prelude
+  ( Unit
+  , bind
+  , discard
+  , pure
+  , unit
+  , (#)
+  , ($)
+  , (<>)
+  , (=<<)
+  , (<<<)
+  , show
+  )
 import Data.Argonaut.Core (stringify)
 import Data.Argonaut.Decode
   ( JsonDecodeError
@@ -11,16 +23,30 @@ import Data.Argonaut.Decode
   , printJsonDecodeError
   )
 import Data.Argonaut.Encode (encodeJson)
-import Data.Either (Either(Left, Right))
+import Data.Either (either, Either(Left, Right))
 import Effect (Effect)
 import Effect.Class.Console (error, log)
 import Node.ReadLine (createConsoleInterface, noCompletion, question)
-import RoundTrip.Types (TestData, Request(..), Response(..))
--- import ToData (toData)
--- import FromData (fromData)
+import RoundTrip.Types (TestData, TestPlutusData, Request(..), Response(..))
+import ToData (toData)
+import FromData (fromData)
 import Data.BigInt
-
--- import Data.Maybe (Maybe(Nothing, Just))
+import Deserialization.FromBytes (fromBytes', FromBytesError)
+import Error (E)
+import Data.Maybe (Maybe(Nothing, Just))
+import Serialization.Types
+  ( PlutusData
+  )
+import Type.Row (type (+))
+import Types.ByteArray (hexToByteArrayUnsafe)
+import Deserialization.PlutusData as DeserPd
+import Serialization.PlutusData as SerPd
+import Data.String.Base64 as B64
+import Control.Monad.Error.Class (throwError)
+import Data.Maybe (maybe)
+import Types.ByteArray (byteArrayFromAscii, byteArrayToHex)
+import Serialization (toBytes)
+import Untagged.Union (asOneOf)
 
 main :: Effect Unit
 main = do
@@ -39,29 +65,52 @@ main = do
             <> " on input: "
             <> input
           log ""
-        Right req' -> handleReq req'
+        Right req' -> do
+          either
+            ( \err -> do
+                error err
+                log ""
+                throwError err
+            )
+            log $ handleReq req'
       go interface
 
-handleReq :: Request -> Effect Unit
-handleReq (ReqParseJson json) = do
-  let
-    testDataOrErr =
-      decodeJson =<< parseJson json :: Either JsonDecodeError TestData
-  case testDataOrErr of
-    Left err -> do
-      error $ "ps> Wanted TestData got error: " <> printJsonDecodeError err
+handleReq :: Request -> Either String String
+handleReq (ReqParseJson str) = do
+  testData <- either
+    ( \err -> Left $ "ps> Wanted Json got err: " <> printJsonDecodeError err
         <> " on input: "
-        <> json
-      log ""
-    Right testData -> do
-      error ""
-      let payload = stringify $ encodeJson testData
-      log $ stringify $ encodeJson (RespParseJson payload)
-handleReq (ReqParsePlutusData _) = pure unit
--- case (fromData pd) of
---   Nothing -> do
---         error $ "ps> json parsing errored on: " <> pd
---         log ""
---   Just testData -> do
---     error ""
---     log $ toData testData
+        <> str
+    )
+    pure
+    (decodeJson =<< parseJson str :: Either JsonDecodeError TestData)
+  let payload = stringify $ encodeJson testData
+  pure $ stringify $ encodeJson (RespParseJson payload)
+handleReq (ReqParsePlutusData ascii) = do
+  -- Base16 + Cbor (ascii) -> Foreign PlutusData -> CTL PlutusData -> TestPlutusData
+  cbor <- maybe
+    (Left $ "ps> Wanted base16 string got error on input: " <> ascii)
+    pure
+    (byteArrayFromAscii ascii)
+  pdF <- either
+    ( \err -> Left $ "ps> Wanted Foreign PlutusData got error: " <> show err
+        <> "on input: "
+        <> show cbor
+    )
+    pure
+    (fromBytes' cbor :: E (FromBytesError + ()) PlutusData)
+  pdN <- maybe
+    (Left $ "ps> Wanted Native PlutusData got error on input: " <> show cbor)
+    pure
+    (DeserPd.convertPlutusData pdF)
+  testData <- maybe
+    (Left $ "ps> Wanted TestData got error on input: " <> ascii)
+    pure
+    (fromData pdN)
+  -- TestPlutusData -> CTL PlutusData -> Foreign PlutusData -> Base16 + Cbor ascii
+  let pdN' = toData testData
+  pdF' <- maybe
+    (Left $ "ps> Wanted Foreign PlutusData got error on input: " <> show cbor)
+    pure
+    (SerPd.convertPlutusData pdN')
+  pure $ (byteArrayToHex <<< toBytes <<< asOneOf) pdF'
