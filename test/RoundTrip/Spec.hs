@@ -160,7 +160,7 @@ roundTripSpec = do
   where
     doReq hin herr hout req = do
       let jsonReq = toString $ encode @Request req
-      putStrLn jsonReq
+      -- putStrLn jsonReq -- DEBUG
       -- IPC
       hPutStrLn hin jsonReq
       err <- hGetLine herr
