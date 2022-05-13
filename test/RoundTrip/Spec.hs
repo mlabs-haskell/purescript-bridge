@@ -1,6 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
+-- {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
@@ -10,6 +12,7 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Exception (bracket)
 import Control.Monad
 import Data.Aeson (eitherDecode, encode)
+import qualified Data.ByteString.Lazy as BL
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
 import Data.List (isInfixOf)
 import Language.PureScript.Bridge (
@@ -52,16 +55,29 @@ import RoundTrip.Types (
 import System.Directory (withCurrentDirectory)
 import System.Exit (ExitCode (ExitSuccess))
 import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
-import System.Process (
+import System.Process {-(
   readProcessWithExitCode,
   runInteractiveCommand,
   terminateProcess,
- )
+ )-}
 import Test.HUnit (assertBool, assertEqual)
 import Test.Hspec (Spec, around, aroundAll_, describe, it)
 import Test.QuickCheck (arbitrary, generate)
 import Test.QuickCheck.Property (Testable (property))
 
+import           Control.Applicative      ((*>))
+import           Control.Concurrent.Async (Concurrently (..))
+import           Data.Conduit             (await, yield, (.|), runConduit, ConduitT)
+import qualified  Data.Conduit.Combinators as CC
+import qualified Data.Conduit.Binary      as CB
+import qualified Data.Conduit.List        as CL
+import           Data.Conduit.Process     (ClosedStream (..), streamingProcess,
+                                           proc, waitForStreamingProcess)
+import           System.IO                (stdin)
+import Control.Monad.IO.Class (liftIO)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.UTF8 as B
+import Control.Concurrent.Async
 myBridge :: BridgePart
 myBridge = defaultBridge
 
@@ -141,6 +157,35 @@ stupidTest = do
   putStrLn "writing plutus types...\n"
   withCurrentDirectory "test/RoundTrip/app" $ writePlutusTypes "src" myPlutusTypes
 
+  --aSum <- toString <$>  generate $ arbitrary @ASum
+
+  --let input = toString $ encode @ASum aSum
+
+  let myCreateProcess = (shell "spago run")
+
+  ((toProcess,close),fromProcess,ClosedStream,cph) <- streamingProcess$  myCreateProcess {cwd = Just "./test/RoundTrip/app"}
+
+  testCases <- replicateM 10 (BL.toStrict . encode @ASum <$> (generate $ arbitrary @ASum))
+
+  input <- async $ (runConduit
+            $ CL.sourceList testCases
+           .| CC.iterM print
+           .| toProcess) >> close
+
+  output <- async $ runConduit $ fromProcess .| CC.iterM  (putStrLn . B.toString) .| CC.sinkNull
+
+
+  void $ waitEither (input) output
+  
+
+  waitForStreamingProcess cph >>= print
+
+{-
+stupidTest' :: IO ()
+stupidTest' = do
+  putStrLn "writing plutus types...\n"
+  withCurrentDirectory "test/RoundTrip/app" $ writePlutusTypes "src" myPlutusTypes
+
   aSum <- generate $ arbitrary @ASum
 
   let input = toString $ encode @ASum aSum
@@ -155,16 +200,21 @@ stupidTest = do
   putStrLn "\nstarting PureScript process..."
   (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
   mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
-  threadDelay 2000000
+  --threadDelay 2000000
   --err <- hGetLine herr
   --unless (null err) $ putStrLn err
 
-  forkIO $ putStrLn "\nSending ASum to PureScript...\n"
+  putStrLn "\nSending ASum to PureScript...\n"
   let input = toString $ encode @ASum aSum
-  forkIO $ hPutStrLn hin input
+  hPutStrLn hin input
   --err' <- hGetLine herr
   --unless (null err') $ putStrLn err
-
-  output <- hGetLine hout
-  putStrLn "\npurescript output:"
-  putStrLn output
+  putStrLn "sent to purescript"
+  getProcessExitCode hproc >>= \case
+    Nothing -> do
+      putStrLn "process still alive"
+      output <- hGetLine hout
+      putStrLn "\npurescript output:"
+      putStrLn output
+    Just _ -> putStrLn "process died :-("
+-}

@@ -76,8 +76,9 @@ import Prelude hiding (readFile)
 
 main :: IO ()
 main = do
-  hspec $ plutusTests *> allTests *> roundtripSpec
   stupidTest
+  hspec $ plutusTests *> allTests *> roundtripSpec
+
 
 custom :: SumType 'Haskell -> SumType 'Haskell
 custom (SumType t cs is) = SumType t cs $ customInstance : is
