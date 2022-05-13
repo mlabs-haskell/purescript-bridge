@@ -7,8 +7,10 @@
 
 module RoundTrip.Types (
   TestData (..),
+  RepType (..),
   Request (..),
   Response (..),
+  response,
   ANewtype (..),
   ANewtypeRec (..),
   ARecord (..),
@@ -270,17 +272,26 @@ instance Arbitrary ASum where
 unstableMakeIsData ''ARecord
 unstableMakeIsData ''ASum
 
-data Request = ReqParseJson String | ReqParsePlutusData String
+data RepType = RTJson | RTPlutusData deriving stock (Show, Eq, Generic)
+instance FromJSON RepType
+instance ToJSON RepType
+
+data Request = Req RepType String
   deriving stock (Show, Eq, Generic)
 
 instance FromJSON Request
 instance ToJSON Request
 
-data Response = RespParseJson String | RespParsePlutusData String
+data Response = RespSuccess RepType String | RespError String
   deriving stock (Show, Eq, Generic)
 
 instance FromJSON Response
 instance ToJSON Response
+
+response :: forall p. (String -> p) -> (String -> p) -> (String -> p) -> Response -> p
+response e _ _ (RespError err) = e err
+response _ js _ (RespSuccess RTJson payload) = js payload
+response _ _ pd (RespSuccess RTPlutusData payload) = pd payload
 
 data TestPlutusData
   = PdMaybe (Maybe TestPlutusDataSum)

@@ -15,21 +15,24 @@ import Data.Either (either, Either(Left, Right))
 import Effect (Effect)
 import Effect.Class.Console (error, log)
 import Node.ReadLine (createConsoleInterface, noCompletion, question)
-import RoundTrip.Types (TestData, TestPlutusData, Request(..), Response(..))
+import RoundTrip.Types
+  ( TestData
+  , TestPlutusData
+  , Request(..)
+  , Response(..)
+  , RepType(..)
+  )
 import ToData (toData)
 import FromData (fromData)
-import Data.BigInt
 import Deserialization.FromBytes (fromBytes', FromBytesError)
 import Error (E)
-import Data.Maybe (maybe, Maybe(Nothing, Just))
+import Data.Maybe (maybe, Maybe)
 import Serialization.Types
   ( PlutusData
   )
 import Type.Row (type (+))
 import Deserialization.PlutusData as DeserPd
 import Serialization.PlutusData as SerPd
-import Data.String.Base64 as B64
-import Control.Monad.Error.Class (throwError)
 import Types.ByteArray (byteArrayFromAscii, byteArrayToHex)
 import Serialization (toBytes)
 import Untagged.Union (asOneOf)
@@ -55,17 +58,17 @@ main = do
           either
             ( \err -> do
                 error err
-                log ""
+                log $ stringify $ encodeJson $ RespError err
             )
             ( \resp -> do
                 error ""
-                log resp
+                log $ stringify $ encodeJson $ resp
             )
             (handleReq req)
       go interface
 
-handleReq :: Request -> Either String String
-handleReq (ReqParseJson str) = do
+handleReq :: Request -> Either String Response
+handleReq (Req RTJson str) = do
   testData <- either
     ( \err -> Left $ "ps> Wanted Json got err: " <> printJsonDecodeError err
         <> " on input: "
@@ -74,8 +77,8 @@ handleReq (ReqParseJson str) = do
     pure
     (decodeJson =<< parseJson str :: Either JsonDecodeError TestData)
   let payload = stringify $ encodeJson testData
-  pure $ stringify $ encodeJson (RespParseJson payload)
-handleReq (ReqParsePlutusData ascii) = do
+  pure $ RespSuccess RTJson payload
+handleReq (Req RTPlutusData ascii) = do
   -- Base16 + Cbor (ascii) -> Foreign PlutusData -> CTL PlutusData -> TestPlutusData
   cbor <- maybe
     (Left $ "ps> Wanted base16 string got error on input: " <> ascii)
@@ -102,4 +105,5 @@ handleReq (ReqParsePlutusData ascii) = do
     (Left $ "ps> Wanted Foreign PlutusData got error on input: " <> show cbor)
     pure
     (SerPd.convertPlutusData pdN')
-  pure $ (byteArrayToHex <<< toBytes <<< asOneOf) pdF'
+  let payload = (byteArrayToHex <<< toBytes <<< asOneOf) pdF'
+  pure $ RespSuccess RTPlutusData payload

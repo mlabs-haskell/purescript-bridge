@@ -2,8 +2,6 @@
 , dependencies =
   [ "argonaut-codecs"
   , "argonaut-core"
-  , "b64"
-  , "bigints"
   , "cardano-transaction-lib"
   , "console"
   , "control"
@@ -17,7 +15,6 @@
   , "ordered-collections"
   , "prelude"
   , "profunctor-lenses"
-  , "transformers"
   , "tuples"
   , "typelevel-prelude"
   , "untagged-union"

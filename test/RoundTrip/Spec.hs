@@ -38,8 +38,9 @@ import RoundTrip.Types (
   ARecord,
   ASum,
   MyUnit,
-  Request (ReqParseJson, ReqParsePlutusData),
-  Response (RespParseJson, RespParsePlutusData),
+  RepType (RTJson, RTPlutusData),
+  Request (Req),
+  Response,
   TestData,
   TestEnum,
   TestMultiInlineRecords,
@@ -52,6 +53,7 @@ import RoundTrip.Types (
   TestRecursiveB,
   TestSum,
   TestTwoFields,
+  response,
  )
 import System.Directory (withCurrentDirectory)
 import System.Exit (ExitCode (ExitSuccess))
@@ -102,7 +104,7 @@ roundTripSpec = do
           do
             -- Prepare request
             let payload = toString $ encode @TestData testData
-                req = toString $ encode @Request (ReqParseJson payload)
+                req = toString $ encode @Request (Req RTJson payload)
             -- IPC
             hPutStrLn hin req
             err <- hGetLine herr
@@ -115,8 +117,9 @@ roundTripSpec = do
                 (eitherDecode @Response $ fromString output)
             jsonResp <-
               response
+                (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
                 return
-                (\pd -> assertFailure $ "hs> Wanted RespParseJson got RespParsePlutusData: " <> pd)
+                (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
                 resp
             assertEqual "hs> Purescript shouldn't report an error" "" err
             assertEqual
@@ -139,7 +142,7 @@ roundTripSpec = do
           do
             -- Prepare request
             let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
-                req = toString $ encode @Request (ReqParsePlutusData payload)
+                req = toString $ encode @Request (Req RTPlutusData payload)
             -- IPC
             hPutStrLn hin req
             err <- hGetLine herr
@@ -152,8 +155,9 @@ roundTripSpec = do
                 (eitherDecode @Response $ fromString output)
             pdResp <-
               response
+                (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
                 return
-                (\json -> assertFailure $ "hs> Wanted RespParsePlutusData got RespParseJson: " <> json)
+                (\json -> assertFailure $ "hs> Wanted RTPlutusData got RTJson " <> json)
                 resp
             cbor <-
               either
@@ -172,9 +176,6 @@ roundTripSpec = do
               (fromData @TestPlutusData pd)
   runIO $ stopPurescript hproc
   where
-    response js _ (RespParseJson payload) = js payload
-    response _ pd (RespParsePlutusData payload) = pd payload
-
     encodeBase16 = toString . fromStrict . Base16.encode . toStrict
     decodeBase16 str = do
       bs <- Base16.decode $ toStrict . fromString $ str
@@ -223,6 +224,7 @@ myTypes =
         , equal . genericShow . order $ mkSumType @MyUnit
         , equal . genericShow . order $ mkSumType @Request
         , equal . genericShow . order $ mkSumType @Response
+        , equal . genericShow . order $ mkSumType @RepType
         ]
 
 myPlutusTypes :: [SumType 'Haskell]
