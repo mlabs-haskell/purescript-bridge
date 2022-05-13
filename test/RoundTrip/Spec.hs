@@ -2,19 +2,17 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
-{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module RoundTrip.Spec (roundtripSpec, stupidTest) where
 
 import Control.Concurrent (forkIO, threadDelay)
-import Control.Exception (bracket)
-import Control.Monad
+import Control.Monad (guard, unless)
 import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
 import Data.List (isInfixOf)
 import Language.PureScript.Bridge (
   BridgePart,
-  Language (..),
+  Language (Haskell),
   SumType,
   argonaut,
   buildBridge,
@@ -30,14 +28,16 @@ import Language.PureScript.Bridge (
   writePSTypesWith,
  )
 import Language.PureScript.Bridge.TypeParameters (A)
-import PlutusTx
-import PlutusTx.LedgerTypes
+import PlutusTx (toData)
+import PlutusTx.LedgerTypes (writePlutusTypes)
 import RoundTrip.Types (
   ANewtype,
   ANewtypeRec,
   ARecord,
   ASum,
   MyUnit,
+  Request (ReqParseJson),
+  Response (RespParseJson, RespParsePlutusData),
   TestData,
   TestEnum,
   TestMultiInlineRecords,
@@ -53,14 +53,95 @@ import System.Directory (withCurrentDirectory)
 import System.Exit (ExitCode (ExitSuccess))
 import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
+  getPid,
   readProcessWithExitCode,
   runInteractiveCommand,
   terminateProcess,
  )
-import Test.HUnit (assertBool, assertEqual)
-import Test.Hspec (Spec, around, aroundAll_, describe, it)
+import Test.HUnit (assertBool, assertEqual, assertFailure)
+import Test.Hspec (Spec, describe, it, runIO)
 import Test.QuickCheck (arbitrary, generate)
 import Test.QuickCheck.Property (Testable (property))
+
+roundtripSpec :: Spec
+roundtripSpec = do
+  describe
+    "Round trip prerequisite tests"
+    do
+      it "`[test/RoundTrip/app] $ spago build` should work" do
+        (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+        assertEqual (stdout <> stderr) exitCode ExitSuccess
+      it "`[test/RoundTrip/app] $ spago build` should not warn of unused packages buildable" do
+        (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+        assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
+
+  (hin, hout, herr, hproc) <- runIO startPurescript
+  describe "Round trip tests (Purescript <-> Haskell)" do
+    it "should have a Purescript process running" $ do
+      mayPid <- getPid hproc
+      maybe
+        (assertFailure "No process running")
+        (\_ -> return ())
+        mayPid
+
+    it "should produce aeson-compatible argonaut instances" $ do
+      property $
+        \testData ->
+          do
+            -- Prepare request
+            let payload = toString $ encode @TestData testData
+                req = toString $ encode @Request (ReqParseJson payload)
+            -- IPC
+            hPutStrLn hin req
+            err <- hGetLine herr
+            output <- hGetLine hout
+            -- Assert response
+            resp <-
+              either
+                (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
+                return
+                (eitherDecode @Response $ fromString output)
+            jsonResp <-
+              response
+                return
+                (\pd -> assertFailure $ "hs> Wanted RespParseJson got RespParsePlutusData: " <> pd)
+                resp
+            assertEqual "hs> Purescript shouldn't report an error" "" err
+            assertEqual
+              "hs> Round trip for payload should be ok"
+              (Right testData)
+              (eitherDecode @TestData (fromString jsonResp))
+  runIO $ stopPurescript hproc
+  where
+    response js _ (RespParseJson payload) = js payload
+    response _ pd (RespParsePlutusData payload) = pd payload
+
+    spagoRun = do
+      (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
+      mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
+      -- Wait until Spago is done with the build
+      let waitUntilBuildSucceded = do
+            l <- hGetLine herr
+            Control.Monad.unless (l == "[info] Build succeeded.") waitUntilBuildSucceded
+      waitUntilBuildSucceded
+      -- Wait for initial "ready" log message
+      l <- hGetLine hout
+      guard $ l == "ready"
+      pure (hin, hout, herr, hproc)
+
+    stopPurescript = terminateProcess
+
+    startPurescript = do
+      withCurrentDirectory "test/RoundTrip/app" do
+        generateBridgedFiles
+        spagoRun
+
+    generateBridgedFiles = do
+      writePSTypesWith
+        defaultSwitch
+        "src"
+        (buildBridge myBridge)
+        (myTypes <> myPlutusTypes)
 
 myBridge :: BridgePart
 myBridge = defaultBridge
@@ -78,55 +159,9 @@ myTypes =
   , equal . genericShow . order . argonaut $ mkSumType @TestTwoFields
   , equal . genericShow . order . argonaut $ mkSumType @TestEnum
   , equal . genericShow . order . argonaut $ mkSumType @MyUnit
+  , equal . genericShow . order . argonaut $ mkSumType @Request
+  , equal . genericShow . order . argonaut $ mkSumType @Response
   ]
-
-roundtripSpec :: Spec
-roundtripSpec = do
-  aroundAll_ withProject $
-    describe "writePSTypesWith" do
-      it "should be buildable" do
-        (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-        assertEqual (stdout <> stderr) exitCode ExitSuccess
-      it "should not warn of unused packages buildable" do
-        (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-        assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
-      around withApp $
-        it "should produce aeson-compatible argonaut instances" $
-          \(hin, hout, herr, _) ->
-            property $
-              \testData -> do
-                let input = toString $ encode @TestData testData
-                hPutStrLn hin input
-                err <- hGetLine herr
-                output <- hGetLine hout
-                assertEqual input "" err
-                assertEqual output (Right testData) $ eitherDecode @TestData $ fromString output
-  where
-    withApp = bracket runApp killApp
-    runApp = do
-      (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
-      mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
-      -- Wait until Spago is done with the build
-      let waitUntilBuildSucceded = do
-            l <- hGetLine herr
-            Control.Monad.unless (l == "[info] Build succeeded.") waitUntilBuildSucceded
-      waitUntilBuildSucceded
-      -- Wait for initial "ready" log message
-      l <- hGetLine hout
-      guard $ l == "ready"
-      pure (hin, hout, herr, hproc)
-
-    killApp (_, _, _, hproc) = terminateProcess hproc
-
-    withProject runSpec =
-      withCurrentDirectory "test/RoundTrip/app" $ generate *> runSpec
-
-    generate = do
-      writePSTypesWith
-        defaultSwitch
-        "src"
-        (buildBridge myBridge)
-        (myTypes <> myPlutusTypes)
 
 myPlutusTypes :: [SumType 'Haskell]
 myPlutusTypes =

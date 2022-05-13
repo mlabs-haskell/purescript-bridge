@@ -4,19 +4,35 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
-{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
-module RoundTrip.Types where
+module RoundTrip.Types (
+  TestData (..),
+  Request (..),
+  Response (..),
+  ANewtype (..),
+  ANewtypeRec (..),
+  ARecord (..),
+  ASum (..),
+  MyUnit (..),
+  TestEnum (..),
+  TestMultiInlineRecords (..),
+  TestNewtype (..),
+  TestNewtypeRecord (..),
+  TestRecord (..),
+  TestRecursiveA (..),
+  TestRecursiveB (..),
+  TestSum (..),
+  TestTwoFields (..),
+) where
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import Data.Set (Set)
 import GHC.Generics (Generic)
 import PlutusTx qualified as P
-import PlutusTx.Aux
-import PlutusTx.ConstrIndices
-import Test.QuickCheck (Arbitrary (..), chooseEnum, oneof, resize, sized)
+import PlutusTx.Aux (unstableMakeIsData)
+import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
+import Test.QuickCheck (Arbitrary (arbitrary), chooseEnum, oneof, resize, sized)
 
 data TestData
   = Maybe (Maybe TestSum)
@@ -251,3 +267,15 @@ instance Arbitrary ASum where
 
 unstableMakeIsData ''ARecord
 unstableMakeIsData ''ASum
+
+data Request = ReqParseJson String | ReqParsePlutusData String
+  deriving stock (Show, Eq, Generic)
+
+instance FromJSON Request
+instance ToJSON Request
+
+data Response = RespParseJson String | RespParsePlutusData String
+  deriving stock (Show, Eq, Generic)
+
+instance FromJSON Response
+instance ToJSON Response
