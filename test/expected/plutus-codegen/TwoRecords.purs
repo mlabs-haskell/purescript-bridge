@@ -5,6 +5,7 @@ import Prelude
 
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
+import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
@@ -22,6 +23,9 @@ data TwoRecords
     }
 
 derive instance Generic TwoRecords _
+
+instance Show TwoRecords where
+  show a = genericShow a
 
 instance HasPlutusSchema TwoRecords
   ("FirstRecord" :=

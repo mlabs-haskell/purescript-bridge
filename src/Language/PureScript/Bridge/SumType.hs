@@ -113,7 +113,7 @@ unsafeMkPlutusDataType ::
   SumType 'Haskell
 unsafeMkPlutusDataType = case mkSumType @t of
   SumType tInfo constructors instances ->
-    SumType tInfo constructors (instances <> [PlutusData, ToData, FromData])
+    SumType tInfo constructors (instances <> [GenericShow, PlutusData, ToData, FromData])
 
 mkPlutusNewtype ::
   forall t.
@@ -122,8 +122,8 @@ mkPlutusNewtype ::
 mkPlutusNewtype = case mkSumType @t of
   SumType tInfo cs is -> case cs of
     [(0, DataConstructor sc (Record [RecordEntry _ ti]))] ->
-      SumType tInfo [(0, DataConstructor sc (Normal [ti]))] (is <> [PlutusNewtype, ToData, FromData])
-    [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [PlutusNewtype, ToData, FromData])
+      SumType tInfo [(0, DataConstructor sc (Normal [ti]))] (is <> [GenericShow, PlutusNewtype, ToData, FromData])
+    [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [GenericShow,PlutusNewtype, ToData, FromData])
     _ ->
       error $
         "Cannot generate a PureScript newtype for type "
@@ -137,7 +137,7 @@ mkPlutusDataType_ ::
   (Generic t, Typeable t, c t, GDataConstructor (Rep t)) =>
   (forall x. c x => [(Int, String)]) ->
   SumType 'Haskell
-mkPlutusDataType_ f = SumType (mkTypeInfo @t) constructors (Generic : PlutusData : ToData : FromData : maybeToList (nootype . map snd $ constructors))
+mkPlutusDataType_ f = SumType (mkTypeInfo @t) constructors (Generic : GenericShow : PlutusData : ToData : FromData : maybeToList (nootype . map snd $ constructors))
   where
     ixs = M.fromList . map (\(i, t) -> (T.pack t, i)) $ f @t
     constructors =

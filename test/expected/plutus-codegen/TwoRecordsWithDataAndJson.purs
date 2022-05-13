@@ -12,6 +12,7 @@ import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (unwrap)
+import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
@@ -59,6 +60,9 @@ instance DecodeJson TwoRecords where
       ]
 
 derive instance Generic TwoRecords _
+
+instance Show TwoRecords where
+  show a = genericShow a
 
 instance HasPlutusSchema TwoRecords
   ("FirstRecord" :=
