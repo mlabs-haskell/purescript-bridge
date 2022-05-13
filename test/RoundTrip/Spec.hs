@@ -106,6 +106,7 @@ roundTripSpec = do
             let payload = toString $ encode @TestData testData
             -- IPC
             resp <- doReq hin herr hout (Req RTJson payload)
+            -- Assert response
             jsonResp <-
               response
                 (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
@@ -138,8 +139,8 @@ roundTripSpec = do
             pdResp <-
               response
                 (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
-                return
                 (\json -> assertFailure $ "hs> Wanted RTPlutusData got RTJson " <> json)
+                return
                 resp
             cbor <-
               either
@@ -159,6 +160,7 @@ roundTripSpec = do
   where
     doReq hin herr hout req = do
       let jsonReq = toString $ encode @Request req
+      putStrLn jsonReq
       -- IPC
       hPutStrLn hin jsonReq
       err <- hGetLine herr

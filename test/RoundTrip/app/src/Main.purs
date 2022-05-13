@@ -27,13 +27,11 @@ import FromData (fromData)
 import Deserialization.FromBytes (fromBytes', FromBytesError)
 import Error (E)
 import Data.Maybe (maybe, Maybe)
-import Serialization.Types
-  ( PlutusData
-  )
+import Serialization.Types (PlutusData)
 import Type.Row (type (+))
 import Deserialization.PlutusData as DeserPd
 import Serialization.PlutusData as SerPd
-import Types.ByteArray (byteArrayFromAscii, byteArrayToHex)
+import Types.ByteArray (hexToByteArray, byteArrayToHex)
 import Serialization (toBytes)
 import Untagged.Union (asOneOf)
 
@@ -78,12 +76,12 @@ handleReq (Req RTJson str) = do
     (decodeJson =<< parseJson str :: Either JsonDecodeError TestData)
   let payload = stringify $ encodeJson testData
   pure $ RespSuccess RTJson payload
-handleReq (Req RTPlutusData ascii) = do
-  -- Base16 + Cbor (ascii) -> Foreign PlutusData -> CTL PlutusData -> TestPlutusData
+handleReq (Req RTPlutusData hex) = do
+  -- Base16 -> ByteArray -> Cbor-> Foreign PlutusData -> CTL PlutusData -> TestPlutusData
   cbor <- maybe
-    (Left $ "ps> Wanted base16 string got error on input: " <> ascii)
+    (Left $ "ps> Wanted base16 string got error on input: " <> hex)
     pure
-    (byteArrayFromAscii ascii)
+    (hexToByteArray hex)
   pdF <- either
     ( \err -> Left $ "ps> Wanted Foreign PlutusData got error: " <> show err
         <> "on input: "
@@ -92,17 +90,17 @@ handleReq (Req RTPlutusData ascii) = do
     pure
     (fromBytes' cbor :: E (FromBytesError + ()) PlutusData)
   pdN <- maybe
-    (Left $ "ps> Wanted Native PlutusData got error on input: " <> show cbor)
+    (Left "ps> Wanted Native PlutusData got error")
     pure
     (DeserPd.convertPlutusData pdF)
   testData <- maybe
-    (Left $ "ps> Wanted TestData got error on input: " <> ascii)
+    (Left $ "ps> Wanted TestData got error on input: " <> show pdN)
     pure
     (fromData pdN :: Maybe TestPlutusData)
-  -- TestPlutusData -> CTL PlutusData -> Foreign PlutusData -> Base16 + Cbor ascii
+  -- TestPlutusData -> CTL PlutusData -> Foreign PlutusData -> Cbor -> ByteArray -> Base16
   let pdN' = toData testData
   pdF' <- maybe
-    (Left $ "ps> Wanted Foreign PlutusData got error on input: " <> show cbor)
+    (Left $ "ps> Wanted Foreign PlutusData got error on input: " <> show pdN')
     pure
     (SerPd.convertPlutusData pdN')
   let payload = (byteArrayToHex <<< toBytes <<< asOneOf) pdF'
