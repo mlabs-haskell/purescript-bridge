@@ -123,7 +123,7 @@ mkPlutusNewtype = case mkSumType @t of
   SumType tInfo cs is -> case cs of
     [(0, DataConstructor sc (Record [RecordEntry _ ti]))] ->
       SumType tInfo [(0, DataConstructor sc (Normal [ti]))] (is <> [GenericShow, PlutusNewtype, ToData, FromData])
-    [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [GenericShow,PlutusNewtype, ToData, FromData])
+    [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [GenericShow, PlutusNewtype, ToData, FromData])
     _ ->
       error $
         "Cannot generate a PureScript newtype for type "

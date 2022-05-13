@@ -24,16 +24,20 @@ newtype RecordWithPlutusScripts = RecordWithPlutusScripts
   }
 
 instance EncodeJson RecordWithPlutusScripts where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                   { mintingPolicy: E.value :: _ MintingPolicy
-                                                   , validator: E.value :: _ Validator
-                                                   })
+  encodeJson = defer \_ -> E.encode $ unwrap >$<
+    ( E.record
+        { mintingPolicy: E.value :: _ MintingPolicy
+        , validator: E.value :: _ Validator
+        }
+    )
 
 instance DecodeJson RecordWithPlutusScripts where
-  decodeJson = defer \_ -> D.decode $ (RecordWithPlutusScripts <$> D.record "RecordWithPlutusScripts"
-      { mintingPolicy: D.value :: _ MintingPolicy
-      , validator: D.value :: _ Validator
-      })
+  decodeJson = defer \_ -> D.decode $
+    ( RecordWithPlutusScripts <$> D.record "RecordWithPlutusScripts"
+        { mintingPolicy: D.value :: _ MintingPolicy
+        , validator: D.value :: _ Validator
+        }
+    )
 
 derive instance Generic RecordWithPlutusScripts _
 
