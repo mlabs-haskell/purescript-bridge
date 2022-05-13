@@ -205,25 +205,17 @@ instance Arbitrary MyUnit where
 
 newtype ANewtype = ANewtype Bool
   deriving stock (Show, Eq, Generic)
-  deriving newtype (P.ToData, P.FromData, P.UnsafeFromData)
-
-instance FromJSON ANewtype
-
-instance ToJSON ANewtype
+  deriving newtype (P.ToData, P.FromData, P.UnsafeFromData, FromJSON, ToJSON)
 
 instance Arbitrary ANewtype where
   arbitrary = ANewtype <$> arbitrary
 
 newtype ANewtypeRec = ANewtypeRec {ntrec :: ANewtype}
   deriving stock (Show, Eq, Generic)
-  deriving newtype (P.ToData, P.FromData, P.UnsafeFromData)
+  deriving newtype (P.ToData, P.FromData, P.UnsafeFromData, FromJSON, ToJSON)
 
 instance Arbitrary ANewtypeRec where
   arbitrary = ANewtypeRec <$> arbitrary
-
-instance FromJSON ANewtypeRec
-
-instance ToJSON ANewtypeRec
 
 data ARecord = ARecord
   { field1 :: Bool
