@@ -90,7 +90,7 @@ roundTripSpec = do
         )
 
   (hin, hout, herr, hproc) <- runIO $ startPurescript defaultBridge (myTypes <> myPlutusTypes)
-  describe "Round trip tests (Purescript <-> Haskell)" do
+  describe "with defaultBridge" do
     it "should have a Purescript process running" $ do
       mayPid <- getPid hproc
       maybe
@@ -104,24 +104,14 @@ roundTripSpec = do
           do
             -- Prepare request
             let payload = toString $ encode @TestData testData
-                req = toString $ encode @Request (Req RTJson payload)
             -- IPC
-            hPutStrLn hin req
-            err <- hGetLine herr
-            output <- hGetLine hout
-            -- Assert response
-            resp <-
-              either
-                (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
-                return
-                (eitherDecode @Response $ fromString output)
+            resp <- doReq hin herr hout (Req RTJson payload)
             jsonResp <-
               response
                 (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
                 return
                 (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
                 resp
-            assertEqual "hs> Purescript shouldn't report an error" "" err
             assertEqual
               "hs> Round trip for payload should be ok"
               (Right testData)
@@ -129,7 +119,7 @@ roundTripSpec = do
   runIO $ stopPurescript hproc
 
   (hin, hout, herr, hproc) <- runIO $ startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)
-  describe "Round trip tests (Purescript <-> Haskell) with ledger bridge" do
+  describe "with ledger bridge" do
     it "should have a Purescript process running" $ do
       mayPid <- getPid hproc
       maybe
@@ -142,17 +132,9 @@ roundTripSpec = do
           do
             -- Prepare request
             let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
-                req = toString $ encode @Request (Req RTPlutusData payload)
             -- IPC
-            hPutStrLn hin req
-            err <- hGetLine herr
-            output <- hGetLine hout
+            resp <- doReq hin herr hout (Req RTPlutusData payload)
             -- Assert response
-            resp <-
-              either
-                (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
-                return
-                (eitherDecode @Response $ fromString output)
             pdResp <-
               response
                 (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
@@ -169,13 +151,25 @@ roundTripSpec = do
                 (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
                 return
                 (Cbor.deserialiseOrFail cbor)
-            assertEqual "hs> Purescript shouldn't report an error" "" err
             assertEqual
               "hs> Round trip for payload should be ok"
               (Just testPlutusData)
               (fromData @TestPlutusData pd)
   runIO $ stopPurescript hproc
   where
+    doReq hin herr hout req = do
+      let jsonReq = toString $ encode @Request req
+      -- IPC
+      hPutStrLn hin jsonReq
+      err <- hGetLine herr
+      assertEqual "hs> Purescript shouldn't report an error" "" err
+      output <- hGetLine hout
+      -- Assert response
+      either
+        (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
+        return
+        (eitherDecode @Response $ fromString output)
+
     encodeBase16 = toString . fromStrict . Base16.encode . toStrict
     decodeBase16 str = do
       bs <- Base16.decode $ toStrict . fromString $ str
