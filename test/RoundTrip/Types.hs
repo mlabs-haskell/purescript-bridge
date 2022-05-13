@@ -38,7 +38,7 @@ import Test.QuickCheck (Arbitrary (arbitrary), chooseEnum, oneof, resize, sized)
 
 data TestData
   = Maybe (Maybe TestSum)
-  | Either (Either (Maybe Int) (Maybe Bool))
+  | Either (Either (Maybe Bool) (Maybe Bool))
   deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestData
@@ -55,25 +55,25 @@ instance Arbitrary TestData where
 data TestSum
   = Nullary
   | Bool Bool
-  | Int Int
+  | Int Bool -- FIXME: Conflict Argonaut vs PlutusTx (Int vs Integer)
   | Number Double
   | String String
-  | Array [Int]
-  | InlineRecord {why :: String, wouldYouDoThis :: Int}
+  | Array [Bool]
+  | InlineRecord {why :: String, wouldYouDoThis :: Bool}
   | MultiInlineRecords TestMultiInlineRecords
-  | Record (TestRecord Int)
-  | NestedRecord (TestRecord (TestRecord Int))
+  | Record (TestRecord Bool)
+  | NestedRecord (TestRecord (TestRecord Bool))
   | NT TestNewtype
   | NTRecord TestNewtypeRecord
   | TwoFields TestTwoFields
-  | Set (Set Int)
-  | Map (Map String Int)
+  | Set (Set Bool)
+  | Map (Map String Bool)
   | Unit ()
   | MyUnit MyUnit
-  | Pair (Int, Double)
-  | Triple (Int, (), Bool)
-  | Quad (Int, Double, Bool, Double)
-  | QuadSimple Int Double Bool Double
+  | Pair (Bool, Double)
+  | Triple (Bool, (), Bool)
+  | Quad (Bool, Double, Bool, Double)
+  | QuadSimple Bool Double Bool Double
   | Recursive TestRecursiveA
   | Enum TestEnum
   deriving stock (Show, Eq, Ord, Generic)
@@ -87,7 +87,7 @@ instance Arbitrary TestSum where
     oneof
       [ pure Nullary
       , Bool <$> arbitrary
-      , Int <$> arbitrary
+      , Bool <$> arbitrary
       , Number <$> arbitrary
       , String <$> arbitrary
       , Array <$> arbitrary
@@ -132,7 +132,7 @@ instance ToJSON TestRecursiveB
 
 data TestMultiInlineRecords
   = Foo
-      { _foo1 :: Maybe Int
+      { _foo1 :: Maybe Bool
       , _foo2 :: ()
       }
   | Bar
@@ -153,7 +153,7 @@ instance Arbitrary TestMultiInlineRecords where
       ]
 
 data TestRecord a = TestRecord
-  { _field1 :: Maybe Int
+  { _field1 :: Maybe Bool
   , _field2 :: a
   }
   deriving stock (Show, Eq, Ord, Generic)
@@ -165,7 +165,7 @@ instance (ToJSON a) => ToJSON (TestRecord a)
 instance (Arbitrary a) => Arbitrary (TestRecord a) where
   arbitrary = TestRecord <$> arbitrary <*> arbitrary
 
-data TestTwoFields = TestTwoFields Bool Int
+data TestTwoFields = TestTwoFields Bool Bool
   deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestTwoFields

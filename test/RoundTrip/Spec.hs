@@ -3,10 +3,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
-module RoundTrip.Spec (roundtripSpec, stupidTest) where
+module RoundTrip.Spec (spec) where
 
 import Codec.Serialise qualified as Cbor
-import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (guard, unless)
 import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Base16 qualified as Base16
@@ -32,7 +31,7 @@ import Language.PureScript.Bridge (
 import Language.PureScript.Bridge.TypeParameters (A)
 import PlutusTx (toData)
 import PlutusTx.IsData.Class (fromData)
-import PlutusTx.LedgerTypes (plutusLedgerApiBridge, writePlutusTypes)
+import PlutusTx.LedgerTypes (plutusLedgerApiBridge)
 import RoundTrip.Types (
   ANewtype,
   ANewtypeRec,
@@ -65,22 +64,30 @@ import System.Process (
  )
 import Test.HUnit (assertBool, assertEqual, assertFailure)
 import Test.Hspec (Spec, describe, it, runIO)
-import Test.QuickCheck (arbitrary, generate)
 import Test.QuickCheck.Property (Testable (property))
 
-roundtripSpec :: Spec
-roundtripSpec = do
+spec :: Spec
+spec = describe "Round trip tests (Purescript <-> Haskell)" roundTripSpec
+
+roundTripSpec :: Spec
+roundTripSpec = do
   describe
     "Round trip prerequisite tests"
     do
-      it "`[test/RoundTrip/app] $ spago build` should work" do
-        (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-        assertEqual (stdout <> stderr) exitCode ExitSuccess
-      it "`[test/RoundTrip/app] $ spago build` should not warn of unused packages buildable" do
-        (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-        assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
+      it
+        "`[test/RoundTrip/app] $ spago build` should work"
+        ( withCurrentDirectory "test/RoundTrip/app" do
+            (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+            assertEqual (stdout <> stderr) exitCode ExitSuccess
+        )
+      it
+        "`[test/RoundTrip/app] $ spago build` should not warn of unused packages buildable"
+        ( withCurrentDirectory "test/RoundTrip/app" do
+            (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+            assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
+        )
 
-  (hin, hout, herr, hproc) <- runIO $ startPurescript defaultBridge myTypes
+  (hin, hout, herr, hproc) <- runIO $ startPurescript defaultBridge (myTypes <> myPlutusTypes)
   describe "Round trip tests (Purescript <-> Haskell)" do
     it "should have a Purescript process running" $ do
       mayPid <- getPid hproc
@@ -117,53 +124,52 @@ roundtripSpec = do
               (Right testData)
               (eitherDecode @TestData (fromString jsonResp))
   runIO $ stopPurescript hproc
-  (hin, hout, herr, hproc) <- runIO $ startPurescript plutusLedgerApiBridge myPlutusTypes
-  describe
-    "Round trip tests (Purescript <-> Haskell) with ledger bridge"
-    do
-      it "should have a Purescript process running" $ do
-        mayPid <- getPid hproc
-        maybe
-          (assertFailure "No process running")
-          (\_ -> return ())
-          mayPid
-      it "should produce PlutusData compatible representations" $ do
-        property $
-          \testPlutusData ->
-            do
-              -- Prepare request
-              let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
-                  req = toString $ encode @Request (ReqParsePlutusData payload)
-              -- IPC
-              hPutStrLn hin req
-              err <- hGetLine herr
-              output <- hGetLine hout
-              -- Assert response
-              resp <-
-                either
-                  (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
-                  return
-                  (eitherDecode @Response $ fromString output)
-              pdResp <-
-                response
-                  return
-                  (\json -> assertFailure $ "hs> Wanted RespParsePlutusData got RespParseJson: " <> json)
-                  resp
-              cbor <-
-                either
-                  (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
-                  return
-                  (decodeBase16 pdResp)
-              pd <-
-                either
-                  (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
-                  return
-                  (Cbor.deserialiseOrFail cbor)
-              assertEqual "hs> Purescript shouldn't report an error" "" err
-              assertEqual
-                "hs> Round trip for payload should be ok"
-                (Just testPlutusData)
-                (fromData @TestPlutusData pd)
+
+  (hin, hout, herr, hproc) <- runIO $ startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)
+  describe "Round trip tests (Purescript <-> Haskell) with ledger bridge" do
+    it "should have a Purescript process running" $ do
+      mayPid <- getPid hproc
+      maybe
+        (assertFailure "No process running")
+        (\_ -> return ())
+        mayPid
+    it "should produce PlutusData compatible representations" $ do
+      property $
+        \testPlutusData ->
+          do
+            -- Prepare request
+            let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
+                req = toString $ encode @Request (ReqParsePlutusData payload)
+            -- IPC
+            hPutStrLn hin req
+            err <- hGetLine herr
+            output <- hGetLine hout
+            -- Assert response
+            resp <-
+              either
+                (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
+                return
+                (eitherDecode @Response $ fromString output)
+            pdResp <-
+              response
+                return
+                (\json -> assertFailure $ "hs> Wanted RespParsePlutusData got RespParseJson: " <> json)
+                resp
+            cbor <-
+              either
+                (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
+                return
+                (decodeBase16 pdResp)
+            pd <-
+              either
+                (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
+                return
+                (Cbor.deserialiseOrFail cbor)
+            assertEqual "hs> Purescript shouldn't report an error" "" err
+            assertEqual
+              "hs> Round trip for payload should be ok"
+              (Just testPlutusData)
+              (fromData @TestPlutusData pd)
   runIO $ stopPurescript hproc
   where
     response js _ (RespParseJson payload) = js payload
@@ -217,8 +223,6 @@ myTypes =
         , equal . genericShow . order $ mkSumType @MyUnit
         , equal . genericShow . order $ mkSumType @Request
         , equal . genericShow . order $ mkSumType @Response
-        , equal . genericShow . order $ mkSumType @TestPlutusData
-        , equal . genericShow . order $ mkSumType @TestPlutusDataSum
         ]
 
 myPlutusTypes :: [SumType 'Haskell]
@@ -230,36 +234,3 @@ myPlutusTypes =
   , equal . genericShow . order $ unsafeMkPlutusDataType @TestPlutusData
   , equal . genericShow . order $ unsafeMkPlutusDataType @TestPlutusDataSum
   ]
-
-stupidTest :: IO ()
-stupidTest = do
-  putStrLn "writing plutus types...\n"
-  withCurrentDirectory "test/RoundTrip/app" $ writePlutusTypes "src" myPlutusTypes
-
-  aSum <- generate $ arbitrary @ASum
-
-  let input = toString $ encode @ASum aSum
-
-  putStrLn "Generated ASum:\n"
-  print aSum
-  putStrLn "\nPlutus Data:"
-  print (toData aSum)
-  putStrLn "\nJSON:"
-  putStrLn input
-
-  putStrLn "\nstarting PureScript process..."
-  (hin, hout, herr, _) <- runInteractiveCommand "spago run"
-  mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
-  threadDelay 2000000
-  --err <- hGetLine herr
-  --unless (null err) $ putStrLn err
-
-  forkIO $ putStrLn "\nSending ASum to PureScript...\n"
-  let input = toString $ encode @ASum aSum
-  forkIO $ hPutStrLn hin input
-  --err' <- hGetLine herr
-  --unless (null err') $ putStrLn err
-
-  output <- hGetLine hout
-  putStrLn "\npurescript output:"
-  putStrLn output

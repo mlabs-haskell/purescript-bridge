@@ -2,6 +2,7 @@
 , dependencies =
   [ "argonaut-codecs"
   , "argonaut-core"
+  , "b64"
   , "bigints"
   , "cardano-transaction-lib"
   , "console"
@@ -16,8 +17,10 @@
   , "ordered-collections"
   , "prelude"
   , "profunctor-lenses"
+  , "transformers"
   , "tuples"
-  , "b64"
+  , "typelevel-prelude"
+  , "untagged-union"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "generated/**/*.purs" ]

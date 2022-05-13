@@ -2,19 +2,7 @@ module Main
   ( main
   ) where
 
-import Prelude
-  ( Unit
-  , bind
-  , discard
-  , pure
-  , unit
-  , (#)
-  , ($)
-  , (<>)
-  , (=<<)
-  , (<<<)
-  , show
-  )
+import Prelude (Unit, bind, discard, pure, show, (#), ($), (<<<), (<>), (=<<))
 import Data.Argonaut.Core (stringify)
 import Data.Argonaut.Decode
   ( JsonDecodeError
@@ -33,17 +21,15 @@ import FromData (fromData)
 import Data.BigInt
 import Deserialization.FromBytes (fromBytes', FromBytesError)
 import Error (E)
-import Data.Maybe (Maybe(Nothing, Just))
+import Data.Maybe (maybe, Maybe(Nothing, Just))
 import Serialization.Types
   ( PlutusData
   )
 import Type.Row (type (+))
-import Types.ByteArray (hexToByteArrayUnsafe)
 import Deserialization.PlutusData as DeserPd
 import Serialization.PlutusData as SerPd
 import Data.String.Base64 as B64
 import Control.Monad.Error.Class (throwError)
-import Data.Maybe (maybe)
 import Types.ByteArray (byteArrayFromAscii, byteArrayToHex)
 import Serialization (toBytes)
 import Untagged.Union (asOneOf)
@@ -57,22 +43,25 @@ main = do
   go interface =
     interface # question "" \input -> do
       let
-        req :: Either JsonDecodeError Request
-        req = decodeJson =<< parseJson input
-      case req of
+        reqOrErr :: Either JsonDecodeError Request
+        reqOrErr = decodeJson =<< parseJson input
+      case reqOrErr of
         Left err -> do
           error $ "ps> Wanted Request got error: " <> printJsonDecodeError err
             <> " on input: "
             <> input
           log ""
-        Right req' -> do
+        Right req -> do
           either
             ( \err -> do
                 error err
                 log ""
-                throwError err
             )
-            log $ handleReq req'
+            ( \resp -> do
+                error ""
+                log resp
+            )
+            (handleReq req)
       go interface
 
 handleReq :: Request -> Either String String
@@ -106,7 +95,7 @@ handleReq (ReqParsePlutusData ascii) = do
   testData <- maybe
     (Left $ "ps> Wanted TestData got error on input: " <> ascii)
     pure
-    (fromData pdN)
+    (fromData pdN :: Maybe TestPlutusData)
   -- TestPlutusData -> CTL PlutusData -> Foreign PlutusData -> Base16 + Cbor ascii
   let pdN' = toData testData
   pdF' <- maybe
