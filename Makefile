@@ -6,9 +6,10 @@ current-system := $(shell nix eval --impure --expr builtins.currentSystem)
 
 NIX_BUILD:= nix -L --show-trace build
 NIX_RUN:= nix -L --show-trace run
+NIX_DEV:= nix -L --show-trace develop .#default
 
 develop:
-	nix develop -L .#default
+	$(NIX_DEV)
 
 # Tests
 test:
@@ -38,6 +39,7 @@ check-files:
 
 # Run what CI would
 ci: check-files build-all
+	$(NIX_DEV) -c cabal run test:tests
 
 # Clean local folder.
 clean:
