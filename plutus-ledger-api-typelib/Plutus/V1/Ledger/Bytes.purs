@@ -3,19 +3,31 @@ module Plutus.V1.Ledger.Bytes where
 
 import Prelude
 
+import Control.Lazy (defer)
+import Data.Argonaut.Core (Json, jsonNull)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap)
+import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
+import Record (get)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
+import Data.Argonaut.Decode.Aeson as D
+import Data.Argonaut.Encode.Aeson as E
+import Data.Map as Map
 
-newtype LedgerBytes = LedgerBytes { getLedgerBytes :: ByteArray }
+newtype LedgerBytes = LedgerBytes ByteArray
 
 instance Show LedgerBytes where
   show a = genericShow a
@@ -30,7 +42,13 @@ derive newtype instance ToData LedgerBytes
 
 derive newtype instance FromData LedgerBytes
 
+instance EncodeJson LedgerBytes where
+  encodeJson x = E.encode  (E.record {getLedgerBytes: E.value :: Op Json (ByteArray) }) {getLedgerBytes: unwrap x}
+
+instance DecodeJson LedgerBytes where
+  decodeJson = defer \_ -> get (Proxy :: Proxy "getLedgerBytes") <$> D.decode D.record "getLedgerBytes"{ getLedgerBytes: D.value}
+
 --------------------------------------------------------------------------------
 
-_LedgerBytes :: Iso' LedgerBytes {getLedgerBytes :: ByteArray}
+_LedgerBytes :: Iso' LedgerBytes ByteArray
 _LedgerBytes = _Newtype

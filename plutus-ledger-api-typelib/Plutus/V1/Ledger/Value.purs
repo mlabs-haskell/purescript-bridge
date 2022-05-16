@@ -3,21 +3,33 @@ module Plutus.V1.Ledger.Value where
 
 import Prelude
 
+import Control.Lazy (defer)
+import Data.Argonaut.Core (Json, jsonNull)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap)
+import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple)
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import Plutus.Types.CurrencySymbol (CurrencySymbol)
+import Record (get)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.TokenName (TokenName)
+import Data.Argonaut.Decode.Aeson as D
+import Data.Argonaut.Encode.Aeson as E
+import Data.Map as Map
 
-newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
+newtype AssetClass = AssetClass (Tuple CurrencySymbol TokenName)
 
 instance Show AssetClass where
   show a = genericShow a
@@ -36,7 +48,13 @@ derive newtype instance ToData AssetClass
 
 derive newtype instance FromData AssetClass
 
+instance EncodeJson AssetClass where
+  encodeJson x = E.encode  (E.record {unAssetClass: E.value :: Op Json (Tuple CurrencySymbol TokenName) }) {unAssetClass: unwrap x}
+
+instance DecodeJson AssetClass where
+  decodeJson = defer \_ -> get (Proxy :: Proxy "unAssetClass") <$> D.decode D.record "unAssetClass"{ unAssetClass: D.value}
+
 --------------------------------------------------------------------------------
 
-_AssetClass :: Iso' AssetClass {unAssetClass :: Tuple CurrencySymbol TokenName}
+_AssetClass :: Iso' AssetClass (Tuple CurrencySymbol TokenName)
 _AssetClass = _Newtype

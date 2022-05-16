@@ -4,7 +4,7 @@ module Plutus.V1.Ledger.TxId where
 import Prelude
 
 import Control.Lazy (defer)
-import Data.Argonaut.Core (jsonNull)
+import Data.Argonaut.Core (Json, jsonNull)
 import Data.Argonaut.Decode (class DecodeJson, decodeJson)
 import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
 import Data.Argonaut.Encode (class EncodeJson, encodeJson)
@@ -15,6 +15,7 @@ import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype, unwrap)
+import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import Data.Tuple.Nested ((/\))

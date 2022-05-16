@@ -3,17 +3,29 @@ module Plutus.V1.Ledger.Time where
 
 import Prelude
 
+import Control.Lazy (defer)
+import Data.Argonaut.Core (Json, jsonNull)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap)
+import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
+import Record (get)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
+import Data.Argonaut.Decode.Aeson as D
+import Data.Argonaut.Encode.Aeson as E
+import Data.Map as Map
 
 newtype DiffMilliSeconds = DiffMilliSeconds BigInt
 
@@ -34,6 +46,12 @@ derive newtype instance ToData DiffMilliSeconds
 
 derive newtype instance FromData DiffMilliSeconds
 
+instance EncodeJson DiffMilliSeconds where
+  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
+
+instance DecodeJson DiffMilliSeconds where
+  decodeJson = defer \_ -> D.decode $ (DiffMilliSeconds <$> D.value)
+
 --------------------------------------------------------------------------------
 
 _DiffMilliSeconds :: Iso' DiffMilliSeconds BigInt
@@ -41,7 +59,7 @@ _DiffMilliSeconds = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype POSIXTime = POSIXTime { getPOSIXTime :: BigInt }
+newtype POSIXTime = POSIXTime BigInt
 
 instance Show POSIXTime where
   show a = genericShow a
@@ -60,7 +78,13 @@ derive newtype instance ToData POSIXTime
 
 derive newtype instance FromData POSIXTime
 
+instance EncodeJson POSIXTime where
+  encodeJson x = E.encode  (E.record {getPOSIXTime: E.value :: Op Json (BigInt) }) {getPOSIXTime: unwrap x}
+
+instance DecodeJson POSIXTime where
+  decodeJson = defer \_ -> get (Proxy :: Proxy "getPOSIXTime") <$> D.decode D.record "getPOSIXTime"{ getPOSIXTime: D.value}
+
 --------------------------------------------------------------------------------
 
-_POSIXTime :: Iso' POSIXTime {getPOSIXTime :: BigInt}
+_POSIXTime :: Iso' POSIXTime BigInt
 _POSIXTime = _Newtype
