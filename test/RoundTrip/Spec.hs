@@ -188,7 +188,7 @@ roundTripSpec = do
       -- Wait until Spago is done with the build
       waitUntil (== "[info] Build succeeded.") herr
       -- Wait for initial "ready" log message
-      waitUntil (== "ready") hout
+      waitUntil (== "I was born ready") hout
       pure (hin, hout, herr, hproc)
 
     stopPurescript = terminateProcess

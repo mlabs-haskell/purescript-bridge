@@ -38,7 +38,7 @@ import Untagged.Union (asOneOf)
 main :: Effect Unit
 main = do
   interface <- createConsoleInterface noCompletion
-  log "ready"
+  log "I was born ready"
   go interface
   where
   go interface =
