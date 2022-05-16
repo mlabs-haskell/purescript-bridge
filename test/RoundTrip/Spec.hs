@@ -17,7 +17,6 @@ import Language.PureScript.Bridge (
   SumType,
   argonaut,
   buildBridge,
-  defaultBridge,
   defaultSwitch,
   equal,
   functor,
@@ -74,7 +73,7 @@ spec = describe "Round trip tests (Purescript <-> Haskell)" roundTripSpec
 roundTripSpec :: Spec
 roundTripSpec = do
   describe
-    "Round trip prerequisite tests"
+    "Prerequisite tests"
     do
       it
         "`[test/RoundTrip/app] $ spago build` should work"
@@ -88,15 +87,15 @@ roundTripSpec = do
             (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
             assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
         )
-  beforeAll (startPurescript defaultBridge (myTypes <> myPlutusTypes)) $
-    describe "with defaultBridge" do
+
+  beforeAll (startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)) $
+    describe "With plutus-ledger-api bridge" do
       it "should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
         mayPid <- getPid hproc
         maybe
           (assertFailure "No process running")
           (\_ -> return ())
           mayPid
-
       it "should produce Aeson-compatible representations" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testData ->
@@ -116,15 +115,6 @@ roundTripSpec = do
                 "hs> Round trip for payload should be ok"
                 (Right testData)
                 (eitherDecode @TestData (fromString jsonResp))
-
-  beforeAll (startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)) $
-    describe "with ledger bridge" do
-      it "should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
-        mayPid <- getPid hproc
-        maybe
-          (assertFailure "No process running")
-          (\_ -> return ())
-          mayPid
       it "should produce PlutusData compatible representations" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testPlutusData ->
