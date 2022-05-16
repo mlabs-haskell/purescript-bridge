@@ -121,13 +121,30 @@ mkPlutusNewtype ::
   SumType 'Haskell
 mkPlutusNewtype = case mkSumType @t of
   SumType tInfo cs is -> case cs of
-    [(0, DataConstructor sc (Record [RecordEntry _ ti]))] ->
-      SumType tInfo [(0, DataConstructor sc (Normal [ti]))] (is <> [GenericShow, PlutusNewtype, ToData, FromData])
+    [(0, DataConstructor sc (Record [RecordEntry _ _]))] ->
+      SumType tInfo cs (is <> [GenericShow, PlutusNewtype, ToData, FromData])
     [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [GenericShow, PlutusNewtype, ToData, FromData])
     _ ->
       error $
         "Cannot generate a PureScript newtype for type "
           <> T.unpack (_typeName tInfo)
+
+isNewtypeRec :: forall (lang :: Language). SumType lang -> Bool
+isNewtypeRec (SumType tInfo constrs instances) = case constrs of
+   [(0, DataConstructor sc (Record [RecordEntry _ ti]))] -> True
+   _                                                     -> False
+
+eraseNewtypeRec :: forall (lang :: Language). SumType lang -> SumType lang
+eraseNewtypeRec st@(SumType tInfo constrs instances)
+  | isPlutusNewtype st = case constrs of
+      [(0, DataConstructor sc (Record [RecordEntry _ ti]))] ->
+        SumType tInfo [(0, DataConstructor sc (Normal [ti]))] is
+
+      _ -> st
+
+  | otherwise = error $
+         T.unpack (_typeName tInfo)
+      <> " is not a Plutus Newtype"
 
 {- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
    index information.
