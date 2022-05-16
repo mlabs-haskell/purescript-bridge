@@ -51,6 +51,8 @@ clean:
 	@ rm -rf ./test/RoundTrip/app/.spago    || true
 	@ rm -rf ./test/RoundTrip/app/.psci_modules    || true
 	@ rm -rf ./test/RoundTrip/app/.spago2nix    || true
+	@ rm -rf ./test/RoundTrip/app/node_modules || true
+	@ rm -rf ./test/RoundTrip/app/generated || true
 	@ rm -rf .spago || true
 	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago2nix || true
 	@ rm -rf ./nix/purescript-bridge-typelib-spago/output || true

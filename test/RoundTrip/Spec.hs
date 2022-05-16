@@ -54,7 +54,7 @@ import RoundTrip.Types (
   TestTwoFields,
   response,
  )
-import System.Directory (withCurrentDirectory)
+import System.Directory (withCurrentDirectory, createDirectoryIfMissing)
 import System.Exit (ExitCode (ExitSuccess))
 import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
@@ -185,6 +185,7 @@ roundTripSpec = do
         spagoRun
 
     generateBridgedFiles bridge types = do
+      createDirectoryIfMissing True "generated"
       writePSTypesWith
         defaultSwitch
         "generated"
