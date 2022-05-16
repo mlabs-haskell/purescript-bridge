@@ -66,8 +66,9 @@
         pursBridgeFlake = pursBridgeHsProject.flake { };
 
         # Code quality
-        cq = import ./nix/code-quality.nix { projectName = ""; inherit pkgs easy-ps; };
+        cq = import ./nix/code-quality.nix { inherit pkgs easy-ps; };
         fileCheckers = cq.checkers pkgs;
+        fileFixers = cq.fixers pkgs;
 
         # plutus-ledger-api Purescript typelib
         sampleLedgerTypelib = import ./nix/purescript-bridge-typelib.nix {
@@ -103,22 +104,39 @@
           default = pursBridgeFlake.devShell;
         };
 
-        # Fix files
-        fix-files = cq.format;
-
         # Used by CI
         build-all = pkgs.runCommand "build-all"
           (self.packages.${system} // self.devShells.${system})
           "touch $out";
 
+        # Check files
         check-files = pkgs.runCommand "check-files"
-          (builtins.mapAttrs
-            (k: v:
-              if k == "checkPurescriptFiles"
-              then v ./test/RoundTrip/app
-              else v src)
-            fileCheckers)
+          ({
+            checks = [
+              (fileCheckers.checkNixFiles src)
+              (fileCheckers.checkHaskellFiles src)
+              (fileCheckers.checkCabalFiles src)
+              (fileCheckers.checkShellFiles src)
+              (fileCheckers.checkDhallFiles src)
+              (fileCheckers.checkPurescriptFiles ./plutus-ledger-api-typelib)
+              (fileCheckers.checkPurescriptFiles ./test/RoundTrip/app)
+            ];
+          })
           "touch $out";
+
+        # Fix files
+        fix-files = cq.makeBundle {
+          myScriptName = "fix-files";
+          myScript = ''
+            ${fileFixers.fixNixFiles}/bin/fix-nix-files-bundle $@
+            ${fileFixers.fixHaskellFiles}/bin/fix-haskell-files-bundle $@
+            ${fileFixers.fixCabalFiles}/bin/fix-cabal-files-bundle $@
+            ${fileFixers.fixShellFiles}/bin/fix-shell-files-bundle $@
+            ${fileFixers.fixDhallFiles}/bin/fix-dhall-files-bundle $@
+            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/plutus-ledger-api-typelib
+            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/test/RoundTrip/app
+          '';
+        };
 
         # Purescript and bridge Nix libs
         lib = {

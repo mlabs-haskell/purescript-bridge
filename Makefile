@@ -30,7 +30,7 @@ build-test-all: build-all test-all
 
 # Fix files
 fix-files:
-	$(NIX_RUN) .#$@.${current-system}
+	$(NIX_RUN) .#$@.${current-system} $$PWD
 
 # Check files
 check-files:
