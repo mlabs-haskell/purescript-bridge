@@ -54,7 +54,7 @@ import RoundTrip.Types (
   TestTwoFields,
   response,
  )
-import System.Directory (withCurrentDirectory, createDirectoryIfMissing)
+import System.Directory (createDirectoryIfMissing, withCurrentDirectory)
 import System.Exit (ExitCode (ExitSuccess))
 import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
@@ -72,24 +72,16 @@ spec = describe "Round trip tests (Purescript <-> Haskell)" roundTripSpec
 
 roundTripSpec :: Spec
 roundTripSpec = do
-  describe
-    "Prerequisite tests"
-    do
-      it
-        "`[test/RoundTrip/app] $ spago build` should work"
-        ( withCurrentDirectory "test/RoundTrip/app" do
-            (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-            assertEqual (stdout <> stderr) exitCode ExitSuccess
-        )
-      it
-        "`[test/RoundTrip/app] $ spago build` should not warn of unused packages buildable"
-        ( withCurrentDirectory "test/RoundTrip/app" do
-            (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-            assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
-        )
-
   beforeAll (startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)) $
     describe "With plutus-ledger-api bridge" do
+      it "`[test/RoundTrip/app] $ spago build` should work" $ \_ -> do
+        withCurrentDirectory "test/RoundTrip/app" do
+          (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+          assertEqual (stdout <> stderr) exitCode ExitSuccess
+      it "`[test/RoundTrip/app] $ spago build` should not warn of unused packages buildable" $ \_ -> do
+        withCurrentDirectory "test/RoundTrip/app" do
+          (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+          assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
       it "should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
         mayPid <- getPid hproc
         maybe
