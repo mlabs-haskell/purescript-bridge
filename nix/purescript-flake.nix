@@ -1,6 +1,6 @@
 { name
 , src
-, pursSubDirs ? [ /src /test ]
+, pursSubDirs ? [ "/src" "/test" ]
 , pkgs
 , system
 , easy-ps
@@ -61,7 +61,7 @@ rec {
       nodePackages.jsonlint
     ]) ++ [ purs ];
 
-    inherit nodeModules spagoLocalPkgs;
+    inherit spagoLocalPkgs;
 
     phases = [ "installPhase" ];
     installPhase = ''touch $out'';
@@ -71,7 +71,7 @@ rec {
       export XDG_RUNTIME_DIR=$TMPDIR
 
       echo "Setting up Nodejs dependencies"
-      ln -s $nodeModules/lib/node_modules $TMPDIR/node_modules
+      ln -s ${nodeModules}/lib/node_modules $TMPDIR/node_modules
       export NODE_PATH="$TMPDIR/node_modules:$NODE_PATH"
       export PATH="$nodeModules/bin:$PATH"
 

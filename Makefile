@@ -7,6 +7,7 @@ current-system := $(shell nix eval --impure --expr builtins.currentSystem)
 NIX_BUILD:= nix -L --show-trace build
 NIX_RUN:= nix -L --show-trace run
 NIX_DEV:= nix -L --show-trace develop .#default
+NIX_DEV_RT:= nix -L --show-trace develop .#roundTripTest
 
 develop:
 	$(NIX_DEV)
@@ -30,7 +31,7 @@ build-sample-plutus-ledger-api-typelib:
 build-test-all: build-all test-all
 
 # Fix files
-fix-files:
+fix-files: clean
 	$(NIX_RUN) .#$@.${current-system} $$PWD
 
 # Check files
@@ -39,7 +40,7 @@ check-files:
 
 # Run what CI would
 ci: check-files build-all
-	$(NIX_DEV) -c cabal run test:tests
+	$(NIX_DEV_RT) -c cabal run test:tests
 
 # Clean local folder.
 clean:
@@ -54,6 +55,7 @@ clean:
 	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago2nix || true
 	@ rm -rf ./nix/purescript-bridge-typelib-spago/output || true
 	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago || true
+	@ rm -rf ./nix/purescript-bridge-typelib-spago/node_modules || true
 
 generate-plutus-ledger-api-typelib:
 	@ if [ -d plutus-ledger-api-typelib ]; then git rm -r --cached plutus-ledger-api-typelib; else echo "skip"; fi

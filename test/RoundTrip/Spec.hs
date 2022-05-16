@@ -6,7 +6,7 @@
 module RoundTrip.Spec (spec) where
 
 import Codec.Serialise qualified as Cbor
-import Control.Monad (guard, unless)
+import Control.Monad (unless)
 import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Lazy (fromStrict, toStrict)
@@ -177,17 +177,18 @@ roundTripSpec = do
       bs <- Base16.decode $ toStrict . fromString $ str
       return $ fromStrict bs
 
+    waitUntil pred fd = do
+      l <- hGetLine fd
+      putStrLn $ "hs > waitUntil> " <> l
+      Control.Monad.unless (pred l) (waitUntil pred fd)
+
     spagoRun = do
       (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
       mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
       -- Wait until Spago is done with the build
-      let waitUntilBuildSucceded = do
-            l <- hGetLine herr
-            Control.Monad.unless (l == "[info] Build succeeded.") waitUntilBuildSucceded
-      waitUntilBuildSucceded
+      waitUntil (== "[info] Build succeeded.") herr
       -- Wait for initial "ready" log message
-      l <- hGetLine hout
-      guard $ l == "ready"
+      waitUntil (== "ready") hout
       pure (hin, hout, herr, hproc)
 
     stopPurescript = terminateProcess
