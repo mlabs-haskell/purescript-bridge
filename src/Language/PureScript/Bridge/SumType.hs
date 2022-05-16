@@ -121,7 +121,7 @@ mkPlutusNewtype ::
   SumType 'Haskell
 mkPlutusNewtype = case mkSumType @t of
   SumType tInfo cs is -> case cs of
-    [(0, DataConstructor sc (Record [RecordEntry _ _]))] ->
+    [(0, DataConstructor _ (Record [RecordEntry _ _]))] ->
       SumType tInfo cs (is <> [GenericShow, PlutusNewtype, ToData, FromData])
     [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [GenericShow, PlutusNewtype, ToData, FromData])
     _ ->
@@ -130,15 +130,15 @@ mkPlutusNewtype = case mkSumType @t of
           <> T.unpack (_typeName tInfo)
 
 isNewtypeRec :: forall (lang :: Language). SumType lang -> Bool
-isNewtypeRec (SumType tInfo constrs instances) = case constrs of
-   [(0, DataConstructor sc (Record [RecordEntry _ ti]))] -> True
+isNewtypeRec (SumType _ constrs _) = case constrs of
+   [(0, DataConstructor _ (Record [RecordEntry _ _]))] -> True
    _                                                     -> False
 
 eraseNewtypeRec :: forall (lang :: Language). SumType lang -> SumType lang
 eraseNewtypeRec st@(SumType tInfo constrs instances)
   | isPlutusNewtype st = case constrs of
       [(0, DataConstructor sc (Record [RecordEntry _ ti]))] ->
-        SumType tInfo [(0, DataConstructor sc (Normal [ti]))] is
+        SumType tInfo [(0, DataConstructor sc (Normal [ti]))] instances
 
       _ -> st
 

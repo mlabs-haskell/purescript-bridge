@@ -28,6 +28,8 @@ derive instance Generic DiffMilliSeconds _
 
 derive instance Newtype DiffMilliSeconds _
 
+
+
 derive newtype instance ToData DiffMilliSeconds
 
 derive newtype instance FromData DiffMilliSeconds
@@ -39,7 +41,7 @@ _DiffMilliSeconds = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype POSIXTime = POSIXTime BigInt
+newtype POSIXTime = POSIXTime { getPOSIXTime :: BigInt }
 
 instance Show POSIXTime where
   show a = genericShow a
@@ -52,11 +54,13 @@ derive instance Generic POSIXTime _
 
 derive instance Newtype POSIXTime _
 
+
+
 derive newtype instance ToData POSIXTime
 
 derive newtype instance FromData POSIXTime
 
 --------------------------------------------------------------------------------
 
-_POSIXTime :: Iso' POSIXTime BigInt
+_POSIXTime :: Iso' POSIXTime {getPOSIXTime :: BigInt}
 _POSIXTime = _Newtype

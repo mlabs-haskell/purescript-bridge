@@ -16,7 +16,7 @@ import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 
-newtype PubKey = PubKey LedgerBytes
+newtype PubKey = PubKey { getPubKey :: LedgerBytes }
 
 instance Show PubKey where
   show a = genericShow a
@@ -25,18 +25,20 @@ derive instance Generic PubKey _
 
 derive instance Newtype PubKey _
 
+
+
 derive newtype instance ToData PubKey
 
 derive newtype instance FromData PubKey
 
 --------------------------------------------------------------------------------
 
-_PubKey :: Iso' PubKey LedgerBytes
+_PubKey :: Iso' PubKey {getPubKey :: LedgerBytes}
 _PubKey = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype PubKeyHash = PubKeyHash ByteArray
+newtype PubKeyHash = PubKeyHash { getPubKeyHash :: ByteArray }
 
 instance Show PubKeyHash where
   show a = genericShow a
@@ -45,18 +47,20 @@ derive instance Generic PubKeyHash _
 
 derive instance Newtype PubKeyHash _
 
+
+
 derive newtype instance ToData PubKeyHash
 
 derive newtype instance FromData PubKeyHash
 
 --------------------------------------------------------------------------------
 
-_PubKeyHash :: Iso' PubKeyHash ByteArray
+_PubKeyHash :: Iso' PubKeyHash {getPubKeyHash :: ByteArray}
 _PubKeyHash = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype PrivateKey = PrivateKey LedgerBytes
+newtype PrivateKey = PrivateKey { getPrivateKey :: LedgerBytes }
 
 instance Show PrivateKey where
   show a = genericShow a
@@ -65,18 +69,20 @@ derive instance Generic PrivateKey _
 
 derive instance Newtype PrivateKey _
 
+
+
 derive newtype instance ToData PrivateKey
 
 derive newtype instance FromData PrivateKey
 
 --------------------------------------------------------------------------------
 
-_PrivateKey :: Iso' PrivateKey LedgerBytes
+_PrivateKey :: Iso' PrivateKey {getPrivateKey :: LedgerBytes}
 _PrivateKey = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype Signature = Signature ByteArray
+newtype Signature = Signature { getSignature :: ByteArray }
 
 instance Show Signature where
   show a = genericShow a
@@ -85,11 +91,13 @@ derive instance Generic Signature _
 
 derive instance Newtype Signature _
 
+
+
 derive newtype instance ToData Signature
 
 derive newtype instance FromData Signature
 
 --------------------------------------------------------------------------------
 
-_Signature :: Iso' Signature ByteArray
+_Signature :: Iso' Signature {getSignature :: ByteArray}
 _Signature = _Newtype

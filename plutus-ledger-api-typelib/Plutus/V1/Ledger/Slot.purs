@@ -15,7 +15,7 @@ import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype Slot = Slot BigInt
+newtype Slot = Slot { getSlot :: BigInt }
 
 instance Show Slot where
   show a = genericShow a
@@ -28,11 +28,13 @@ derive instance Generic Slot _
 
 derive instance Newtype Slot _
 
+
+
 derive newtype instance ToData Slot
 
 derive newtype instance FromData Slot
 
 --------------------------------------------------------------------------------
 
-_Slot :: Iso' Slot BigInt
+_Slot :: Iso' Slot {getSlot :: BigInt}
 _Slot = _Newtype

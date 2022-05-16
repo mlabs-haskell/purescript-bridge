@@ -3,42 +3,42 @@ module Plutus.V1.Ledger.TxId where
 
 import Prelude
 
+import Control.Lazy (defer)
+import Data.Argonaut.Core (jsonNull)
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import TypeLevel.Nat (S, Z)
 import Types.ByteArray (ByteArray)
+import Data.Argonaut.Decode.Aeson as D
+import Data.Argonaut.Encode.Aeson as E
+import Data.Map as Map
 
 newtype TxId = TxId { getTxId :: ByteArray }
 
 instance Show TxId where
   show a = genericShow a
+
+instance EncodeJson TxId where
+  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
+                                                 { getTxId: E.value :: _ ByteArray })
+
+instance DecodeJson TxId where
+  decodeJson = defer \_ -> D.decode $ (TxId <$> D.record "TxId" { getTxId: D.value :: _ ByteArray })
 
 derive instance Eq TxId
 
@@ -48,16 +48,12 @@ derive instance Generic TxId _
 
 derive instance Newtype TxId _
 
-instance
-  HasPlutusSchema TxId
-    ( "TxId"
-        :=
-          ( "getTxId" := I ByteArray
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema TxId
+  ("TxId" :=
+     ("getTxId" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData TxId where
   toData x = genericToData x
@@ -67,5 +63,5 @@ instance FromData TxId where
 
 --------------------------------------------------------------------------------
 
-_TxId :: Iso' TxId { getTxId :: ByteArray }
+_TxId :: Iso' TxId {getTxId :: ByteArray}
 _TxId = _Newtype

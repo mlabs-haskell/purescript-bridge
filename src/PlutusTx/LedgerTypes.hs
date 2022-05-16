@@ -141,7 +141,7 @@ ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
   genericShow
     <$> [ order $ mkPlutusNewtype @AssetClass -- this might be a type synonym in the version of Plutus we're using at Cardax?
-        , order $ unsafeMkPlutusDataType @TxId
+        , argonaut $ order $ unsafeMkPlutusDataType @TxId
         , unsafeMkPlutusDataType @TxOut
         , unsafeMkPlutusDataType @TxOutRef
         , order $ mkPlutusNewtype @DiffMilliSeconds

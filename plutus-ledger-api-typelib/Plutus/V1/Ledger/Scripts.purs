@@ -16,7 +16,7 @@ import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 import Types.PlutusData (PlutusData)
 
-newtype Redeemer = Redeemer PlutusData
+newtype Redeemer = Redeemer { getRedeemer :: PlutusData }
 
 instance Show Redeemer where
   show a = genericShow a
@@ -25,18 +25,20 @@ derive instance Generic Redeemer _
 
 derive instance Newtype Redeemer _
 
+
+
 derive newtype instance ToData Redeemer
 
 derive newtype instance FromData Redeemer
 
 --------------------------------------------------------------------------------
 
-_Redeemer :: Iso' Redeemer PlutusData
+_Redeemer :: Iso' Redeemer {getRedeemer :: PlutusData}
 _Redeemer = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype Datum = Datum PlutusData
+newtype Datum = Datum { getDatum :: PlutusData }
 
 instance Show Datum where
   show a = genericShow a
@@ -45,18 +47,20 @@ derive instance Generic Datum _
 
 derive instance Newtype Datum _
 
+
+
 derive newtype instance ToData Datum
 
 derive newtype instance FromData Datum
 
 --------------------------------------------------------------------------------
 
-_Datum :: Iso' Datum PlutusData
+_Datum :: Iso' Datum {getDatum :: PlutusData}
 _Datum = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype ScriptHash = ScriptHash ByteArray
+newtype ScriptHash = ScriptHash { getScriptHash :: ByteArray }
 
 instance Show ScriptHash where
   show a = genericShow a
@@ -65,13 +69,15 @@ derive instance Generic ScriptHash _
 
 derive instance Newtype ScriptHash _
 
+
+
 derive newtype instance ToData ScriptHash
 
 derive newtype instance FromData ScriptHash
 
 --------------------------------------------------------------------------------
 
-_ScriptHash :: Iso' ScriptHash ByteArray
+_ScriptHash :: Iso' ScriptHash {getScriptHash :: ByteArray}
 _ScriptHash = _Newtype
 
 --------------------------------------------------------------------------------
@@ -84,6 +90,8 @@ instance Show ValidatorHash where
 derive instance Generic ValidatorHash _
 
 derive instance Newtype ValidatorHash _
+
+
 
 derive newtype instance ToData ValidatorHash
 
@@ -105,6 +113,8 @@ derive instance Generic DatumHash _
 
 derive instance Newtype DatumHash _
 
+
+
 derive newtype instance ToData DatumHash
 
 derive newtype instance FromData DatumHash
@@ -125,6 +135,8 @@ derive instance Generic MintingPolicyHash _
 
 derive instance Newtype MintingPolicyHash _
 
+
+
 derive newtype instance ToData MintingPolicyHash
 
 derive newtype instance FromData MintingPolicyHash
@@ -144,6 +156,8 @@ instance Show StakeValidatorHash where
 derive instance Generic StakeValidatorHash _
 
 derive instance Newtype StakeValidatorHash _
+
+
 
 derive newtype instance ToData StakeValidatorHash
 

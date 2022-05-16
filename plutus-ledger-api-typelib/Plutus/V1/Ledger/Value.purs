@@ -17,7 +17,7 @@ import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.TokenName (TokenName)
 
-newtype AssetClass = AssetClass (Tuple CurrencySymbol TokenName)
+newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
 
 instance Show AssetClass where
   show a = genericShow a
@@ -30,11 +30,13 @@ derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
 
+
+
 derive newtype instance ToData AssetClass
 
 derive newtype instance FromData AssetClass
 
 --------------------------------------------------------------------------------
 
-_AssetClass :: Iso' AssetClass (Tuple CurrencySymbol TokenName)
+_AssetClass :: Iso' AssetClass {unAssetClass :: Tuple CurrencySymbol TokenName}
 _AssetClass = _Newtype

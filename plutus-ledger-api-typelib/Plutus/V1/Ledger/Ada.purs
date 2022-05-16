@@ -15,7 +15,7 @@ import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype Ada = Lovelace BigInt
+newtype Ada = Lovelace { getLovelace :: BigInt }
 
 instance Show Ada where
   show a = genericShow a
@@ -24,11 +24,13 @@ derive instance Generic Ada _
 
 derive instance Newtype Ada _
 
+
+
 derive newtype instance ToData Ada
 
 derive newtype instance FromData Ada
 
 --------------------------------------------------------------------------------
 
-_Lovelace :: Iso' Ada BigInt
+_Lovelace :: Iso' Ada {getLovelace :: BigInt}
 _Lovelace = _Newtype
