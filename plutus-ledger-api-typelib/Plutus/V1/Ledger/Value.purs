@@ -52,7 +52,7 @@ instance EncodeJson AssetClass where
   encodeJson x = E.encode  (E.record {unAssetClass: E.value :: Op Json (Tuple CurrencySymbol TokenName) }) {unAssetClass: unwrap x}
 
 instance DecodeJson AssetClass where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "unAssetClass") <$> D.decode D.record "unAssetClass"{ unAssetClass: D.value}
+  decodeJson x = get (Proxy :: Proxy "unAssetClass") <$> D.decode (D.record "unAssetClass"{ unAssetClass: D.value :: _ (Tuple CurrencySymbol TokenName)}) x
 
 --------------------------------------------------------------------------------
 

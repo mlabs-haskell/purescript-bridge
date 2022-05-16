@@ -82,7 +82,7 @@ instance EncodeJson POSIXTime where
   encodeJson x = E.encode  (E.record {getPOSIXTime: E.value :: Op Json (BigInt) }) {getPOSIXTime: unwrap x}
 
 instance DecodeJson POSIXTime where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getPOSIXTime") <$> D.decode D.record "getPOSIXTime"{ getPOSIXTime: D.value}
+  decodeJson x = get (Proxy :: Proxy "getPOSIXTime") <$> D.decode (D.record "getPOSIXTime"{ getPOSIXTime: D.value :: _ (BigInt)}) x
 
 --------------------------------------------------------------------------------
 

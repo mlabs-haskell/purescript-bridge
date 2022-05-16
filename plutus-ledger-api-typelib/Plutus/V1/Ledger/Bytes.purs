@@ -46,7 +46,7 @@ instance EncodeJson LedgerBytes where
   encodeJson x = E.encode  (E.record {getLedgerBytes: E.value :: Op Json (ByteArray) }) {getLedgerBytes: unwrap x}
 
 instance DecodeJson LedgerBytes where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getLedgerBytes") <$> D.decode D.record "getLedgerBytes"{ getLedgerBytes: D.value}
+  decodeJson x = get (Proxy :: Proxy "getLedgerBytes") <$> D.decode (D.record "getLedgerBytes"{ getLedgerBytes: D.value :: _ (ByteArray)}) x
 
 --------------------------------------------------------------------------------
 

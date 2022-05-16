@@ -47,7 +47,7 @@ instance EncodeJson PubKey where
   encodeJson x = E.encode  (E.record {getPubKey: E.value :: Op Json (LedgerBytes) }) {getPubKey: unwrap x}
 
 instance DecodeJson PubKey where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getPubKey") <$> D.decode D.record "getPubKey"{ getPubKey: D.value}
+  decodeJson x = get (Proxy :: Proxy "getPubKey") <$> D.decode (D.record "getPubKey"{ getPubKey: D.value :: _ (LedgerBytes)}) x
 
 --------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ instance EncodeJson PubKeyHash where
   encodeJson x = E.encode  (E.record {getPubKeyHash: E.value :: Op Json (ByteArray) }) {getPubKeyHash: unwrap x}
 
 instance DecodeJson PubKeyHash where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getPubKeyHash") <$> D.decode D.record "getPubKeyHash"{ getPubKeyHash: D.value}
+  decodeJson x = get (Proxy :: Proxy "getPubKeyHash") <$> D.decode (D.record "getPubKeyHash"{ getPubKeyHash: D.value :: _ (ByteArray)}) x
 
 --------------------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ instance EncodeJson PrivateKey where
   encodeJson x = E.encode  (E.record {getPrivateKey: E.value :: Op Json (LedgerBytes) }) {getPrivateKey: unwrap x}
 
 instance DecodeJson PrivateKey where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getPrivateKey") <$> D.decode D.record "getPrivateKey"{ getPrivateKey: D.value}
+  decodeJson x = get (Proxy :: Proxy "getPrivateKey") <$> D.decode (D.record "getPrivateKey"{ getPrivateKey: D.value :: _ (LedgerBytes)}) x
 
 --------------------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ instance EncodeJson Signature where
   encodeJson x = E.encode  (E.record {getSignature: E.value :: Op Json (ByteArray) }) {getSignature: unwrap x}
 
 instance DecodeJson Signature where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getSignature") <$> D.decode D.record "getSignature"{ getSignature: D.value}
+  decodeJson x = get (Proxy :: Proxy "getSignature") <$> D.decode (D.record "getSignature"{ getSignature: D.value :: _ (ByteArray)}) x
 
 --------------------------------------------------------------------------------
 

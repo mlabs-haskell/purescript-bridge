@@ -46,7 +46,7 @@ instance EncodeJson Ada where
   encodeJson x = E.encode  (E.record {getLovelace: E.value :: Op Json (BigInt) }) {getLovelace: unwrap x}
 
 instance DecodeJson Ada where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getLovelace") <$> D.decode D.record "getLovelace"{ getLovelace: D.value}
+  decodeJson x = get (Proxy :: Proxy "getLovelace") <$> D.decode (D.record "getLovelace"{ getLovelace: D.value :: _ (BigInt)}) x
 
 --------------------------------------------------------------------------------
 

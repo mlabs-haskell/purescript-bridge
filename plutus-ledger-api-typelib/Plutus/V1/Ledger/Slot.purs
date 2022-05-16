@@ -50,7 +50,7 @@ instance EncodeJson Slot where
   encodeJson x = E.encode  (E.record {getSlot: E.value :: Op Json (BigInt) }) {getSlot: unwrap x}
 
 instance DecodeJson Slot where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getSlot") <$> D.decode D.record "getSlot"{ getSlot: D.value}
+  decodeJson x = get (Proxy :: Proxy "getSlot") <$> D.decode (D.record "getSlot"{ getSlot: D.value :: _ (BigInt)}) x
 
 --------------------------------------------------------------------------------
 

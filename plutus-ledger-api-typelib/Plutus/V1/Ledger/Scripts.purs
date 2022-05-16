@@ -47,7 +47,7 @@ instance EncodeJson Redeemer where
   encodeJson x = E.encode  (E.record {getRedeemer: E.value :: Op Json (PlutusData) }) {getRedeemer: unwrap x}
 
 instance DecodeJson Redeemer where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getRedeemer") <$> D.decode D.record "getRedeemer"{ getRedeemer: D.value}
+  decodeJson x = get (Proxy :: Proxy "getRedeemer") <$> D.decode (D.record "getRedeemer"{ getRedeemer: D.value :: _ (PlutusData)}) x
 
 --------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ instance EncodeJson Datum where
   encodeJson x = E.encode  (E.record {getDatum: E.value :: Op Json (PlutusData) }) {getDatum: unwrap x}
 
 instance DecodeJson Datum where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getDatum") <$> D.decode D.record "getDatum"{ getDatum: D.value}
+  decodeJson x = get (Proxy :: Proxy "getDatum") <$> D.decode (D.record "getDatum"{ getDatum: D.value :: _ (PlutusData)}) x
 
 --------------------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ instance EncodeJson ScriptHash where
   encodeJson x = E.encode  (E.record {getScriptHash: E.value :: Op Json (ByteArray) }) {getScriptHash: unwrap x}
 
 instance DecodeJson ScriptHash where
-  decodeJson = defer \_ -> get (Proxy :: Proxy "getScriptHash") <$> D.decode D.record "getScriptHash"{ getScriptHash: D.value}
+  decodeJson x = get (Proxy :: Proxy "getScriptHash") <$> D.decode (D.record "getScriptHash"{ getScriptHash: D.value :: _ (ByteArray)}) x
 
 --------------------------------------------------------------------------------
 
