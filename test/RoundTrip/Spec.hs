@@ -117,7 +117,7 @@ roundTripSpec = do
               "hs> Round trip for payload should be ok"
               (Right testData)
               (eitherDecode @TestData (fromString jsonResp))
-  runIO $ stopPurescript hproc
+  --runIO $ stopPurescript hproc
 
   (hin, hout, herr, hproc) <- runIO $ startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)
   describe "with ledger bridge" do
@@ -156,8 +156,9 @@ roundTripSpec = do
               "hs> Round trip for payload should be ok"
               (Just testPlutusData)
               (fromData @TestPlutusData pd)
-  runIO $ stopPurescript hproc
   where
+    --runIO $ stopPurescript hproc
+
     doReq hin herr hout req = do
       let jsonReq = toString $ encode @Request req
       -- putStrLn jsonReq -- DEBUG
