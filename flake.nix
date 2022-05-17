@@ -58,29 +58,31 @@
             then { src = inputs.servant-purescript; subdirs = e.subdirs; }
             else e)
           extraSources';
-        pursBridgeHsProject = import ./nix/haskell.nix {
+        haskellProject = import ./nix/haskell.nix {
           inherit src system pkgs pkgs' easy-ps;
           inputs = inputs.bot-plutus-interface.inputs;
           extraSources = extraSources'';
         };
-        pursBridgeFlake = pursBridgeHsProject.flake { };
+        haskellFlake = haskellProject.flake { };
 
         # Code quality
-        cq = import ./nix/code-quality.nix { projectName = ""; inherit pkgs easy-ps; };
+        cq = import ./nix/code-quality.nix { inherit pkgs easy-ps; };
         fileCheckers = cq.checkers pkgs;
+        fileFixers = cq.fixers pkgs;
 
+        pursVersion = "purs-0_14_5";
         # plutus-ledger-api Purescript typelib
         sampleLedgerTypelib = import ./nix/purescript-bridge-typelib.nix {
           inherit pkgs;
-          purs = easy-ps.purs-0_14_5; # TODO: Extract the purs version as a param and share across
+          purs = easy-ps.${pursVersion};
           pursDir = ./plutus-ledger-api-typelib;
         };
         ledgerTypelib = import ./nix/purescript-bridge-typelib.nix {
           inherit pkgs;
-          purs = easy-ps.purs-0_14_5; # TODO: Extract the purs version as a param and share across
+          purs = easy-ps.${pursVersion};
           pursDir = (pkgs.runCommand "generate-plutus-ledger-api-typelib"
             {
-              cli = pursBridgeHsProject.getComponent "purescript-bridge:exe:cli";
+              cli = haskellProject.getComponent "purescript-bridge:exe:cli";
             }
             ''
               mkdir $out
@@ -88,37 +90,86 @@
             '');
         };
 
+        # Purescript - Haskell round trip test purs flake
+        roundTripTestPursFlake =
+          let
+            inherit pkgs easy-ps;
+            src = ./test/RoundTrip/app;
+            pursSubDirs = [ "/src" "/generated" ];
+            nodejs = pkgs.nodejs-14_x;
+            spagoPkgs = import (src + "/spago-packages.nix") { inherit pkgs; };
+            spagoLocalPkgs = [ ];
+            nodePkgs =
+              import (src + "/node2nix.nix") { inherit pkgs system nodejs; };
+            purs = easy-ps.${pursVersion};
+          in
+          import ./nix/purescript-flake.nix {
+            name = "purescript-bridge-roundtrip-test";
+            inherit src pursSubDirs pkgs system easy-ps spagoPkgs spagoLocalPkgs
+              nodejs nodePkgs purs;
+          };
+        combineDevShells = hsShell: pursShell:
+          hsShell.overrideAttrs
+            (
+              old: {
+                buildInputs = old.buildInputs ++ pursShell.buildInputs;
+                shellHook = ''
+                  ${old.shellHook}
+                  ${pursShell.shellHook}
+                '';
+              }
+            ) // {
+            inherit (pursShell) spagoPkgs;
+          };
       in
       {
         # Useful attributes
-        inherit pkgs easy-ps pursBridgeHsProject pursBridgeFlake;
+        inherit pkgs easy-ps haskellProject haskellFlake;
 
         # Flake standard attributes
-        packages = pursBridgeFlake.packages // {
+        packages = haskellFlake.packages // {
           sample-plutus-ledger-api-typelib = sampleLedgerTypelib;
           plutus-ledger-api-typelib = ledgerTypelib;
         };
-        checks = pursBridgeFlake.checks;
+        checks = haskellFlake.checks;
         devShells = {
-          default = pursBridgeFlake.devShell;
+          default = haskellFlake.devShell;
+          roundTripTest = combineDevShells haskellFlake.devShell roundTripTestPursFlake.devShell;
         };
-
-        # Fix files
-        fix-files = cq.format;
 
         # Used by CI
         build-all = pkgs.runCommand "build-all"
           (self.packages.${system} // self.devShells.${system})
           "touch $out";
 
+        # Check files
         check-files = pkgs.runCommand "check-files"
-          (builtins.mapAttrs
-            (k: v:
-              if k == "checkPurescriptFiles"
-              then v ./test/RoundTrip/app
-              else v src)
-            fileCheckers)
+          ({
+            checks = [
+              (fileCheckers.checkNixFiles src)
+              (fileCheckers.checkHaskellFiles src)
+              (fileCheckers.checkCabalFiles src)
+              (fileCheckers.checkShellFiles src)
+              (fileCheckers.checkDhallFiles src)
+              (fileCheckers.checkPurescriptFiles ./plutus-ledger-api-typelib)
+              (fileCheckers.checkPurescriptFiles ./test/RoundTrip/app)
+            ];
+          })
           "touch $out";
+
+        # Fix files
+        fix-files = cq.makeBundle {
+          myScriptName = "fix-files";
+          myScript = ''
+            ${fileFixers.fixNixFiles}/bin/fix-nix-files-bundle $@
+            ${fileFixers.fixHaskellFiles}/bin/fix-haskell-files-bundle $@
+            ${fileFixers.fixCabalFiles}/bin/fix-cabal-files-bundle $@
+            ${fileFixers.fixShellFiles}/bin/fix-shell-files-bundle $@
+            ${fileFixers.fixDhallFiles}/bin/fix-dhall-files-bundle $@
+            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/plutus-ledger-api-typelib
+            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/test/RoundTrip/app
+          '';
+        };
 
         # Purescript and bridge Nix libs
         lib = {

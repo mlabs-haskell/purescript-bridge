@@ -9,7 +9,7 @@
 rec {
   pursFilterSource = pursDirs: builtins.filterSource (path: type: type == "regular" && builtins.elem (builtins.baseNameOf path) pursDirs) ./.;
 
-  buildPursProject = { projectDir, pursSubDirs ? [ /src /test ], checkWarnings ? true }:
+  buildPursProject = { projectDir, pursSubDirs ? [ "/src" "/test" ], checkWarnings ? true }:
     pkgs.stdenv.mkDerivation rec {
       name = "purescript-lib-build-purs-project";
       pursDirs = (builtins.map (sd: projectDir + sd) pursSubDirs);

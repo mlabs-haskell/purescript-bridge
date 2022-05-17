@@ -17,7 +17,6 @@ import Language.PureScript.Bridge (
   SumType,
   argonaut,
   buildBridge,
-  defaultBridge,
   defaultSwitch,
   equal,
   functor,
@@ -55,7 +54,7 @@ import RoundTrip.Types (
   TestTwoFields,
   response,
  )
-import System.Directory (withCurrentDirectory)
+import System.Directory (createDirectoryIfMissing, withCurrentDirectory)
 import System.Exit (ExitCode (ExitSuccess))
 import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
@@ -64,8 +63,8 @@ import System.Process (
   runInteractiveCommand,
   terminateProcess,
  )
-import Test.HUnit (assertBool, assertEqual, assertFailure)
-import Test.Hspec (Spec, describe, it, runIO)
+import Test.HUnit (assertEqual, assertFailure)
+import Test.Hspec (Spec, beforeAll, describe, it)
 import Test.QuickCheck.Property (Testable (property))
 
 spec :: Spec
@@ -73,90 +72,62 @@ spec = describe "Round trip tests (Purescript <-> Haskell)" roundTripSpec
 
 roundTripSpec :: Spec
 roundTripSpec = do
-  describe
-    "Round trip prerequisite tests"
-    do
-      it
-        "`[test/RoundTrip/app] $ spago build` should work"
-        ( withCurrentDirectory "test/RoundTrip/app" do
-            (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-            assertEqual (stdout <> stderr) exitCode ExitSuccess
-        )
-      it
-        "`[test/RoundTrip/app] $ spago build` should not warn of unused packages buildable"
-        ( withCurrentDirectory "test/RoundTrip/app" do
-            (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-            assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
-        )
-
-  (hin, hout, herr, hproc) <- runIO $ startPurescript defaultBridge (myTypes <> myPlutusTypes)
-  describe "with defaultBridge" do
-    it "should have a Purescript process running" $ do
-      mayPid <- getPid hproc
-      maybe
-        (assertFailure "No process running")
-        (\_ -> return ())
-        mayPid
-
-    it "should produce Aeson-compatible representations" $ do
-      property $
-        \testData ->
-          do
-            -- Prepare request
-            let payload = toString $ encode @TestData testData
-            -- IPC
-            resp <- doReq hin herr hout (Req RTJson payload)
-            -- Assert response
-            jsonResp <-
-              response
-                (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
-                return
-                (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
-                resp
-            assertEqual
-              "hs> Round trip for payload should be ok"
-              (Right testData)
-              (eitherDecode @TestData (fromString jsonResp))
-  runIO $ stopPurescript hproc
-
-  (hin, hout, herr, hproc) <- runIO $ startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)
-  describe "with ledger bridge" do
-    it "should have a Purescript process running" $ do
-      mayPid <- getPid hproc
-      maybe
-        (assertFailure "No process running")
-        (\_ -> return ())
-        mayPid
-    it "should produce PlutusData compatible representations" $ do
-      property $
-        \testPlutusData ->
-          do
-            -- Prepare request
-            let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
-            -- IPC
-            resp <- doReq hin herr hout (Req RTPlutusData payload)
-            -- Assert response
-            pdResp <-
-              response
-                (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
-                (\json -> assertFailure $ "hs> Wanted RTPlutusData got RTJson " <> json)
-                return
-                resp
-            cbor <-
-              either
-                (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
-                return
-                (decodeBase16 pdResp)
-            pd <-
-              either
-                (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
-                return
-                (Cbor.deserialiseOrFail cbor)
-            assertEqual
-              "hs> Round trip for payload should be ok"
-              (Just testPlutusData)
-              (fromData @TestPlutusData pd)
-  runIO $ stopPurescript hproc
+  beforeAll (startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)) $
+    describe "With plutus-ledger-api bridge" do
+      it "should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
+        mayPid <- getPid hproc
+        maybe
+          (assertFailure "No process running")
+          (\_ -> return ())
+          mayPid
+      it "should produce Aeson-compatible representations" $ \(hin, hout, herr, _hproc) -> do
+        property $
+          \testData ->
+            do
+              -- Prepare request
+              let payload = toString $ encode @TestData testData
+              -- IPC
+              resp <- doReq hin herr hout (Req RTJson payload)
+              -- Assert response
+              jsonResp <-
+                response
+                  (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
+                  return
+                  (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
+                  resp
+              assertEqual
+                "hs> Round trip for payload should be ok"
+                (Right testData)
+                (eitherDecode @TestData (fromString jsonResp))
+      it "should produce PlutusData compatible representations" $ \(hin, hout, herr, _hproc) -> do
+        property $
+          \testPlutusData ->
+            do
+              -- Prepare request
+              let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
+              -- IPC
+              resp <- doReq hin herr hout (Req RTPlutusData payload)
+              -- Assert response
+              pdResp <-
+                response
+                  (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
+                  (\json -> assertFailure $ "hs> Wanted RTPlutusData got RTJson " <> json)
+                  return
+                  resp
+              cbor <-
+                either
+                  (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
+                  return
+                  (decodeBase16 pdResp)
+              pd <-
+                either
+                  (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
+                  return
+                  (Cbor.deserialiseOrFail cbor)
+              assertEqual
+                "hs> Round trip for payload should be ok"
+                (Just testPlutusData)
+                (fromData @TestPlutusData pd)
   where
     doReq hin herr hout req = do
       let jsonReq = toString $ encode @Request req
@@ -177,32 +148,37 @@ roundTripSpec = do
       bs <- Base16.decode $ toStrict . fromString $ str
       return $ fromStrict bs
 
+    waitUntil pred fd = do
+      l <- hGetLine fd
+      putStrLn $ "hs > waitUntil> " <> l
+      Control.Monad.unless (pred l) (waitUntil pred fd)
+
+    spagoBuild = do
+      (exitCode, _stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+      guard $ exitCode == ExitSuccess
+      guard $ not $ "[warn]" `isInfixOf` stderr
+      guard $ "[info] Build succeeded." `isInfixOf` stderr
+
     spagoRun = do
       (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
       mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
       -- Wait until Spago is done with the build
-      let waitUntilBuildSucceded = do
-            l <- hGetLine herr
-            Control.Monad.unless (l == "[info] Build succeeded.") waitUntilBuildSucceded
-      waitUntilBuildSucceded
+      waitUntil (== "[info] Build succeeded.") herr
       -- Wait for initial "ready" log message
-      l <- hGetLine hout
-      guard $ l == "ready"
+      waitUntil (== "I was born ready") hout
       pure (hin, hout, herr, hproc)
 
-    stopPurescript = terminateProcess
-
+    _stopPurescript = terminateProcess -- TODO: Figure out `after` cleanup
     startPurescript bridge types = do
       withCurrentDirectory "test/RoundTrip/app" do
-        generateBridgedFiles bridge types
+        createDirectoryIfMissing True "generated"
+        writePSTypesWith
+          defaultSwitch
+          "generated"
+          (buildBridge bridge)
+          types
+        spagoBuild
         spagoRun
-
-    generateBridgedFiles bridge types = do
-      writePSTypesWith
-        defaultSwitch
-        "generated"
-        (buildBridge bridge)
-        types
 
 myTypes :: [SumType 'Haskell]
 myTypes =

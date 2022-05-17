@@ -1,23 +1,12 @@
-{ projectName, pkgs, easy-ps }:
+{ pkgs, easy-ps }:
 let
-
-  # Recursively build script contents from a list of script addresses. They get
-  # concatenated sequentially.
-  mkScriptContents = sPs:
-    if sPs == [ ]
-    then ""
-    else (with builtins;(readFile (head sPs)) + "\n" + (mkScriptContents (tail sPs)));
-
-  # Util fn.
-  makeCIAction = { action, scriptPaths, buildInputsAdditional }:
+  makeBundle = { myScriptName, myScript, buildInputsAdditional ? [ ] }:
     pkgs.symlinkJoin rec {
 
-      name = "${action}-${projectName}";
-
-      scriptContents = mkScriptContents scriptPaths;
+      name = "${myScriptName}-bundle";
 
       script =
-        (pkgs.writeScriptBin name scriptContents).overrideAttrs
+        (pkgs.writeScriptBin name myScript).overrideAttrs
           (old: {
             buildCommand = ''
               ${old.buildCommand}
@@ -35,49 +24,9 @@ let
       '';
 
     };
-  dependencies = {
-
-    format = [
-      pkgs.haskellPackages.fourmolu
-      pkgs.haskellPackages.cabal-fmt
-      pkgs.nixpkgs-fmt
-      pkgs.shfmt
-      pkgs.dhall
-      easy-ps.purs-tidy
-    ];
-
-    lint = [
-      pkgs.hlint
-      pkgs.haskellPackages.apply-refact
-      pkgs.shellcheck
-    ];
-  };
-
-  # Shell scripts.
-  sScript = {
-    format = ./scripts/format.sh;
-    lint-inplace = ./scripts/lint-inplace.sh;
-  };
 in
 {
-  "format" = makeCIAction {
-    action = "format";
-    scriptPaths = [ sScript.format ];
-    buildInputsAdditional = dependencies.format;
-  };
-
-  "lint-inplace" = makeCIAction {
-    action = "lint-inplace";
-    scriptPaths = [ sScript.lint-inplace ];
-    buildInputsAdditional = dependencies.lint;
-  };
-
-  "format-lint" = makeCIAction {
-    action = "format-lint";
-    scriptPaths = [ sScript.format sScript.lint-inplace ];
-    buildInputsAdditional = dependencies.lint ++ dependencies.format;
-  };
-
+  inherit makeBundle;
 
   checkers = pkgs:
     let
@@ -95,61 +44,173 @@ in
       checkNixFiles = src: pkgs.runCommand "check-nix-files" { }
         ''
           touch $out
-          echo "Check Nix files"
-          NIX_FILES=$(find ${src} -name "*.nix")
-          ${nixpkgs-fmt}/bin/nixpkgs-fmt --check $NIX_FILES
+          echo "Check Nix files in ${src}"
+          FILES=$(find ${src} -name "*.nix")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${nixpkgs-fmt}/bin/nixpkgs-fmt --check $FILES
         '';
 
       checkHaskellFiles = src: pkgs.runCommand "check-haskell-files" { }
         ''
           touch $out
-          echo "Check Haskell files"
+          echo "Check Haskell files in ${src}"
           EXTENSIONS="-o -XTypeApplications -o -XTemplateHaskell -o -XImportQualifiedPost -o -XPatternSynonyms -o -XBangPatterns -o -fplugin=RecordDotPreprocessor"
-          HASKELL_FILES=$(find ${src} -name "*.hs")
-          ${fourmolu}/bin/fourmolu --mode check --check-idempotence $EXTENSIONS $HASKELL_FILES
+          FILES=$(find ${src} -name "*.hs")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${fourmolu}/bin/fourmolu --mode check --check-idempotence $EXTENSIONS $FILES
           if [ $? -ne 0 ]; then
             echo "Fourmolu complained."
             exit 1
           fi
           EXTENSIONS="-XTypeApplications -XTemplateHaskell -XImportQualifiedPost -XPatternSynonyms -XBangPatterns"
-          ${hlint}/bin/hlint $EXTENSIONS $HASKELL_FILES
+          ${hlint}/bin/hlint $EXTENSIONS $FILES
         '';
 
       checkCabalFiles = src: pkgs.runCommand "check-cabal-files" { }
         ''
           touch $out
-          echo "Check Cabal files"
-          CABAL_FILES=$(find ${src} -name "*.cabal")
-          ${cabal-fmt}/bin/cabal-fmt --check $CABAL_FILES
+          echo "Check Cabal files in ${src}"
+          FILES=$(find ${src} -name "*.cabal")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${cabal-fmt}/bin/cabal-fmt --check $FILES
         '';
 
       checkShellFiles = src: pkgs.runCommand "check-shell-files" { }
         ''
           touch $out
-          echo "Check Shell files"
-          SHELL_FILES=$(find ${src} -name "*.sh")
-          ${shfmt}/bin/shfmt -d $SHELL_FILES
-          ${shellcheck}/bin/shellcheck $SHELL_FILES
+          echo "Check Shell files in ${src}"
+          FILES=$(find ${src} -name "*.sh")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${shfmt}/bin/shfmt -d $FILES
+          ${shellcheck}/bin/shellcheck $FILES
         '';
 
       checkDhallFiles = src: pkgs.runCommand "check-dhall-files" { }
         ''
           touch $out
-          echo "Check Dhall files"
-          DHALL_FILES=$(find ${src} -name "*.dhall")
-          ${dhall}/bin/dhall format --check $DHALL_FILES
+          echo "Check Dhall files in ${src}"
+          FILES=$(find ${src} -name "*.dhall")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${dhall}/bin/dhall format --check $FILES
         '';
 
       checkPurescriptFiles = src: pkgs.runCommand "check-purescript-files" { }
         ''
           touch $out
-          echo "Check Purescript files"
-          PURS_FILES=$(find ${src} -name "*.purs")
-          ${purs-tidy}/bin/purs-tidy check $PURS_FILES
+          echo "Check Purescript files in ${src}"
+          FILES=$(find ${src} -name "*.purs")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${purs-tidy}/bin/purs-tidy check $FILES
         '';
     };
+  fixers = pkgs:
+    let
+      nixpkgs-fmt = pkgs.nixpkgs-fmt;
+      fourmolu = pkgs.haskellPackages.fourmolu;
+      hlint = pkgs.hlint;
+      cabal-fmt = pkgs.haskellPackages.cabal-fmt;
+      shfmt = pkgs.shfmt;
+      shellcheck = pkgs.shellcheck;
+      dhall = pkgs.dhall;
+      purs-tidy = easy-ps.purs-tidy;
+
+    in
+    {
+      fixNixFiles = makeBundle {
+        myScriptName = "fix-nix-files";
+        myScript = ''
+          echo "Fix Nix files in $@"
+          FILES=$(find $@ -name "*.nix")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${nixpkgs-fmt}/bin/nixpkgs-fmt $FILES
+        '';
+      };
+
+      fixHaskellFiles = makeBundle {
+        myScriptName = "fix-haskell-files";
+        myScript = ''
+          echo "Fix Haskell files in $@"
+          EXTENSIONS="-o -XTypeApplications -o -XTemplateHaskell -o -XImportQualifiedPost -o -XPatternSynonyms -o -XBangPatterns -o -fplugin=RecordDotPreprocessor"
+          FILES=$(find $@ -name "*.hs")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${fourmolu}/bin/fourmolu -i $EXTENSIONS $FILES
+        '';
+      };
+
+      fixCabalFiles = makeBundle {
+        myScriptName = "fix-cabal-files";
+        myScript = ''
+          echo "Fix Cabal files in $@"
+          FILES=$(find $@ -name "*.cabal")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${cabal-fmt}/bin/cabal-fmt --inplace $FILES
+        '';
+      };
+
+      fixShellFiles = makeBundle {
+        myScriptName = "fix-shell-files";
+        myScript = ''
+          echo "Fix Shell files in $@"
+          FILES=$(find $@ -name "*.sh")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${shfmt}/bin/shfmt -w $FILES
+        '';
+      };
+
+      fixDhallFiles = makeBundle {
+        myScriptName = "fix-dhall-files";
+        myScript = ''
+          echo "Fix Dhall files in $@"
+          FILES=$(find $@ -name "*.dhall")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${dhall}/bin/dhall format $FILES
+        '';
+      };
+
+      fixPurescriptFiles = makeBundle {
+        myScriptName = "fix-purescript-files";
+        myScript = ''
+          echo "Fix Purescript files in $@"
+          FILES=$(find $@ -name "*.purs")
+          if [ -z "$FILES" ]; then
+             echo "No files found"
+             exit 0;
+          fi;
+          ${purs-tidy}/bin/purs-tidy format-in-place $FILES
+        '';
+      };
+    };
 }
-
-
-
-
