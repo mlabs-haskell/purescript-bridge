@@ -6,7 +6,7 @@
 module RoundTrip.Spec (spec) where
 
 import Codec.Serialise qualified as Cbor
-import Control.Monad (unless)
+import Control.Monad (guard, unless)
 import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Lazy (fromStrict, toStrict)
@@ -63,7 +63,7 @@ import System.Process (
   runInteractiveCommand,
   terminateProcess,
  )
-import Test.HUnit (assertBool, assertEqual, assertFailure)
+import Test.HUnit (assertEqual, assertFailure)
 import Test.Hspec (Spec, beforeAll, describe, it)
 import Test.QuickCheck.Property (Testable (property))
 
@@ -74,14 +74,6 @@ roundTripSpec :: Spec
 roundTripSpec = do
   beforeAll (startPurescript plutusLedgerApiBridge (myTypes <> myPlutusTypes)) $
     describe "With plutus-ledger-api bridge" do
-      it "`[test/RoundTrip/app] $ spago build` should work" $ \_ -> do
-        withCurrentDirectory "test/RoundTrip/app" do
-          (exitCode, stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-          assertEqual (stdout <> stderr) exitCode ExitSuccess
-      it "`[test/RoundTrip/app] $ spago build` should not warn of unused packages buildable" $ \_ -> do
-        withCurrentDirectory "test/RoundTrip/app" do
-          (_, _, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-          assertBool stderr $ not $ "[warn]" `isInfixOf` stderr
       it "should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
         mayPid <- getPid hproc
         maybe
@@ -161,6 +153,12 @@ roundTripSpec = do
       putStrLn $ "hs > waitUntil> " <> l
       Control.Monad.unless (pred l) (waitUntil pred fd)
 
+    spagoBuild = do
+      (exitCode, _stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
+      guard $ exitCode == ExitSuccess
+      guard $ not $ "[warn]" `isInfixOf` stderr
+      guard $ "[info] Build succeeded." `isInfixOf` stderr
+
     spagoRun = do
       (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
       mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
@@ -173,16 +171,14 @@ roundTripSpec = do
     _stopPurescript = terminateProcess -- TODO: Figure out `after` cleanup
     startPurescript bridge types = do
       withCurrentDirectory "test/RoundTrip/app" do
-        generateBridgedFiles bridge types
+        createDirectoryIfMissing True "generated"
+        writePSTypesWith
+          defaultSwitch
+          "generated"
+          (buildBridge bridge)
+          types
+        spagoBuild
         spagoRun
-
-    generateBridgedFiles bridge types = do
-      createDirectoryIfMissing True "generated"
-      writePSTypesWith
-        defaultSwitch
-        "generated"
-        (buildBridge bridge)
-        types
 
 myTypes :: [SumType 'Haskell]
 myTypes =
