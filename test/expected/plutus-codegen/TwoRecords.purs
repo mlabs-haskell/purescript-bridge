@@ -8,8 +8,8 @@ import Data.Maybe (Maybe(Nothing, Just))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
+import Plutus.Types.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import ToData (class ToData, genericToData)
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import TypeLevel.Nat (S, Z)
 
 data TwoRecords

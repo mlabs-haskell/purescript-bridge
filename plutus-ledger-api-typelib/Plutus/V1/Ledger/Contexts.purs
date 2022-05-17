@@ -14,18 +14,7 @@ import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple, Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import Plutus.Types.CurrencySymbol (CurrencySymbol)
-import Plutus.Types.Value (Value)
-import Plutus.V1.Ledger.Credential (StakingCredential)
-import Plutus.V1.Ledger.Crypto (PubKeyHash)
-import Plutus.V1.Ledger.DCert (DCert)
-import Plutus.V1.Ledger.Interval (Interval)
-import Plutus.V1.Ledger.Scripts (Datum, DatumHash)
-import Plutus.V1.Ledger.Time (POSIXTime)
-import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
-import Plutus.V1.Ledger.TxId (TxId)
-import ToData (class ToData, genericToData)
-import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
+import Plutus.Types.DataSchema
   ( ApPCons
   , Field
   , I
@@ -43,6 +32,17 @@ import TypeLevel.DataSchema
   , type (:=)
   , type (@@)
   )
+import Plutus.Types.Value (Value)
+import Plutus.V1.Ledger.Credential (StakingCredential)
+import Plutus.V1.Ledger.Crypto (PubKeyHash)
+import Plutus.V1.Ledger.DCert (DCert)
+import Plutus.V1.Ledger.Interval (Interval)
+import Plutus.V1.Ledger.Scripts (Datum, DatumHash)
+import Plutus.V1.Ledger.Time (POSIXTime)
+import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
+import Plutus.V1.Ledger.TxId (TxId)
+import ToData (class ToData, genericToData)
+import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
 
 newtype TxInfo = TxInfo

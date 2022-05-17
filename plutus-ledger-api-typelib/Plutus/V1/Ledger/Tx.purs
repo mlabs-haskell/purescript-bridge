@@ -14,12 +14,7 @@ import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import Plutus.Types.Address (Address)
-import Plutus.Types.Value (Value)
-import Plutus.V1.Ledger.Scripts (DatumHash)
-import Plutus.V1.Ledger.TxId (TxId)
-import ToData (class ToData, genericToData)
-import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
+import Plutus.Types.DataSchema
   ( ApPCons
   , Field
   , I
@@ -37,6 +32,11 @@ import TypeLevel.DataSchema
   , type (:=)
   , type (@@)
   )
+import Plutus.Types.Value (Value)
+import Plutus.V1.Ledger.Scripts (DatumHash)
+import Plutus.V1.Ledger.TxId (TxId)
+import ToData (class ToData, genericToData)
+import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
 
 newtype TxOut = TxOut

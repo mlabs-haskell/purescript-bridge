@@ -3,12 +3,17 @@ module Plutus.V1.Ledger.Scripts where
 
 import Prelude
 
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
-import Data.Argonaut.Core (Json, jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -24,8 +29,8 @@ import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 import Types.PlutusData (PlutusData)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
+import Aeson.Decode as D
+import Aeson.Encode as E
 import Data.Map as Map
 
 newtype Redeemer = Redeemer PlutusData
@@ -41,12 +46,12 @@ derive newtype instance ToData Redeemer
 
 derive newtype instance FromData Redeemer
 
-instance EncodeJson Redeemer where
-  encodeJson x = E.encode (E.record { getRedeemer: E.value :: _ (PlutusData) })
+instance EncodeAeson Redeemer where
+  encodeAeson x = E.encode (E.record { getRedeemer: E.value :: _ (PlutusData) })
     { getRedeemer: unwrap x }
 
-instance DecodeJson Redeemer where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getRedeemer") <$> D.decode
+instance DecodeAeson Redeemer where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getRedeemer") <$> D.decode
     (D.record "getRedeemer " { getRedeemer: D.value :: _ (PlutusData) })
     x
 
@@ -70,12 +75,12 @@ derive newtype instance ToData Datum
 
 derive newtype instance FromData Datum
 
-instance EncodeJson Datum where
-  encodeJson x = E.encode (E.record { getDatum: E.value :: _ (PlutusData) })
+instance EncodeAeson Datum where
+  encodeAeson x = E.encode (E.record { getDatum: E.value :: _ (PlutusData) })
     { getDatum: unwrap x }
 
-instance DecodeJson Datum where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getDatum") <$> D.decode
+instance DecodeAeson Datum where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getDatum") <$> D.decode
     (D.record "getDatum " { getDatum: D.value :: _ (PlutusData) })
     x
 
@@ -99,12 +104,13 @@ derive newtype instance ToData ScriptHash
 
 derive newtype instance FromData ScriptHash
 
-instance EncodeJson ScriptHash where
-  encodeJson x = E.encode (E.record { getScriptHash: E.value :: _ (ByteArray) })
+instance EncodeAeson ScriptHash where
+  encodeAeson x = E.encode
+    (E.record { getScriptHash: E.value :: _ (ByteArray) })
     { getScriptHash: unwrap x }
 
-instance DecodeJson ScriptHash where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getScriptHash") <$> D.decode
+instance DecodeAeson ScriptHash where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getScriptHash") <$> D.decode
     (D.record "getScriptHash " { getScriptHash: D.value :: _ (ByteArray) })
     x
 
@@ -128,11 +134,11 @@ derive newtype instance ToData ValidatorHash
 
 derive newtype instance FromData ValidatorHash
 
-instance EncodeJson ValidatorHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
+instance EncodeAeson ValidatorHash where
+  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
 
-instance DecodeJson ValidatorHash where
-  decodeJson = defer \_ -> D.decode $ (ValidatorHash <$> D.value)
+instance DecodeAeson ValidatorHash where
+  decodeAeson = defer \_ -> D.decode $ (ValidatorHash <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -154,11 +160,11 @@ derive newtype instance ToData DatumHash
 
 derive newtype instance FromData DatumHash
 
-instance EncodeJson DatumHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
+instance EncodeAeson DatumHash where
+  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
 
-instance DecodeJson DatumHash where
-  decodeJson = defer \_ -> D.decode $ (DatumHash <$> D.value)
+instance DecodeAeson DatumHash where
+  decodeAeson = defer \_ -> D.decode $ (DatumHash <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -180,11 +186,11 @@ derive newtype instance ToData MintingPolicyHash
 
 derive newtype instance FromData MintingPolicyHash
 
-instance EncodeJson MintingPolicyHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
+instance EncodeAeson MintingPolicyHash where
+  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
 
-instance DecodeJson MintingPolicyHash where
-  decodeJson = defer \_ -> D.decode $ (MintingPolicyHash <$> D.value)
+instance DecodeAeson MintingPolicyHash where
+  decodeAeson = defer \_ -> D.decode $ (MintingPolicyHash <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -206,11 +212,11 @@ derive newtype instance ToData StakeValidatorHash
 
 derive newtype instance FromData StakeValidatorHash
 
-instance EncodeJson StakeValidatorHash where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
+instance EncodeAeson StakeValidatorHash where
+  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
 
-instance DecodeJson StakeValidatorHash where
-  decodeJson = defer \_ -> D.decode $ (StakeValidatorHash <$> D.value)
+instance DecodeAeson StakeValidatorHash where
+  decodeAeson = defer \_ -> D.decode $ (StakeValidatorHash <$> D.value)
 
 --------------------------------------------------------------------------------
 

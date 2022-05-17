@@ -12,11 +12,7 @@ import Data.Maybe (Maybe(Nothing, Just))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
-import Plutus.V1.Ledger.Credential (StakingCredential)
-import Plutus.V1.Ledger.Crypto (PubKeyHash)
-import ToData (class ToData, genericToData)
-import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
+import Plutus.Types.DataSchema
   ( ApPCons
   , Field
   , I
@@ -34,6 +30,10 @@ import TypeLevel.DataSchema
   , type (:=)
   , type (@@)
   )
+import Plutus.V1.Ledger.Credential (StakingCredential)
+import Plutus.V1.Ledger.Crypto (PubKeyHash)
+import ToData (class ToData, genericToData)
+import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
 
 data DCert

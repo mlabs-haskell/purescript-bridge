@@ -3,14 +3,14 @@ module Main
   ) where
 
 import Prelude (Unit, bind, discard, pure, show, (#), ($), (<<<), (<>), (=<<))
-import Data.Argonaut.Core (stringify)
-import Data.Argonaut.Decode
+import Aeson (stringify)
+import Aeson.Decode
   ( JsonDecodeError
   , decodeJson
   , parseJson
   , printJsonDecodeError
   )
-import Data.Argonaut.Encode (encodeJson)
+import Aeson.Encode (encodeJson)
 import Data.Either (either, Either(Left, Right))
 import Effect (Effect)
 import Effect.Class.Console (error, log)

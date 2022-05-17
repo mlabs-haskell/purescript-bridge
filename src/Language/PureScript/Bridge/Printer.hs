@@ -204,8 +204,8 @@ instancesToImportLines =
 instanceToQualifiedImports :: PSInstance -> Map Text Text
 instanceToQualifiedImports Json =
   Map.fromList
-    [ ("Data.Argonaut.Decode.Aeson", "D")
-    , ("Data.Argonaut.Encode.Aeson", "E")
+    [ ("Aeson.Decode", "D")
+    , ("Aeson.Encode", "E")
     , ("Data.Map", "Map")
     ]
 instanceToQualifiedImports _ = Map.empty
@@ -447,9 +447,9 @@ instances st@(SumType t cs is) = go <$> is
                 punctuate
                   line
                   [ mkInstance
-                      (mkType "EncodeJson" [t])
+                      (mkType "EncodeAeson" [t])
                       encodeJsonConstraints
-                      [ "encodeJson x = E.encode  (E.record {"
+                      [ "encodeAeson x = E.encode  (E.record {"
                           <> fname
                           <> ": E.value :: _ "
                           <> parens (signature_' tp)
@@ -459,10 +459,10 @@ instances st@(SumType t cs is) = go <$> is
                           <> ": unwrap x}"
                       ]
                   , mkInstance
-                      (mkType "DecodeJson" [t])
+                      (mkType "DecodeAeson" [t])
                       decodeJsonConstraints
                       [ hang 2 $
-                          "decodeJson x = wrap <<< get (Proxy :: Proxy \""
+                          "decodeAeson x = wrap <<< get (Proxy :: Proxy \""
                             <> fname
                             <> "\") <$> D.decode (D.record \""
                             <> fname
@@ -479,13 +479,13 @@ instances st@(SumType t cs is) = go <$> is
           punctuate
             line
             [ mkInstance
-                (mkType "EncodeJson" [t])
+                (mkType "EncodeAeson" [t])
                 encodeJsonConstraints
-                ["encodeJson = defer \\_ ->" <+> sumTypeToEncode st]
+                ["encodeAeson = defer \\_ ->" <+> sumTypeToEncode st]
             , mkInstance
-                (mkType "DecodeJson" [t])
+                (mkType "DecodeAeson" [t])
                 decodeJsonConstraints
-                [hang 2 $ "decodeJson = defer \\_ -> D.decode" <+> sumTypeToDecode st]
+                [hang 2 $ "decodeAeson = defer \\_ -> D.decode" <+> sumTypeToDecode st]
             ]
     go GenericShow = mkInstance (mkType "Show" [t]) showConstraints ["show a = genericShow a"]
     go Functor = mkDerivedInstance (mkType "Functor" [toKind1 t]) (const [])
@@ -516,10 +516,10 @@ showConstraints :: PSType -> [PSType]
 showConstraints = constrainWith "Show"
 
 decodeJsonConstraints :: PSType -> [PSType]
-decodeJsonConstraints = constrainWith "DecodeJson"
+decodeJsonConstraints = constrainWith "DecodeAeson"
 
 encodeJsonConstraints :: PSType -> [PSType]
-encodeJsonConstraints = constrainWith "EncodeJson"
+encodeJsonConstraints = constrainWith "EncodeAeson"
 
 isEnum :: [DataConstructor lang] -> Bool
 isEnum = all $ (== Nullary) . _sigValues
@@ -542,7 +542,7 @@ sumTypeToEncode (SumType _ cs _)
     constructorToEncode c@(DataConstructor name args) =
       ( constructorPattern c
       , case args of
-          Nullary -> "encodeJson { tag:" <+> dquotes (textStrict name) <> " }"
+          Nullary -> "encodeAeson { tag:" <+> dquotes (textStrict name) <> " }"
           Normal as ->
             "E.encodeTagged"
               <+> dquotes (textStrict name)
@@ -556,7 +556,7 @@ sumTypeToEncode (SumType _ cs _)
                 <+> argsToEncode args
             | otherwise ->
               hsep
-                [ "encodeJson"
+                [ "encodeAeson"
                 , vrecord $
                     ("tag:" <+> dquotes (textStrict name)) :
                     (recordFieldToJson <$> NE.toList rs)

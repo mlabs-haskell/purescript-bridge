@@ -4,9 +4,7 @@ You can edit this file as you like.
 -}
 { name = "purescript-bridge-typelib-cbtx"
 , dependencies =
-  [ "argonaut-codecs"
-  , "argonaut-core"
-  , "purescript-bridge-json-helpers"
+  [ "aeson-helpers"
   , "cardano-transaction-lib"
   , "enums"
   , "maybe"
@@ -16,5 +14,5 @@ You can edit this file as you like.
   , "tuples"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 }

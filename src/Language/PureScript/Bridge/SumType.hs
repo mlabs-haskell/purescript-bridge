@@ -351,8 +351,8 @@ instanceToTypes Generic = pure $ constraintToType $ TypeInfo "purescript-prelude
 instanceToTypes GenericShow = pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Show" []
 instanceToTypes Json =
   constraintToType
-    <$> [ TypeInfo "purescript-argonaut-codecs" "Data.Argonaut.Decode" "DecodeJson" []
-        , TypeInfo "purescript-argonaut-codecs" "Data.Argonaut.Encode" "EncodeJson" []
+    <$> [ TypeInfo "purescript-aeson" "Aeson" "DecodeAeson" []
+        , TypeInfo "purescript-aeson" "Aeson" "EncodeAeson" []
         ]
 instanceToTypes Newtype =
   pure $ constraintToType $ TypeInfo "purescript-newtype" "Data.Newtype" "Newtype" []
@@ -370,7 +370,7 @@ instanceToTypes Bounded =
   pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Bounded" []
 -- fix this later (i don't think it matters now)
 instanceToTypes PlutusData =
-  pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "TypeLevel.DataSchema" "HasPlutusSchema" []
+  pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "Plutus.Types.DataSchema" "HasPlutusSchema" []
 instanceToTypes (PlutusNewtype _) = instanceToTypes Newtype
 instanceToTypes ToData =
   pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "ToData" "ToData" []
@@ -392,11 +392,9 @@ instanceToImportLines GenericShow =
 instanceToImportLines Json =
   importsFromList
     [ ImportLine "Control.Lazy" $ Set.singleton "defer"
-    , ImportLine "Data.Argonaut.Core" $ Set.fromList ["jsonNull", "Json"]
-    , ImportLine "Data.Argonaut.Encode" $ Set.fromList ["encodeJson"]
-    , ImportLine "Data.Argonaut.Decode" $ Set.fromList ["decodeJson"]
-    , ImportLine "Data.Argonaut.Decode.Aeson" $ Set.fromList ["null", "decode", "(</$\\>)", "(</*\\>)", "(</\\>)"]
-    , ImportLine "Data.Argonaut.Encode.Aeson" $ Set.fromList ["null", "encode", "(>$<)", "(>/\\<)"]
+    , ImportLine "Aeson" $ Set.fromList ["aesonNull", "Aeson", "encodeAeson", "decodeAeson"]
+    , ImportLine "Aeson.Decode" $ Set.fromList ["null", "decode", "(</$\\>)", "(</*\\>)", "(</\\>)"]
+    , ImportLine "Aeson.Encode" $ Set.fromList ["null", "encode", "(>$<)", "(>/\\<)"]
     , ImportLine "Data.Newtype" $ Set.fromList ["unwrap", "wrap"]
     , ImportLine "Data.Tuple.Nested" $ Set.singleton "(/\\)"
     , ImportLine "Data.Op" $ Set.singleton "Op(Op)"
@@ -411,7 +409,7 @@ instanceToImportLines Bounded =
     ]
 instanceToImportLines PlutusData =
   importsFromList
-    [ ImportLine "TypeLevel.DataSchema" $
+    [ ImportLine "Plutus.Types.DataSchema" $
         Set.fromList
           [ "PSchema"
           , "PNil"

@@ -105,13 +105,14 @@ in  upstream
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.14.5-20211116/packages.dhall
-        sha256:7ba810597a275e43c83411d2ab0d4b3c54d0b551436f4b1632e9ff3eb62e327a
+      https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20211005/packages.dhall
+        sha256:2ec351f17be14b3f6421fbba36f4f01d1681e5c7f46e0c981465c4cf222de5be
 
 let additions =
       { cardano-transaction-lib =
         { dependencies =
-          [ "aff"
+          [ "aeson"
+          , "aff"
           , "aff-promise"
           , "affjax"
           , "argonaut"
@@ -149,6 +150,7 @@ let additions =
           , "node-fs-aff"
           , "node-path"
           , "nonempty"
+          , "numbers"
           , "ordered-collections"
           , "partial"
           , "prelude"
@@ -159,6 +161,7 @@ let additions =
           , "rationals"
           , "record"
           , "refs"
+          , "sequences"
           , "spec"
           , "strings"
           , "tailrec"
@@ -174,7 +177,73 @@ let additions =
           , "variant"
           ]
         , repo = "https://github.com/plutonomicon/cardano-transaction-lib.git"
-        , version = "01c2c0e62ae596e2f3850e486e1d3f5842dc39d3"
+        , version = "30f1fc2d7ab64406787e56c5b9399402ca6e6ae1"
+        }
+      , aeson =
+        { dependencies =
+          [ "aff"
+          , "argonaut"
+          , "argonaut-codecs"
+          , "argonaut-core"
+          , "arrays"
+          , "bifunctors"
+          , "bigints"
+          , "const"
+          , "control"
+          , "effect"
+          , "either"
+          , "exceptions"
+          , "foldable-traversable"
+          , "foreign-object"
+          , "gen"
+          , "identity"
+          , "integers"
+          , "maybe"
+          , "newtype"
+          , "node-buffer"
+          , "node-fs-aff"
+          , "node-path"
+          , "nonempty"
+          , "numbers"
+          , "partial"
+          , "prelude"
+          , "quickcheck"
+          , "record"
+          , "sequences"
+          , "spec"
+          , "strings"
+          , "transformers"
+          , "tuples"
+          , "typelevel"
+          , "typelevel-prelude"
+          , "uint"
+          , "untagged-union"
+          ]
+        , repo = "https://github.com/mlabs-haskell/purescript-aeson.git"
+        , version = "d4600c3a6bc21fcd94c11e72b65328e4509b6fc7"
+        }
+      , sequences =
+        { dependencies =
+          [ "arrays"
+          , "assert"
+          , "console"
+          , "effect"
+          , "lazy"
+          , "maybe"
+          , "newtype"
+          , "nonempty"
+          , "partial"
+          , "prelude"
+          , "profunctor"
+          , "psci-support"
+          , "quickcheck"
+          , "quickcheck-laws"
+          , "tuples"
+          , "unfoldable"
+          , "unsafe-coerce"
+          ]
+        , repo = "https://github.com/hdgarrood/purescript-sequences"
+        , version = "v3.0.2"
         }
       , properties =
         { dependencies = [ "prelude", "console" ]
@@ -236,7 +305,7 @@ let additions =
         , repo = "https://github.com/juspay/medea-ps.git"
         , version = "8b215851959aa8bbf33e6708df6bd683c89d1a5a"
         }
-      , purescript-bridge-json-helpers =
+      , aeson-helpers =
         { dependencies =
           [ "aff"
           , "argonaut-codecs"

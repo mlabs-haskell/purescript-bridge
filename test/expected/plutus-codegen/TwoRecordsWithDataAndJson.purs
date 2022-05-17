@@ -3,24 +3,23 @@ module TestData where
 
 import Prelude
 
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
-import Data.Argonaut.Core (jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (unwrap)
+import Data.Newtype (unwrap, wrap)
+import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
+import Plutus.Types.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import ToData (class ToData, genericToData)
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import TypeLevel.Nat (S, Z)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
+import Aeson.Decode as D
+import Aeson.Encode as E
 import Data.Map as Map
 
 data TwoRecords
@@ -33,21 +32,21 @@ data TwoRecords
     , _srd :: Array Int
     }
 
-instance EncodeJson TwoRecords where
-  encodeJson = defer \_ -> case _ of
-    FirstRecord {_fra, _frb} -> encodeJson
+instance EncodeAeson TwoRecords where
+  encodeAeson = defer \_ -> case _ of
+    FirstRecord {_fra, _frb} -> encodeAeson
       { tag: "FirstRecord"
       , _fra: flip E.encode _fra E.value
       , _frb: flip E.encode _frb E.value
       }
-    SecondRecord {_src, _srd} -> encodeJson
+    SecondRecord {_src, _srd} -> encodeAeson
       { tag: "SecondRecord"
       , _src: flip E.encode _src E.value
       , _srd: flip E.encode _srd E.value
       }
 
-instance DecodeJson TwoRecords where
-  decodeJson = defer \_ -> D.decode
+instance DecodeAeson TwoRecords where
+  decodeAeson = defer \_ -> D.decode
     $ D.sumType "TwoRecords" $ Map.fromFoldable
       [ "FirstRecord" /\ (FirstRecord <$> D.object "FirstRecord"
         { _fra: D.value :: _ String

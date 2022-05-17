@@ -3,12 +3,17 @@ module Plutus.V1.Ledger.Value where
 
 import Prelude
 
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
-import Data.Argonaut.Core (Json, jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -25,8 +30,8 @@ import Record (get)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.TokenName (TokenName)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
+import Aeson.Decode as D
+import Aeson.Encode as E
 import Data.Map as Map
 
 newtype AssetClass = AssetClass (Tuple CurrencySymbol TokenName)
@@ -46,13 +51,13 @@ derive newtype instance ToData AssetClass
 
 derive newtype instance FromData AssetClass
 
-instance EncodeJson AssetClass where
-  encodeJson x = E.encode
+instance EncodeAeson AssetClass where
+  encodeAeson x = E.encode
     (E.record { unAssetClass: E.value :: _ (Tuple CurrencySymbol TokenName) })
     { unAssetClass: unwrap x }
 
-instance DecodeJson AssetClass where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "unAssetClass") <$> D.decode
+instance DecodeAeson AssetClass where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "unAssetClass") <$> D.decode
     ( D.record "unAssetClass "
         { unAssetClass: D.value :: _ (Tuple CurrencySymbol TokenName) }
     )

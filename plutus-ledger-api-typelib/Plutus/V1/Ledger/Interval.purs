@@ -12,9 +12,7 @@ import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
-import ToData (class ToData, genericToData)
-import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
+import Plutus.Types.DataSchema
   ( ApPCons
   , Field
   , I
@@ -32,6 +30,8 @@ import TypeLevel.DataSchema
   , type (:=)
   , type (@@)
   )
+import ToData (class ToData, genericToData)
+import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
 
 newtype Interval a = Interval

@@ -3,12 +3,17 @@ module Plutus.V1.Ledger.Slot where
 
 import Prelude
 
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
-import Data.Argonaut.Core (Json, jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -23,8 +28,8 @@ import FromData (class FromData, genericFromData)
 import Record (get)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
+import Aeson.Decode as D
+import Aeson.Encode as E
 import Data.Map as Map
 
 newtype Slot = Slot BigInt
@@ -44,12 +49,12 @@ derive newtype instance ToData Slot
 
 derive newtype instance FromData Slot
 
-instance EncodeJson Slot where
-  encodeJson x = E.encode (E.record { getSlot: E.value :: _ (BigInt) })
+instance EncodeAeson Slot where
+  encodeAeson x = E.encode (E.record { getSlot: E.value :: _ (BigInt) })
     { getSlot: unwrap x }
 
-instance DecodeJson Slot where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getSlot") <$> D.decode
+instance DecodeAeson Slot where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getSlot") <$> D.decode
     (D.record "getSlot " { getSlot: D.value :: _ (BigInt) })
     x
 

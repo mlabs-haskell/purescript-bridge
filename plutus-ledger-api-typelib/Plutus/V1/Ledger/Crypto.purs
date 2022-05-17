@@ -3,12 +3,17 @@ module Plutus.V1.Ledger.Crypto where
 
 import Prelude
 
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
-import Data.Argonaut.Core (Json, jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -24,8 +29,8 @@ import Record (get)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
+import Aeson.Decode as D
+import Aeson.Encode as E
 import Data.Map as Map
 
 newtype PubKey = PubKey LedgerBytes
@@ -41,12 +46,12 @@ derive newtype instance ToData PubKey
 
 derive newtype instance FromData PubKey
 
-instance EncodeJson PubKey where
-  encodeJson x = E.encode (E.record { getPubKey: E.value :: _ (LedgerBytes) })
+instance EncodeAeson PubKey where
+  encodeAeson x = E.encode (E.record { getPubKey: E.value :: _ (LedgerBytes) })
     { getPubKey: unwrap x }
 
-instance DecodeJson PubKey where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getPubKey") <$> D.decode
+instance DecodeAeson PubKey where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getPubKey") <$> D.decode
     (D.record "getPubKey " { getPubKey: D.value :: _ (LedgerBytes) })
     x
 
@@ -70,12 +75,13 @@ derive newtype instance ToData PubKeyHash
 
 derive newtype instance FromData PubKeyHash
 
-instance EncodeJson PubKeyHash where
-  encodeJson x = E.encode (E.record { getPubKeyHash: E.value :: _ (ByteArray) })
+instance EncodeAeson PubKeyHash where
+  encodeAeson x = E.encode
+    (E.record { getPubKeyHash: E.value :: _ (ByteArray) })
     { getPubKeyHash: unwrap x }
 
-instance DecodeJson PubKeyHash where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getPubKeyHash") <$> D.decode
+instance DecodeAeson PubKeyHash where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getPubKeyHash") <$> D.decode
     (D.record "getPubKeyHash " { getPubKeyHash: D.value :: _ (ByteArray) })
     x
 
@@ -99,13 +105,13 @@ derive newtype instance ToData PrivateKey
 
 derive newtype instance FromData PrivateKey
 
-instance EncodeJson PrivateKey where
-  encodeJson x = E.encode
+instance EncodeAeson PrivateKey where
+  encodeAeson x = E.encode
     (E.record { getPrivateKey: E.value :: _ (LedgerBytes) })
     { getPrivateKey: unwrap x }
 
-instance DecodeJson PrivateKey where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getPrivateKey") <$> D.decode
+instance DecodeAeson PrivateKey where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getPrivateKey") <$> D.decode
     (D.record "getPrivateKey " { getPrivateKey: D.value :: _ (LedgerBytes) })
     x
 
@@ -129,12 +135,12 @@ derive newtype instance ToData Signature
 
 derive newtype instance FromData Signature
 
-instance EncodeJson Signature where
-  encodeJson x = E.encode (E.record { getSignature: E.value :: _ (ByteArray) })
+instance EncodeAeson Signature where
+  encodeAeson x = E.encode (E.record { getSignature: E.value :: _ (ByteArray) })
     { getSignature: unwrap x }
 
-instance DecodeJson Signature where
-  decodeJson x = wrap <<< get (Proxy :: Proxy "getSignature") <$> D.decode
+instance DecodeAeson Signature where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getSignature") <$> D.decode
     (D.record "getSignature " { getSignature: D.value :: _ (ByteArray) })
     x
 

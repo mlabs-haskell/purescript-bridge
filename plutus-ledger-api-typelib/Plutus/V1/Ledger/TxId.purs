@@ -3,12 +3,17 @@ module Plutus.V1.Ledger.TxId where
 
 import Prelude
 
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
-import Data.Argonaut.Core (Json, jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -20,9 +25,7 @@ import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
-import ToData (class ToData, genericToData)
-import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema
+import Plutus.Types.DataSchema
   ( ApPCons
   , Field
   , I
@@ -40,10 +43,12 @@ import TypeLevel.DataSchema
   , type (:=)
   , type (@@)
   )
+import ToData (class ToData, genericToData)
+import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
 import Types.ByteArray (ByteArray)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
+import Aeson.Decode as D
+import Aeson.Encode as E
 import Data.Map as Map
 
 newtype TxId = TxId { getTxId :: ByteArray }
@@ -51,14 +56,14 @@ newtype TxId = TxId { getTxId :: ByteArray }
 instance Show TxId where
   show a = genericShow a
 
-instance EncodeJson TxId where
-  encodeJson = defer \_ -> E.encode $ unwrap >$<
+instance EncodeAeson TxId where
+  encodeAeson = defer \_ -> E.encode $ unwrap >$<
     ( E.record
         { getTxId: E.value :: _ ByteArray }
     )
 
-instance DecodeJson TxId where
-  decodeJson = defer \_ -> D.decode $
+instance DecodeAeson TxId where
+  decodeAeson = defer \_ -> D.decode $
     (TxId <$> D.record "TxId" { getTxId: D.value :: _ ByteArray })
 
 derive instance Eq TxId
