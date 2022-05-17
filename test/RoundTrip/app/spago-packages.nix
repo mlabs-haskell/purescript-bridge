@@ -559,11 +559,11 @@ let
 
     "json-helpers" = pkgs.stdenv.mkDerivation {
       name = "json-helpers";
-      version = "60615c36abaee16d8dbe09cdd0e772e6d523d024";
+      version = "44d0dae060cf78babd4534320192b58c16a6f45b";
       src = pkgs.fetchgit {
-        url = "https://github.com/input-output-hk/purescript-bridge-json-helpers.git";
-        rev = "60615c36abaee16d8dbe09cdd0e772e6d523d024";
-        sha256 = "0b5wpdgy2pgk5r97ln3sql4h2c2v45h3jl2262gzqchhgvi3n4kb";
+        url = "https://github.com/mlabs-haskell/purescript-bridge-aeson-helpers.git";
+        rev = "44d0dae060cf78babd4534320192b58c16a6f45b";
+        sha256 = "1fgvaqvd9145zz5xw3fsa5vm75kp6bxcwa2nzq1dx2367h3a0zl0";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";

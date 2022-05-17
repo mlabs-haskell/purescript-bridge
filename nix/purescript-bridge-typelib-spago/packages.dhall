@@ -265,8 +265,8 @@ let additions =
           , "typelevel-prelude"
           ]
         , repo =
-            "https://github.com/input-output-hk/purescript-bridge-json-helpers.git"
-        , version = "60615c36abaee16d8dbe09cdd0e772e6d523d024"
+            "https://github.com/mlabs-haskell/purescript-bridge-aeson-helpers.git"
+        , version = "44d0dae060cf78babd4534320192b58c16a6f45b"
         }
       }
 
