@@ -23,10 +23,10 @@ newtype RecordWithPlutusScripts = RecordWithPlutusScripts
   }
 
 instance EncodeAeson RecordWithPlutusScripts where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                    { mintingPolicy: E.value :: _ MintingPolicy
-                                                    , validator: E.value :: _ Validator
-                                                    })
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
+                                                                { mintingPolicy: E.value :: _ MintingPolicy
+                                                                , validator: E.value :: _ Validator
+                                                                }) ) x
 
 instance DecodeAeson RecordWithPlutusScripts where
   decodeAeson = defer \_ -> D.decode $ (RecordWithPlutusScripts <$> D.record "RecordWithPlutusScripts"

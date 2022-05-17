@@ -52,7 +52,7 @@ derive newtype instance ToData AssetClass
 derive newtype instance FromData AssetClass
 
 instance EncodeAeson AssetClass where
-  encodeAeson x = E.encode
+  encodeAeson' x = pure $ E.encode
     (E.record { unAssetClass: E.value :: _ (Tuple CurrencySymbol TokenName) })
     { unAssetClass: unwrap x }
 

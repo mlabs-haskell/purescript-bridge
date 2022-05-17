@@ -46,7 +46,8 @@ derive newtype instance ToData Ada
 derive newtype instance FromData Ada
 
 instance EncodeAeson Ada where
-  encodeAeson x = E.encode (E.record { getLovelace: E.value :: _ (BigInt) })
+  encodeAeson' x = pure $ E.encode
+    (E.record { getLovelace: E.value :: _ (BigInt) })
     { getLovelace: unwrap x }
 
 instance DecodeAeson Ada where

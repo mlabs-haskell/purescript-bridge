@@ -57,10 +57,12 @@ instance Show TxId where
   show a = genericShow a
 
 instance EncodeAeson TxId where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$<
-    ( E.record
-        { getTxId: E.value :: _ ByteArray }
-    )
+  encodeAeson' x = pure $
+    ( defer \_ -> E.encode $ unwrap >$<
+        ( E.record
+            { getTxId: E.value :: _ ByteArray }
+        )
+    ) x
 
 instance DecodeAeson TxId where
   decodeAeson = defer \_ -> D.decode $

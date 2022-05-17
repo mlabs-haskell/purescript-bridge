@@ -2,19 +2,18 @@ module Main
   ( main
   ) where
 
-import Prelude (Unit, bind, discard, pure, show, (#), ($), (<<<), (<>), (=<<))
-import Aeson (stringify)
-import Aeson.Decode
-  ( JsonDecodeError
-  , decodeJson
-  , parseJson
-  , printJsonDecodeError
-  )
-import Aeson.Encode (encodeJson)
+import Aeson (decodeJsonString, encodeAeson, stringifyAeson)
+import Data.Argonaut (JsonDecodeError, printJsonDecodeError)
 import Data.Either (either, Either(Left, Right))
+import Data.Maybe (maybe, Maybe)
+import Deserialization.FromBytes (fromBytes', FromBytesError)
+import Deserialization.PlutusData as DeserPd
 import Effect (Effect)
 import Effect.Class.Console (error, log)
+import Error (E)
+import FromData (fromData)
 import Node.ReadLine (createConsoleInterface, noCompletion, question)
+import Prelude (Unit, bind, discard, pure, show, (#), ($), (<<<), (<>))
 import RoundTrip.Types
   ( TestData
   , TestPlutusData
@@ -22,17 +21,12 @@ import RoundTrip.Types
   , Response(..)
   , RepType(..)
   )
-import ToData (toData)
-import FromData (fromData)
-import Deserialization.FromBytes (fromBytes', FromBytesError)
-import Error (E)
-import Data.Maybe (maybe, Maybe)
-import Serialization.Types (PlutusData)
-import Type.Row (type (+))
-import Deserialization.PlutusData as DeserPd
-import Serialization.PlutusData as SerPd
-import Types.ByteArray (hexToByteArray, byteArrayToHex)
 import Serialization (toBytes)
+import Serialization.PlutusData as SerPd
+import Serialization.Types (PlutusData)
+import ToData (toData)
+import Type.Row (type (+))
+import Types.ByteArray (hexToByteArray, byteArrayToHex)
 import Untagged.Union (asOneOf)
 
 main :: Effect Unit
@@ -45,7 +39,7 @@ main = do
     interface # question "" \input -> do
       let
         reqOrErr :: Either JsonDecodeError Request
-        reqOrErr = decodeJson =<< parseJson input
+        reqOrErr = decodeJsonString input
       case reqOrErr of
         Left err -> do
           error $ "ps> Wanted Request got error: " <> printJsonDecodeError err
@@ -56,11 +50,11 @@ main = do
           either
             ( \err -> do
                 error err
-                log $ stringify $ encodeJson $ RespError err
+                log $ stringifyAeson $ encodeAeson $ RespError err
             )
             ( \resp -> do
                 error ""
-                log $ stringify $ encodeJson $ resp
+                log $ stringifyAeson $ encodeAeson $ resp
             )
             (handleReq req)
       go interface
@@ -73,8 +67,8 @@ handleReq (Req RTJson str) = do
         <> str
     )
     pure
-    (decodeJson =<< parseJson str :: Either JsonDecodeError TestData)
-  let payload = stringify $ encodeJson testData
+    (decodeJsonString str :: Either JsonDecodeError TestData)
+  let payload = stringifyAeson $ encodeAeson testData
   pure $ RespSuccess RTJson payload
 handleReq (Req RTPlutusData hex) = do
   -- Base16 -> ByteArray -> Cbor-> Foreign PlutusData -> CTL PlutusData -> TestPlutusData

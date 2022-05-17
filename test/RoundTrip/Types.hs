@@ -31,7 +31,6 @@ module RoundTrip.Types (
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
-import Data.Set (Set)
 import GHC.Generics (Generic)
 import PlutusTx qualified as P
 import PlutusTx.Aux (unstableMakeIsData)
@@ -57,7 +56,7 @@ instance Arbitrary TestData where
 data TestSum
   = Nullary
   | Bool Bool
-  | Int Bool -- FIXME: Conflict Argonaut vs PlutusTx (Int vs Integer)
+  | Int Integer
   | Number Double
   | String String
   | Array [Bool]
@@ -68,13 +67,13 @@ data TestSum
   | NT TestNewtype
   | NTRecord TestNewtypeRecord
   | TwoFields TestTwoFields
-  | Set (Set Bool)
-  | Map (Map String Bool)
+  | --  | Set (Set Bool)
+    Map (Map String Bool)
   | Unit ()
   | MyUnit MyUnit
   | Pair (Bool, Double)
-  | Triple (Bool, (), Bool)
-  | Quad (Bool, Double, Bool, Double)
+  | Triple (Bool, (), Integer)
+  | Quad (Bool, Double, Integer, Double)
   | QuadSimple Bool Double Bool Double
   | Recursive TestRecursiveA
   | Enum TestEnum
@@ -100,7 +99,6 @@ instance Arbitrary TestSum where
       , NT <$> arbitrary
       , NTRecord <$> arbitrary
       , Map <$> arbitrary
-      , Set <$> arbitrary
       , TwoFields <$> arbitrary
       , pure $ Unit ()
       , Pair <$> arbitrary

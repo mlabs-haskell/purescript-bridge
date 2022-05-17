@@ -6,9 +6,8 @@ pkgs.stdenv.mkDerivation {
   buildInputs = [ purs installSpagoStyle buildFromNixStore ];
   doCheck = true;
   buildPhase = ''
-    set -vox
-     mkdir src
-     cp -r ${pursDir} src/
+    mkdir src
+    cp -r ${pursDir} src/
   '';
   checkPhase = ''
     install-spago-style

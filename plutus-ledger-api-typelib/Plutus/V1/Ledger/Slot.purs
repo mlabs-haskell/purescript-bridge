@@ -50,7 +50,7 @@ derive newtype instance ToData Slot
 derive newtype instance FromData Slot
 
 instance EncodeAeson Slot where
-  encodeAeson x = E.encode (E.record { getSlot: E.value :: _ (BigInt) })
+  encodeAeson' x = pure $ E.encode (E.record { getSlot: E.value :: _ (BigInt) })
     { getSlot: unwrap x }
 
 instance DecodeAeson Slot where

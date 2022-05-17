@@ -449,7 +449,7 @@ instances st@(SumType t cs is) = go <$> is
                   [ mkInstance
                       (mkType "EncodeAeson" [t])
                       encodeJsonConstraints
-                      [ "encodeAeson x = E.encode  (E.record {"
+                      [ "encodeAeson' x = pure $ E.encode  (E.record {"
                           <> fname
                           <> ": E.value :: _ "
                           <> parens (signature_' tp)
@@ -481,7 +481,7 @@ instances st@(SumType t cs is) = go <$> is
             [ mkInstance
                 (mkType "EncodeAeson" [t])
                 encodeJsonConstraints
-                ["encodeAeson = defer \\_ ->" <+> sumTypeToEncode st]
+                ["encodeAeson' x = pure $ (defer \\_ -> " <+> sumTypeToEncode st <+> ") x"]
             , mkInstance
                 (mkType "DecodeAeson" [t])
                 decodeJsonConstraints

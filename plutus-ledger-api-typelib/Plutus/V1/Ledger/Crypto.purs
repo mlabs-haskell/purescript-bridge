@@ -47,7 +47,8 @@ derive newtype instance ToData PubKey
 derive newtype instance FromData PubKey
 
 instance EncodeAeson PubKey where
-  encodeAeson x = E.encode (E.record { getPubKey: E.value :: _ (LedgerBytes) })
+  encodeAeson' x = pure $ E.encode
+    (E.record { getPubKey: E.value :: _ (LedgerBytes) })
     { getPubKey: unwrap x }
 
 instance DecodeAeson PubKey where
@@ -76,7 +77,7 @@ derive newtype instance ToData PubKeyHash
 derive newtype instance FromData PubKeyHash
 
 instance EncodeAeson PubKeyHash where
-  encodeAeson x = E.encode
+  encodeAeson' x = pure $ E.encode
     (E.record { getPubKeyHash: E.value :: _ (ByteArray) })
     { getPubKeyHash: unwrap x }
 
@@ -106,7 +107,7 @@ derive newtype instance ToData PrivateKey
 derive newtype instance FromData PrivateKey
 
 instance EncodeAeson PrivateKey where
-  encodeAeson x = E.encode
+  encodeAeson' x = pure $ E.encode
     (E.record { getPrivateKey: E.value :: _ (LedgerBytes) })
     { getPrivateKey: unwrap x }
 
@@ -136,7 +137,8 @@ derive newtype instance ToData Signature
 derive newtype instance FromData Signature
 
 instance EncodeAeson Signature where
-  encodeAeson x = E.encode (E.record { getSignature: E.value :: _ (ByteArray) })
+  encodeAeson' x = pure $ E.encode
+    (E.record { getSignature: E.value :: _ (ByteArray) })
     { getSignature: unwrap x }
 
 instance DecodeAeson Signature where

@@ -49,7 +49,7 @@ derive newtype instance ToData DiffMilliSeconds
 derive newtype instance FromData DiffMilliSeconds
 
 instance EncodeAeson DiffMilliSeconds where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson DiffMilliSeconds where
   decodeAeson = defer \_ -> D.decode $ (DiffMilliSeconds <$> D.value)
@@ -79,7 +79,7 @@ derive newtype instance ToData POSIXTime
 derive newtype instance FromData POSIXTime
 
 instance EncodeAeson POSIXTime where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson POSIXTime where
   decodeAeson = defer \_ -> D.decode $ (POSIXTime <$> D.value)

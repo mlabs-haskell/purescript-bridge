@@ -46,7 +46,7 @@ derive newtype instance ToData LedgerBytes
 derive newtype instance FromData LedgerBytes
 
 instance EncodeAeson LedgerBytes where
-  encodeAeson x = E.encode
+  encodeAeson' x = pure $ E.encode
     (E.record { getLedgerBytes: E.value :: _ (ByteArray) })
     { getLedgerBytes: unwrap x }
 

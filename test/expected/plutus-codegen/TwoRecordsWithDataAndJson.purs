@@ -33,7 +33,7 @@ data TwoRecords
     }
 
 instance EncodeAeson TwoRecords where
-  encodeAeson = defer \_ -> case _ of
+  encodeAeson' x = pure $ (defer \_ ->  case _ of
     FirstRecord {_fra, _frb} -> encodeAeson
       { tag: "FirstRecord"
       , _fra: flip E.encode _fra E.value
@@ -43,7 +43,7 @@ instance EncodeAeson TwoRecords where
       { tag: "SecondRecord"
       , _src: flip E.encode _src E.value
       , _srd: flip E.encode _srd E.value
-      }
+      } ) x
 
 instance DecodeAeson TwoRecords where
   decodeAeson = defer \_ -> D.decode

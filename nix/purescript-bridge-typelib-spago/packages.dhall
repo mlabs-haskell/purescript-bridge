@@ -117,7 +117,6 @@ let additions =
           , "affjax"
           , "argonaut"
           , "argonaut-codecs"
-          , "argonaut-core"
           , "arraybuffer-types"
           , "arrays"
           , "bifunctors"
@@ -150,7 +149,6 @@ let additions =
           , "node-fs-aff"
           , "node-path"
           , "nonempty"
-          , "numbers"
           , "ordered-collections"
           , "partial"
           , "prelude"
@@ -177,7 +175,7 @@ let additions =
           , "variant"
           ]
         , repo = "https://github.com/plutonomicon/cardano-transaction-lib.git"
-        , version = "30f1fc2d7ab64406787e56c5b9399402ca6e6ae1"
+        , version = "9cc8b10a9b5f49897ca3533f32f54f009f6b67a0"
         }
       , aeson =
         { dependencies =

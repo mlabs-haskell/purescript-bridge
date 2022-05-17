@@ -47,7 +47,8 @@ derive newtype instance ToData Redeemer
 derive newtype instance FromData Redeemer
 
 instance EncodeAeson Redeemer where
-  encodeAeson x = E.encode (E.record { getRedeemer: E.value :: _ (PlutusData) })
+  encodeAeson' x = pure $ E.encode
+    (E.record { getRedeemer: E.value :: _ (PlutusData) })
     { getRedeemer: unwrap x }
 
 instance DecodeAeson Redeemer where
@@ -76,7 +77,8 @@ derive newtype instance ToData Datum
 derive newtype instance FromData Datum
 
 instance EncodeAeson Datum where
-  encodeAeson x = E.encode (E.record { getDatum: E.value :: _ (PlutusData) })
+  encodeAeson' x = pure $ E.encode
+    (E.record { getDatum: E.value :: _ (PlutusData) })
     { getDatum: unwrap x }
 
 instance DecodeAeson Datum where
@@ -105,7 +107,7 @@ derive newtype instance ToData ScriptHash
 derive newtype instance FromData ScriptHash
 
 instance EncodeAeson ScriptHash where
-  encodeAeson x = E.encode
+  encodeAeson' x = pure $ E.encode
     (E.record { getScriptHash: E.value :: _ (ByteArray) })
     { getScriptHash: unwrap x }
 
@@ -135,7 +137,7 @@ derive newtype instance ToData ValidatorHash
 derive newtype instance FromData ValidatorHash
 
 instance EncodeAeson ValidatorHash where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson ValidatorHash where
   decodeAeson = defer \_ -> D.decode $ (ValidatorHash <$> D.value)
@@ -161,7 +163,7 @@ derive newtype instance ToData DatumHash
 derive newtype instance FromData DatumHash
 
 instance EncodeAeson DatumHash where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson DatumHash where
   decodeAeson = defer \_ -> D.decode $ (DatumHash <$> D.value)
@@ -187,7 +189,7 @@ derive newtype instance ToData MintingPolicyHash
 derive newtype instance FromData MintingPolicyHash
 
 instance EncodeAeson MintingPolicyHash where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson MintingPolicyHash where
   decodeAeson = defer \_ -> D.decode $ (MintingPolicyHash <$> D.value)
@@ -213,7 +215,7 @@ derive newtype instance ToData StakeValidatorHash
 derive newtype instance FromData StakeValidatorHash
 
 instance EncodeAeson StakeValidatorHash where
-  encodeAeson = defer \_ -> E.encode $ unwrap >$< E.value
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson StakeValidatorHash where
   decodeAeson = defer \_ -> D.decode $ (StakeValidatorHash <$> D.value)
