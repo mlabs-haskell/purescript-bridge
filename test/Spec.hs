@@ -43,10 +43,10 @@ import Language.PureScript.Bridge (
 import Language.PureScript.Bridge.CodeGenSwitches (
   getSettings,
  )
-import Language.PureScript.Bridge.SumType (mkSumTypeIndexed)
+import Language.PureScript.Bridge.SumType (mkPlutusDataType)
 import Language.PureScript.Bridge.TypeParameters (A, B, C, M1)
 import PlutusTx.LedgerTypes (plutusLedgerApiBridge)
-import RoundTrip.Spec (roundtripSpec)
+import RoundTrip.Spec as RoundTrip (spec)
 import Test.Hspec (
   Example (Arg),
   Spec,
@@ -76,7 +76,7 @@ import Prelude hiding (readFile)
 
 main :: IO ()
 main = do
-  hspec $ plutusTests *> allTests *> roundtripSpec
+  hspec $ plutusTests *> allTests *> RoundTrip.spec
 
 custom :: SumType 'Haskell -> SumType 'Haskell
 custom (SumType t cs is) = SumType t cs $ customInstance : is
@@ -324,13 +324,13 @@ plutusTests = do
     let settings = getSettings noLenses
     itWithFile
       "test/expected/plutus-codegen/TwoRecords.purs"
-      "tests the generation of a CTL HasConstrIndices/ToData/FromData"
+      "tests the generation of a CTL HasPlutusSchema/ToData/FromData"
       ( \txt ->
           let modules =
                 sumTypeToModule $
                   bridgeSumType
                     (buildBridge defaultBridge)
-                    (mkSumTypeIndexed @TwoRecords)
+                    (mkPlutusDataType @TwoRecords)
               m = head . map (moduleToText settings) . Map.elems $ modules
            in m `shouldBe` txt
       )
@@ -353,7 +353,7 @@ plutusTests = do
           let advanced' =
                 bridgeSumType
                   (buildBridge plutusLedgerApiBridge)
-                  (argonaut $ mkSumTypeIndexed @TwoRecords)
+                  (argonaut $ mkPlutusDataType @TwoRecords)
               modules = sumTypeToModule advanced'
               m = head . map (moduleToText settings) . Map.elems $ modules
            in m `shouldBe` txt

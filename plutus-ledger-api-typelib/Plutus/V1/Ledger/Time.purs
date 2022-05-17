@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Time where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -12,7 +11,6 @@ import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
-import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
@@ -30,14 +28,9 @@ derive instance Generic DiffMilliSeconds _
 
 derive instance Newtype DiffMilliSeconds _
 
-instance HasConstrIndices DiffMilliSeconds where
-  constrIndices _ = fromConstr2Index [Tuple "DiffMilliSeconds" 0]
+derive newtype instance ToData DiffMilliSeconds
 
-instance ToData DiffMilliSeconds where
-  toData x = genericToData x
-
-instance FromData DiffMilliSeconds where
-  fromData pd = genericFromData pd
+derive newtype instance FromData DiffMilliSeconds
 
 --------------------------------------------------------------------------------
 
@@ -46,7 +39,7 @@ _DiffMilliSeconds = _Newtype
 
 --------------------------------------------------------------------------------
 
-newtype POSIXTime = POSIXTime { getPOSIXTime :: BigInt }
+newtype POSIXTime = POSIXTime BigInt
 
 instance Show POSIXTime where
   show a = genericShow a
@@ -59,16 +52,11 @@ derive instance Generic POSIXTime _
 
 derive instance Newtype POSIXTime _
 
-instance HasConstrIndices POSIXTime where
-  constrIndices _ = fromConstr2Index [Tuple "POSIXTime" 0]
+derive newtype instance ToData POSIXTime
 
-instance ToData POSIXTime where
-  toData x = genericToData x
-
-instance FromData POSIXTime where
-  fromData pd = genericFromData pd
+derive newtype instance FromData POSIXTime
 
 --------------------------------------------------------------------------------
 
-_POSIXTime :: Iso' POSIXTime {getPOSIXTime :: BigInt}
+_POSIXTime :: Iso' POSIXTime BigInt
 _POSIXTime = _Newtype

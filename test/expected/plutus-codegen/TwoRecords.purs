@@ -3,12 +3,14 @@ module TestData where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
+import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
+import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.Nat (S, Z)
 
 data TwoRecords
   = FirstRecord
@@ -22,11 +24,24 @@ data TwoRecords
 
 derive instance Generic TwoRecords _
 
-instance HasConstrIndices TwoRecords where
-  constrIndices _ = fromConstr2Index [Tuple "FirstRecord" 0,Tuple "SecondRecord" 1]
+instance Show TwoRecords where
+  show a = genericShow a
+
+instance HasPlutusSchema TwoRecords
+  ("FirstRecord" :=
+     ("_fra" := I String
+     :+ "_frb" := I Int
+     :+ PNil)
+   @@ (Z)
+  :+ "SecondRecord" :=
+       ("_src" := I Int
+       :+ "_srd" := I (Array Int)
+       :+ PNil)
+     @@ (S (Z))
+  :+ PNil)
 
 instance ToData TwoRecords where
   toData x = genericToData x
 
 instance FromData TwoRecords where
-  fromData pd = genericFromData pd
+  fromData x = genericFromData x

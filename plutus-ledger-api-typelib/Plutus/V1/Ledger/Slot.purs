@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Slot where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -12,12 +11,11 @@ import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
-import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype Slot = Slot { getSlot :: BigInt }
+newtype Slot = Slot BigInt
 
 instance Show Slot where
   show a = genericShow a
@@ -30,16 +28,11 @@ derive instance Generic Slot _
 
 derive instance Newtype Slot _
 
-instance HasConstrIndices Slot where
-  constrIndices _ = fromConstr2Index [Tuple "Slot" 0]
+derive newtype instance ToData Slot
 
-instance ToData Slot where
-  toData x = genericToData x
-
-instance FromData Slot where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Slot
 
 --------------------------------------------------------------------------------
 
-_Slot :: Iso' Slot {getSlot :: BigInt}
+_Slot :: Iso' Slot BigInt
 _Slot = _Newtype

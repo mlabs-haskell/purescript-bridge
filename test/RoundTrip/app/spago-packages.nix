@@ -177,7 +177,7 @@ let
       name = "cardano-transaction-lib";
       version = "01c2c0e62ae596e2f3850e486e1d3f5842dc39d3";
       src = pkgs.fetchgit {
-        url = "https://github.com/plutonomicon/cardano-transaction-lib.git";
+        url = "https://github.com/gnumonik/cardano-transaction-lib.git";
         rev = "01c2c0e62ae596e2f3850e486e1d3f5842dc39d3";
         sha256 = "0ci3xmzxs3407bs0w3q55y5x8pyrnmbbpbirp66gasvvdn2h316b";
       };
@@ -557,6 +557,18 @@ let
       installPhase = "ln -s $src $out";
     };
 
+    "json-helpers" = pkgs.stdenv.mkDerivation {
+      name = "json-helpers";
+      version = "60615c36abaee16d8dbe09cdd0e772e6d523d024";
+      src = pkgs.fetchgit {
+        url = "https://github.com/input-output-hk/purescript-bridge-json-helpers.git";
+        rev = "60615c36abaee16d8dbe09cdd0e772e6d523d024";
+        sha256 = "0b5wpdgy2pgk5r97ln3sql4h2c2v45h3jl2262gzqchhgvi3n4kb";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
     "lattice" = pkgs.stdenv.mkDerivation {
       name = "lattice";
       version = "v0.3.0";
@@ -773,6 +785,30 @@ let
       installPhase = "ln -s $src $out";
     };
 
+    "node-process" = pkgs.stdenv.mkDerivation {
+      name = "node-process";
+      version = "v8.2.0";
+      src = pkgs.fetchgit {
+        url = "https://github.com/purescript-node/purescript-node-process.git";
+        rev = "e1e807ac7831d1a8a15e242964f7e5005e42f76b";
+        sha256 = "0nl9r271s8f71a9wqfkadq9b490h8phwgqc61jbzhm4ags23pqpg";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
+    "node-readline" = pkgs.stdenv.mkDerivation {
+      name = "node-readline";
+      version = "v5.0.0";
+      src = pkgs.fetchgit {
+        url = "https://github.com/purescript-node/purescript-node-readline.git";
+        rev = "c59deb30c7ff5cc91d6b062120c5a3979bd4ccff";
+        sha256 = "0c299bvkhrdbij88fxb75sdm7bl4wpgv9fz7wsj0hw6gkxmplpj9";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
     "node-streams" = pkgs.stdenv.mkDerivation {
       name = "node-streams";
       version = "v5.0.0";
@@ -828,6 +864,18 @@ let
         url = "https://github.com/purescript/purescript-numbers.git";
         rev = "f5bbd96cbed58403c4445bd4c73df50fc8d86f46";
         sha256 = "00pm2x4kh4fm91r7nmik1v5jclkgh7gpxz13ambyqxbxbiqjq0vg";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
+    "options" = pkgs.stdenv.mkDerivation {
+      name = "options";
+      version = "v6.0.0";
+      src = pkgs.fetchgit {
+        url = "https://github.com/purescript-contrib/purescript-options.git";
+        rev = "0309a42692251ce5e3d1d0be57d4f63f7143f858";
+        sha256 = "04f70wfik1pi6nzfq2cn3la9z735akkadpx5cxbs4mx8xg032sjd";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";
@@ -905,6 +953,18 @@ let
       installPhase = "ln -s $src $out";
     };
 
+    "posix-types" = pkgs.stdenv.mkDerivation {
+      name = "posix-types";
+      version = "v5.0.0";
+      src = pkgs.fetchgit {
+        url = "https://github.com/purescript-node/purescript-posix-types.git";
+        rev = "e562680fce64b67e26741a61a51160a04fd3e7fb";
+        sha256 = "1knhdnnmxx77qsjz3gk1ga7n713l303dxyn8zs46qh7p2hnkalkc";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
     "prelude" = pkgs.stdenv.mkDerivation {
       name = "prelude";
       version = "v5.0.1";
@@ -960,18 +1020,6 @@ let
         url = "https://github.com/purescript/purescript-psci-support.git";
         rev = "f26fe8266a63494080476333e22f971404ea8846";
         sha256 = "16vhf8hapd7rcgmafmjpiq7smhzdh3300f2idk1q4kk01yxn8ddj";
-      };
-      phases = "installPhase";
-      installPhase = "ln -s $src $out";
-    };
-
-    "purescript-bridge-json-helpers" = pkgs.stdenv.mkDerivation {
-      name = "purescript-bridge-json-helpers";
-      version = "60615c36abaee16d8dbe09cdd0e772e6d523d024";
-      src = pkgs.fetchgit {
-        url = "https://github.com/input-output-hk/purescript-bridge-json-helpers.git";
-        rev = "60615c36abaee16d8dbe09cdd0e772e6d523d024";
-        sha256 = "0b5wpdgy2pgk5r97ln3sql4h2c2v45h3jl2262gzqchhgvi3n4kb";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";

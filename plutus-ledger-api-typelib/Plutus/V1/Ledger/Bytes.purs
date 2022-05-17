@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Bytes where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -11,13 +10,12 @@ import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
-import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.ByteArray (ByteArray)
 
-newtype LedgerBytes = LedgerBytes { getLedgerBytes :: ByteArray }
+newtype LedgerBytes = LedgerBytes ByteArray
 
 instance Show LedgerBytes where
   show a = genericShow a
@@ -26,16 +24,11 @@ derive instance Generic LedgerBytes _
 
 derive instance Newtype LedgerBytes _
 
-instance HasConstrIndices LedgerBytes where
-  constrIndices _ = fromConstr2Index [Tuple "LedgerBytes" 0]
+derive newtype instance ToData LedgerBytes
 
-instance ToData LedgerBytes where
-  toData x = genericToData x
-
-instance FromData LedgerBytes where
-  fromData pd = genericFromData pd
+derive newtype instance FromData LedgerBytes
 
 --------------------------------------------------------------------------------
 
-_LedgerBytes :: Iso' LedgerBytes {getLedgerBytes :: ByteArray}
+_LedgerBytes :: Iso' LedgerBytes ByteArray
 _LedgerBytes = _Newtype

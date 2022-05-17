@@ -3,20 +3,44 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
-{-# OPTIONS_GHC -Wno-missing-import-lists #-}
+{-# LANGUAGE TemplateHaskell #-}
 
-module RoundTrip.Types where
+module RoundTrip.Types (
+  TestData (..),
+  RepType (..),
+  Request (..),
+  Response (..),
+  response,
+  ANewtype (..),
+  ANewtypeRec (..),
+  ARecord (..),
+  ASum (..),
+  MyUnit (..),
+  TestEnum (..),
+  TestMultiInlineRecords (..),
+  TestNewtype (..),
+  TestNewtypeRecord (..),
+  TestRecord (..),
+  TestRecursiveA (..),
+  TestRecursiveB (..),
+  TestSum (..),
+  TestTwoFields (..),
+  TestPlutusData (..),
+  TestPlutusDataSum (..),
+) where
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import Data.Set (Set)
 import GHC.Generics (Generic)
-import Test.QuickCheck (Arbitrary (..), chooseEnum, oneof, resize, sized)
+import PlutusTx qualified as P
+import PlutusTx.Aux (unstableMakeIsData)
+import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
+import Test.QuickCheck (Arbitrary (arbitrary), chooseEnum, oneof, resize, sized)
 
 data TestData
   = Maybe (Maybe TestSum)
-  | Either (Either (Maybe Int) (Maybe Bool))
+  | Either (Either (Maybe Bool) (Maybe Bool))
   deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestData
@@ -33,25 +57,25 @@ instance Arbitrary TestData where
 data TestSum
   = Nullary
   | Bool Bool
-  | Int Int
+  | Int Bool -- FIXME: Conflict Argonaut vs PlutusTx (Int vs Integer)
   | Number Double
   | String String
-  | Array [Int]
-  | InlineRecord {why :: String, wouldYouDoThis :: Int}
+  | Array [Bool]
+  | InlineRecord {why :: String, wouldYouDoThis :: Bool}
   | MultiInlineRecords TestMultiInlineRecords
-  | Record (TestRecord Int)
-  | NestedRecord (TestRecord (TestRecord Int))
+  | Record (TestRecord Bool)
+  | NestedRecord (TestRecord (TestRecord Bool))
   | NT TestNewtype
   | NTRecord TestNewtypeRecord
   | TwoFields TestTwoFields
-  | Set (Set Int)
-  | Map (Map String Int)
+  | Set (Set Bool)
+  | Map (Map String Bool)
   | Unit ()
   | MyUnit MyUnit
-  | Pair (Int, Double)
-  | Triple (Int, (), Bool)
-  | Quad (Int, Double, Bool, Double)
-  | QuadSimple Int Double Bool Double
+  | Pair (Bool, Double)
+  | Triple (Bool, (), Bool)
+  | Quad (Bool, Double, Bool, Double)
+  | QuadSimple Bool Double Bool Double
   | Recursive TestRecursiveA
   | Enum TestEnum
   deriving stock (Show, Eq, Ord, Generic)
@@ -65,7 +89,7 @@ instance Arbitrary TestSum where
     oneof
       [ pure Nullary
       , Bool <$> arbitrary
-      , Int <$> arbitrary
+      , Bool <$> arbitrary
       , Number <$> arbitrary
       , String <$> arbitrary
       , Array <$> arbitrary
@@ -110,7 +134,7 @@ instance ToJSON TestRecursiveB
 
 data TestMultiInlineRecords
   = Foo
-      { _foo1 :: Maybe Int
+      { _foo1 :: Maybe Bool
       , _foo2 :: ()
       }
   | Bar
@@ -131,7 +155,7 @@ instance Arbitrary TestMultiInlineRecords where
       ]
 
 data TestRecord a = TestRecord
-  { _field1 :: Maybe Int
+  { _field1 :: Maybe Bool
   , _field2 :: a
   }
   deriving stock (Show, Eq, Ord, Generic)
@@ -143,7 +167,7 @@ instance (ToJSON a) => ToJSON (TestRecord a)
 instance (Arbitrary a) => Arbitrary (TestRecord a) where
   arbitrary = TestRecord <$> arbitrary <*> arbitrary
 
-data TestTwoFields = TestTwoFields Bool Int
+data TestTwoFields = TestTwoFields Bool Bool
   deriving stock (Show, Eq, Ord, Generic)
 
 instance FromJSON TestTwoFields
@@ -198,3 +222,96 @@ instance ToJSON MyUnit
 
 instance Arbitrary MyUnit where
   arbitrary = pure U
+
+newtype ANewtype = ANewtype Bool
+  deriving stock (Show, Eq, Generic)
+  deriving newtype (P.ToData, P.FromData, P.UnsafeFromData, FromJSON, ToJSON)
+
+instance Arbitrary ANewtype where
+  arbitrary = ANewtype <$> arbitrary
+
+newtype ANewtypeRec = ANewtypeRec {ntrec :: ANewtype}
+  deriving stock (Show, Eq, Generic)
+  deriving newtype (P.ToData, P.FromData, P.UnsafeFromData, FromJSON, ToJSON)
+
+instance Arbitrary ANewtypeRec where
+  arbitrary = ANewtypeRec <$> arbitrary
+
+data ARecord = ARecord
+  { field1 :: Bool
+  , field2 :: Either Bool [Bool]
+  , field3 :: Maybe Bool
+  }
+  deriving stock (Show, Eq, Generic)
+
+instance Arbitrary ARecord where
+  arbitrary = ARecord <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance FromJSON ARecord
+
+instance ToJSON ARecord
+
+data ASum
+  = ASumNT ANewtype
+  | ASumNTRec ANewtypeRec
+  | ASumRec ARecord
+  deriving stock (Show, Eq, Generic)
+
+instance FromJSON ASum
+
+instance ToJSON ASum
+
+instance Arbitrary ASum where
+  arbitrary =
+    oneof
+      [ ASumNT <$> arbitrary
+      , ASumNTRec <$> arbitrary
+      , ASumRec <$> arbitrary
+      ]
+
+unstableMakeIsData ''ARecord
+unstableMakeIsData ''ASum
+
+data RepType = RTJson | RTPlutusData deriving stock (Show, Eq, Generic)
+instance FromJSON RepType
+instance ToJSON RepType
+
+data Request = Req RepType String
+  deriving stock (Show, Eq, Generic)
+
+instance FromJSON Request
+instance ToJSON Request
+
+data Response = RespSuccess RepType String | RespError String
+  deriving stock (Show, Eq, Generic)
+
+instance FromJSON Response
+instance ToJSON Response
+
+response :: forall p. (String -> p) -> (String -> p) -> (String -> p) -> Response -> p
+response e _ _ (RespError err) = e err
+response _ js _ (RespSuccess RTJson payload) = js payload
+response _ _ pd (RespSuccess RTPlutusData payload) = pd payload
+
+data TestPlutusData
+  = PdMaybe (Maybe TestPlutusDataSum)
+  | PdEither (Either (Maybe Bool) (Maybe Bool))
+  deriving stock (Show, Eq, Generic)
+
+instance Arbitrary TestPlutusData where
+  arbitrary =
+    oneof
+      [ PdMaybe <$> arbitrary
+      , PdEither <$> arbitrary
+      ]
+
+data TestPlutusDataSum = A deriving stock (Show, Eq, Generic)
+
+instance Arbitrary TestPlutusDataSum where
+  arbitrary =
+    oneof
+      [ pure A
+      ]
+
+unstableMakeIsData ''TestPlutusData
+unstableMakeIsData ''TestPlutusDataSum

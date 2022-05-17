@@ -3,7 +3,6 @@ module Plutus.V1.Ledger.Ada where
 
 import Prelude
 
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
@@ -12,12 +11,11 @@ import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
-import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 
-newtype Ada = Lovelace { getLovelace :: BigInt }
+newtype Ada = Lovelace BigInt
 
 instance Show Ada where
   show a = genericShow a
@@ -26,16 +24,11 @@ derive instance Generic Ada _
 
 derive instance Newtype Ada _
 
-instance HasConstrIndices Ada where
-  constrIndices _ = fromConstr2Index [Tuple "Lovelace" 0]
+derive newtype instance ToData Ada
 
-instance ToData Ada where
-  toData x = genericToData x
-
-instance FromData Ada where
-  fromData pd = genericFromData pd
+derive newtype instance FromData Ada
 
 --------------------------------------------------------------------------------
 
-_Lovelace :: Iso' Ada {getLovelace :: BigInt}
+_Lovelace :: Iso' Ada BigInt
 _Lovelace = _Newtype

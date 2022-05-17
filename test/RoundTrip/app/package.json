@@ -1,0 +1,19 @@
+{
+  "author": "",
+  "dependencies": {
+    "@ngua/cardano-serialization-lib-browser": "9.1.2",
+    "@ngua/cardano-serialization-lib-nodejs": "^9.1.2",
+    "big-integer": "1.6.51",
+    "bufferutil": "4.0.5"
+  },
+  "description": "",
+  "devDependencies": {},
+  "directories": {
+    "test": "test"
+  },
+  "license": "ISC",
+  "main": "js/api.js",
+  "name": "purescript-bridge-rountrip-test",
+  "scripts": {},
+  "version": "1.0.0"
+}

@@ -33,6 +33,6 @@ jobs:
             ~/.cabal/store
             dist-newstyle
           key: ${{ runner.os }}-cabal
-      - name: Check files and build
+      - name: Check files, build and run tests
         run: make ci
 

@@ -3,8 +3,6 @@ module Plutus.V1.Ledger.Value where
 
 import Prelude
 
-import Cardano.Types.Value (CurrencySymbol)
-import ConstrIndices (class HasConstrIndices, fromConstr2Index)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
@@ -12,13 +10,14 @@ import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
-import Data.Tuple (Tuple, Tuple(Tuple))
+import Data.Tuple (Tuple)
 import FromData (class FromData, genericFromData)
+import Plutus.Types.CurrencySymbol (CurrencySymbol)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Types.TokenName (TokenName)
 
-newtype AssetClass = AssetClass { unAssetClass :: Tuple CurrencySymbol TokenName }
+newtype AssetClass = AssetClass (Tuple CurrencySymbol TokenName)
 
 instance Show AssetClass where
   show a = genericShow a
@@ -31,16 +30,11 @@ derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
 
-instance HasConstrIndices AssetClass where
-  constrIndices _ = fromConstr2Index [Tuple "AssetClass" 0]
+derive newtype instance ToData AssetClass
 
-instance ToData AssetClass where
-  toData x = genericToData x
-
-instance FromData AssetClass where
-  fromData pd = genericFromData pd
+derive newtype instance FromData AssetClass
 
 --------------------------------------------------------------------------------
 
-_AssetClass :: Iso' AssetClass {unAssetClass :: Tuple CurrencySymbol TokenName}
+_AssetClass :: Iso' AssetClass (Tuple CurrencySymbol TokenName)
 _AssetClass = _Newtype
