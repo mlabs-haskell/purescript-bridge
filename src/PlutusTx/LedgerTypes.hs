@@ -21,6 +21,7 @@ import Language.PureScript.Bridge (
   genericShow,
   mkPlutusDataType,
   mkPlutusNewtype,
+  mkPlutusNewtype_,
   mkSumType,
   order,
   psTypeParameters,
@@ -145,7 +146,7 @@ ledgerTypes =
         , unsafeMkPlutusDataType @TxOut
         , unsafeMkPlutusDataType @TxOutRef
         , order $ mkPlutusNewtype @DiffMilliSeconds
-        , order $ mkPlutusNewtype @POSIXTime
+        , order $ mkPlutusNewtype_ @POSIXTime
         , order $ mkPlutusNewtype @Slot
         , mkPlutusNewtype @Redeemer
         , mkPlutusNewtype @Datum

@@ -14,7 +14,7 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple.Nested ((/\))
@@ -37,17 +37,18 @@ derive instance Generic Redeemer _
 
 derive instance Newtype Redeemer _
 
-
-
 derive newtype instance ToData Redeemer
 
 derive newtype instance FromData Redeemer
 
 instance EncodeJson Redeemer where
-  encodeJson x = E.encode  (E.record {getRedeemer: E.value :: Op Json (PlutusData) }) {getRedeemer: unwrap x}
+  encodeJson x = E.encode (E.record { getRedeemer: E.value :: _ (PlutusData) })
+    { getRedeemer: unwrap x }
 
 instance DecodeJson Redeemer where
-  decodeJson x = get (Proxy :: Proxy "getRedeemer") <$> D.decode (D.record "getRedeemer"{ getRedeemer: D.value :: _ (PlutusData)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getRedeemer") <$> D.decode
+    (D.record "getRedeemer " { getRedeemer: D.value :: _ (PlutusData) })
+    x
 
 --------------------------------------------------------------------------------
 
@@ -65,17 +66,18 @@ derive instance Generic Datum _
 
 derive instance Newtype Datum _
 
-
-
 derive newtype instance ToData Datum
 
 derive newtype instance FromData Datum
 
 instance EncodeJson Datum where
-  encodeJson x = E.encode  (E.record {getDatum: E.value :: Op Json (PlutusData) }) {getDatum: unwrap x}
+  encodeJson x = E.encode (E.record { getDatum: E.value :: _ (PlutusData) })
+    { getDatum: unwrap x }
 
 instance DecodeJson Datum where
-  decodeJson x = get (Proxy :: Proxy "getDatum") <$> D.decode (D.record "getDatum"{ getDatum: D.value :: _ (PlutusData)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getDatum") <$> D.decode
+    (D.record "getDatum " { getDatum: D.value :: _ (PlutusData) })
+    x
 
 --------------------------------------------------------------------------------
 
@@ -93,17 +95,18 @@ derive instance Generic ScriptHash _
 
 derive instance Newtype ScriptHash _
 
-
-
 derive newtype instance ToData ScriptHash
 
 derive newtype instance FromData ScriptHash
 
 instance EncodeJson ScriptHash where
-  encodeJson x = E.encode  (E.record {getScriptHash: E.value :: Op Json (ByteArray) }) {getScriptHash: unwrap x}
+  encodeJson x = E.encode (E.record { getScriptHash: E.value :: _ (ByteArray) })
+    { getScriptHash: unwrap x }
 
 instance DecodeJson ScriptHash where
-  decodeJson x = get (Proxy :: Proxy "getScriptHash") <$> D.decode (D.record "getScriptHash"{ getScriptHash: D.value :: _ (ByteArray)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getScriptHash") <$> D.decode
+    (D.record "getScriptHash " { getScriptHash: D.value :: _ (ByteArray) })
+    x
 
 --------------------------------------------------------------------------------
 
@@ -120,8 +123,6 @@ instance Show ValidatorHash where
 derive instance Generic ValidatorHash _
 
 derive instance Newtype ValidatorHash _
-
-
 
 derive newtype instance ToData ValidatorHash
 
@@ -149,8 +150,6 @@ derive instance Generic DatumHash _
 
 derive instance Newtype DatumHash _
 
-
-
 derive newtype instance ToData DatumHash
 
 derive newtype instance FromData DatumHash
@@ -177,8 +176,6 @@ derive instance Generic MintingPolicyHash _
 
 derive instance Newtype MintingPolicyHash _
 
-
-
 derive newtype instance ToData MintingPolicyHash
 
 derive newtype instance FromData MintingPolicyHash
@@ -204,8 +201,6 @@ instance Show StakeValidatorHash where
 derive instance Generic StakeValidatorHash _
 
 derive instance Newtype StakeValidatorHash _
-
-
 
 derive newtype instance ToData StakeValidatorHash
 

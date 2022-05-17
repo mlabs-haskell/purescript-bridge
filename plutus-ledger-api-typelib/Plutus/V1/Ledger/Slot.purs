@@ -15,7 +15,7 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple.Nested ((/\))
@@ -40,17 +40,18 @@ derive instance Generic Slot _
 
 derive instance Newtype Slot _
 
-
-
 derive newtype instance ToData Slot
 
 derive newtype instance FromData Slot
 
 instance EncodeJson Slot where
-  encodeJson x = E.encode  (E.record {getSlot: E.value :: Op Json (BigInt) }) {getSlot: unwrap x}
+  encodeJson x = E.encode (E.record { getSlot: E.value :: _ (BigInt) })
+    { getSlot: unwrap x }
 
 instance DecodeJson Slot where
-  decodeJson x = get (Proxy :: Proxy "getSlot") <$> D.decode (D.record "getSlot"{ getSlot: D.value :: _ (BigInt)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getSlot") <$> D.decode
+    (D.record "getSlot " { getSlot: D.value :: _ (BigInt) })
+    x
 
 --------------------------------------------------------------------------------
 

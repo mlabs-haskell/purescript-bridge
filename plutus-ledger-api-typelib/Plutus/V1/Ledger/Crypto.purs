@@ -14,7 +14,7 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple.Nested ((/\))
@@ -37,17 +37,18 @@ derive instance Generic PubKey _
 
 derive instance Newtype PubKey _
 
-
-
 derive newtype instance ToData PubKey
 
 derive newtype instance FromData PubKey
 
 instance EncodeJson PubKey where
-  encodeJson x = E.encode  (E.record {getPubKey: E.value :: Op Json (LedgerBytes) }) {getPubKey: unwrap x}
+  encodeJson x = E.encode (E.record { getPubKey: E.value :: _ (LedgerBytes) })
+    { getPubKey: unwrap x }
 
 instance DecodeJson PubKey where
-  decodeJson x = get (Proxy :: Proxy "getPubKey") <$> D.decode (D.record "getPubKey"{ getPubKey: D.value :: _ (LedgerBytes)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getPubKey") <$> D.decode
+    (D.record "getPubKey " { getPubKey: D.value :: _ (LedgerBytes) })
+    x
 
 --------------------------------------------------------------------------------
 
@@ -65,17 +66,18 @@ derive instance Generic PubKeyHash _
 
 derive instance Newtype PubKeyHash _
 
-
-
 derive newtype instance ToData PubKeyHash
 
 derive newtype instance FromData PubKeyHash
 
 instance EncodeJson PubKeyHash where
-  encodeJson x = E.encode  (E.record {getPubKeyHash: E.value :: Op Json (ByteArray) }) {getPubKeyHash: unwrap x}
+  encodeJson x = E.encode (E.record { getPubKeyHash: E.value :: _ (ByteArray) })
+    { getPubKeyHash: unwrap x }
 
 instance DecodeJson PubKeyHash where
-  decodeJson x = get (Proxy :: Proxy "getPubKeyHash") <$> D.decode (D.record "getPubKeyHash"{ getPubKeyHash: D.value :: _ (ByteArray)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getPubKeyHash") <$> D.decode
+    (D.record "getPubKeyHash " { getPubKeyHash: D.value :: _ (ByteArray) })
+    x
 
 --------------------------------------------------------------------------------
 
@@ -93,17 +95,19 @@ derive instance Generic PrivateKey _
 
 derive instance Newtype PrivateKey _
 
-
-
 derive newtype instance ToData PrivateKey
 
 derive newtype instance FromData PrivateKey
 
 instance EncodeJson PrivateKey where
-  encodeJson x = E.encode  (E.record {getPrivateKey: E.value :: Op Json (LedgerBytes) }) {getPrivateKey: unwrap x}
+  encodeJson x = E.encode
+    (E.record { getPrivateKey: E.value :: _ (LedgerBytes) })
+    { getPrivateKey: unwrap x }
 
 instance DecodeJson PrivateKey where
-  decodeJson x = get (Proxy :: Proxy "getPrivateKey") <$> D.decode (D.record "getPrivateKey"{ getPrivateKey: D.value :: _ (LedgerBytes)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getPrivateKey") <$> D.decode
+    (D.record "getPrivateKey " { getPrivateKey: D.value :: _ (LedgerBytes) })
+    x
 
 --------------------------------------------------------------------------------
 
@@ -121,17 +125,18 @@ derive instance Generic Signature _
 
 derive instance Newtype Signature _
 
-
-
 derive newtype instance ToData Signature
 
 derive newtype instance FromData Signature
 
 instance EncodeJson Signature where
-  encodeJson x = E.encode  (E.record {getSignature: E.value :: Op Json (ByteArray) }) {getSignature: unwrap x}
+  encodeJson x = E.encode (E.record { getSignature: E.value :: _ (ByteArray) })
+    { getSignature: unwrap x }
 
 instance DecodeJson Signature where
-  decodeJson x = get (Proxy :: Proxy "getSignature") <$> D.decode (D.record "getSignature"{ getSignature: D.value :: _ (ByteArray)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getSignature") <$> D.decode
+    (D.record "getSignature " { getSignature: D.value :: _ (ByteArray) })
+    x
 
 --------------------------------------------------------------------------------
 

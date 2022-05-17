@@ -27,6 +27,7 @@ import Data.Set qualified as Set
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
+import Data.Text.Lazy qualified as LT
 import Language.PureScript.Bridge.CodeGenSwitches qualified as Switches
 import Language.PureScript.Bridge.PSTypes (psUnit)
 import Language.PureScript.Bridge.SumType (
@@ -62,6 +63,7 @@ import Language.PureScript.Bridge.SumType (
   PSInstance,
   RecordEntry (..),
   SumType (..),
+  getNewtypeRecField,
   getUsedTypes,
   importsFromList,
   instanceToImportLines,
@@ -355,7 +357,7 @@ instances st@(SumType t cs is) = go <$> is
       Derive -> mkDerivedInstance _customHead (const _customConstraints)
       DeriveNewtype -> mkDerivedNewtypeInstance _customHead (const _customConstraints)
       Explicit members -> mkInstance _customHead (const _customConstraints) $ memberToMethod <$> members
-    go PlutusNewtype = mempty
+    go (PlutusNewtype _) = mempty
     go ToData
       | isPlutusNewtype st =
         mkDerivedNewtypeInstance
@@ -437,19 +439,54 @@ instances st@(SumType t cs is) = go <$> is
         [ "succ = genericSucc"
         , "pred = genericPred"
         ]
-    go Json =
-      vsep $
-        punctuate
-          line
-          [ mkInstance
-              (mkType "EncodeJson" [t])
-              encodeJsonConstraints
-              ["encodeJson = defer \\_ ->" <+> sumTypeToEncode st]
-          , mkInstance
-              (mkType "DecodeJson" [t])
-              decodeJsonConstraints
-              [hang 2 $ "decodeJson = defer \\_ -> D.decode" <+> sumTypeToDecode st]
-          ]
+    go Json = case getNewtypeRecField is of
+      Just fname' -> case map snd cs of
+        [DataConstructor _ (Normal [tp])] ->
+          let fname = text (LT.fromStrict fname')
+           in vsep $
+                punctuate
+                  line
+                  [ mkInstance
+                      (mkType "EncodeJson" [t])
+                      encodeJsonConstraints
+                      [ "encodeJson x = E.encode  (E.record {"
+                          <> fname
+                          <> ": E.value :: _ "
+                          <> parens (signature_' tp)
+                          <> " })"
+                          <+> "{"
+                          <> fname
+                          <> ": unwrap x}"
+                      ]
+                  , mkInstance
+                      (mkType "DecodeJson" [t])
+                      decodeJsonConstraints
+                      [ hang 2 $
+                          "decodeJson x = wrap <<< get (Proxy :: Proxy \""
+                            <> fname
+                            <> "\") <$> D.decode (D.record \""
+                            <> fname
+                            <+> "\"{"
+                            <> fname
+                            <> ": D.value :: _ "
+                            <> parens (signature_' tp)
+                            <> "}) x"
+                      ]
+                  ]
+        _ -> error "boom! (This error should only occur if you manually modified the constructors and instances for a Sum Type. If you see this, undo whatever it is you did!)"
+      Nothing ->
+        vsep $
+          punctuate
+            line
+            [ mkInstance
+                (mkType "EncodeJson" [t])
+                encodeJsonConstraints
+                ["encodeJson = defer \\_ ->" <+> sumTypeToEncode st]
+            , mkInstance
+                (mkType "DecodeJson" [t])
+                decodeJsonConstraints
+                [hang 2 $ "decodeJson = defer \\_ -> D.decode" <+> sumTypeToDecode st]
+            ]
     go GenericShow = mkInstance (mkType "Show" [t]) showConstraints ["show a = genericShow a"]
     go Functor = mkDerivedInstance (mkType "Functor" [toKind1 t]) (const [])
     go Eq = mkDerivedInstance (mkType "Eq" [t]) eqConstraints
@@ -808,6 +845,25 @@ signature' name = signature False name [] []
 signature :: Bool -> Doc -> [PSType] -> [PSType] -> PSType -> Doc
 signature topLevel name constraints params ret =
   hsep $ catMaybes [Just name, Just "::", forAll, constraintsDoc, paramsDoc, Just $ typeInfoToDecl ret]
+  where
+    forAll = case (topLevel, allTypes >>= typeParams) of
+      (False, _) -> Nothing
+      (_, []) -> Nothing
+      (_, ps) -> Just $ "forall" <+> hsep (typeInfoToDoc <$> nubBy (on (==) _typeName) ps) <> "."
+    allTypes = ret : constraints <> params
+    constraintsDoc = case constraints of
+      [] -> Nothing
+      cs -> Just $ hsep ((<+> "=>") . typeInfoToDecl <$> cs)
+    paramsDoc = case params of
+      [] -> Nothing
+      ps -> Just $ hsep ((<+> "->") . typeInfoToDecl <$> ps)
+
+signature_' :: PSType -> Doc
+signature_' = signature_ False [] []
+
+signature_ :: Bool -> [PSType] -> [PSType] -> PSType -> Doc
+signature_ topLevel constraints params ret =
+  hsep $ catMaybes [forAll, constraintsDoc, paramsDoc, Just $ typeInfoToDecl ret]
   where
     forAll = case (topLevel, allTypes >>= typeParams) of
       (False, _) -> Nothing

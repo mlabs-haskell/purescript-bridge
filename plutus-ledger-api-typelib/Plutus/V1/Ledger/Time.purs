@@ -15,12 +15,11 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
-import Record (get)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import Data.Argonaut.Decode.Aeson as D
@@ -39,8 +38,6 @@ derive instance Ord DiffMilliSeconds
 derive instance Generic DiffMilliSeconds _
 
 derive instance Newtype DiffMilliSeconds _
-
-
 
 derive newtype instance ToData DiffMilliSeconds
 
@@ -72,17 +69,15 @@ derive instance Generic POSIXTime _
 
 derive instance Newtype POSIXTime _
 
-
-
 derive newtype instance ToData POSIXTime
 
 derive newtype instance FromData POSIXTime
 
 instance EncodeJson POSIXTime where
-  encodeJson x = E.encode  (E.record {getPOSIXTime: E.value :: Op Json (BigInt) }) {getPOSIXTime: unwrap x}
+  encodeJson = defer \_ -> E.encode $ unwrap >$< E.value
 
 instance DecodeJson POSIXTime where
-  decodeJson x = get (Proxy :: Proxy "getPOSIXTime") <$> D.decode (D.record "getPOSIXTime"{ getPOSIXTime: D.value :: _ (BigInt)}) x
+  decodeJson = defer \_ -> D.decode $ (POSIXTime <$> D.value)
 
 --------------------------------------------------------------------------------
 

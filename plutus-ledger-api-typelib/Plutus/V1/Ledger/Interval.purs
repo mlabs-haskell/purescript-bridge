@@ -14,7 +14,24 @@ import Data.Tuple (Tuple(Tuple))
 import FromData (class FromData, genericFromData)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
-import TypeLevel.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import TypeLevel.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 import TypeLevel.Nat (S, Z)
 
 newtype Interval a = Interval
@@ -29,13 +46,18 @@ derive instance Generic (Interval a) _
 
 derive instance Newtype (Interval a) _
 
-instance HasPlutusSchema (Interval a)
-  ("Interval" :=
-     ("ivFrom" := I (LowerBound a)
-     :+ "ivTo" := I (UpperBound a)
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema (Interval a)
+    ( "Interval"
+        :=
+          ( "ivFrom" := I (LowerBound a)
+              :+ "ivTo"
+              := I (UpperBound a)
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance (ToData a) => ToData (Interval a) where
   toData x = genericToData x
@@ -45,7 +67,9 @@ instance (FromData a) => FromData (Interval a) where
 
 --------------------------------------------------------------------------------
 
-_Interval :: forall a. Iso' (Interval a) {ivFrom :: LowerBound a, ivTo :: UpperBound a}
+_Interval
+  :: forall a
+   . Iso' (Interval a) { ivFrom :: LowerBound a, ivTo :: UpperBound a }
 _Interval = _Newtype
 
 --------------------------------------------------------------------------------
@@ -57,10 +81,12 @@ instance (Show a) => Show (LowerBound a) where
 
 derive instance Generic (LowerBound a) _
 
-instance HasPlutusSchema (LowerBound a)
-  ("LowerBound" := PNil
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema (LowerBound a)
+    ( "LowerBound" := PNil
+        @@ (Z)
+        :+ PNil
+    )
 
 instance (ToData a) => ToData (LowerBound a) where
   toData x = genericToData x
@@ -70,8 +96,9 @@ instance (FromData a) => FromData (LowerBound a) where
 
 --------------------------------------------------------------------------------
 
-_LowerBound :: forall a. Iso' (LowerBound a) {a :: Extended a, b :: Boolean}
-_LowerBound = iso (\(LowerBound a b) -> {a, b}) (\{a, b} -> (LowerBound a b))
+_LowerBound :: forall a. Iso' (LowerBound a) { a :: Extended a, b :: Boolean }
+_LowerBound = iso (\(LowerBound a b) -> { a, b })
+  (\{ a, b } -> (LowerBound a b))
 
 --------------------------------------------------------------------------------
 
@@ -82,10 +109,12 @@ instance (Show a) => Show (UpperBound a) where
 
 derive instance Generic (UpperBound a) _
 
-instance HasPlutusSchema (UpperBound a)
-  ("UpperBound" := PNil
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema (UpperBound a)
+    ( "UpperBound" := PNil
+        @@ (Z)
+        :+ PNil
+    )
 
 instance (ToData a) => ToData (UpperBound a) where
   toData x = genericToData x
@@ -95,8 +124,9 @@ instance (FromData a) => FromData (UpperBound a) where
 
 --------------------------------------------------------------------------------
 
-_UpperBound :: forall a. Iso' (UpperBound a) {a :: Extended a, b :: Boolean}
-_UpperBound = iso (\(UpperBound a b) -> {a, b}) (\{a, b} -> (UpperBound a b))
+_UpperBound :: forall a. Iso' (UpperBound a) { a :: Extended a, b :: Boolean }
+_UpperBound = iso (\(UpperBound a b) -> { a, b })
+  (\{ a, b } -> (UpperBound a b))
 
 --------------------------------------------------------------------------------
 
@@ -110,14 +140,18 @@ instance (Show a) => Show (Extended a) where
 
 derive instance Generic (Extended a) _
 
-instance HasPlutusSchema (Extended a)
-  ("NegInf" := PNil
-   @@ (Z)
-  :+ "Finite" := PNil
-     @@ (S (Z))
-  :+ "PosInf" := PNil
-     @@ (S (S (Z)))
-  :+ PNil)
+instance
+  HasPlutusSchema (Extended a)
+    ( "NegInf" := PNil
+        @@ (Z)
+        :+ "Finite"
+        := PNil
+        @@ (S (Z))
+        :+ "PosInf"
+        := PNil
+        @@ (S (S (Z)))
+        :+ PNil
+    )
 
 instance (ToData a) => ToData (Extended a) where
   toData x = genericToData x

@@ -14,7 +14,7 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple.Nested ((/\))
@@ -36,17 +36,19 @@ derive instance Generic LedgerBytes _
 
 derive instance Newtype LedgerBytes _
 
-
-
 derive newtype instance ToData LedgerBytes
 
 derive newtype instance FromData LedgerBytes
 
 instance EncodeJson LedgerBytes where
-  encodeJson x = E.encode  (E.record {getLedgerBytes: E.value :: Op Json (ByteArray) }) {getLedgerBytes: unwrap x}
+  encodeJson x = E.encode
+    (E.record { getLedgerBytes: E.value :: _ (ByteArray) })
+    { getLedgerBytes: unwrap x }
 
 instance DecodeJson LedgerBytes where
-  decodeJson x = get (Proxy :: Proxy "getLedgerBytes") <$> D.decode (D.record "getLedgerBytes"{ getLedgerBytes: D.value :: _ (ByteArray)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getLedgerBytes") <$> D.decode
+    (D.record "getLedgerBytes " { getLedgerBytes: D.value :: _ (ByteArray) })
+    x
 
 --------------------------------------------------------------------------------
 

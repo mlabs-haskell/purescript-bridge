@@ -15,7 +15,7 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple.Nested ((/\))
@@ -36,17 +36,18 @@ derive instance Generic Ada _
 
 derive instance Newtype Ada _
 
-
-
 derive newtype instance ToData Ada
 
 derive newtype instance FromData Ada
 
 instance EncodeJson Ada where
-  encodeJson x = E.encode  (E.record {getLovelace: E.value :: Op Json (BigInt) }) {getLovelace: unwrap x}
+  encodeJson x = E.encode (E.record { getLovelace: E.value :: _ (BigInt) })
+    { getLovelace: unwrap x }
 
 instance DecodeJson Ada where
-  decodeJson x = get (Proxy :: Proxy "getLovelace") <$> D.decode (D.record "getLovelace"{ getLovelace: D.value :: _ (BigInt)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "getLovelace") <$> D.decode
+    (D.record "getLovelace " { getLovelace: D.value :: _ (BigInt) })
+    x
 
 --------------------------------------------------------------------------------
 

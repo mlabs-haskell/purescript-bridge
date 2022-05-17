@@ -14,7 +14,7 @@ import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple)
@@ -42,17 +42,21 @@ derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
 
-
-
 derive newtype instance ToData AssetClass
 
 derive newtype instance FromData AssetClass
 
 instance EncodeJson AssetClass where
-  encodeJson x = E.encode  (E.record {unAssetClass: E.value :: Op Json (Tuple CurrencySymbol TokenName) }) {unAssetClass: unwrap x}
+  encodeJson x = E.encode
+    (E.record { unAssetClass: E.value :: _ (Tuple CurrencySymbol TokenName) })
+    { unAssetClass: unwrap x }
 
 instance DecodeJson AssetClass where
-  decodeJson x = get (Proxy :: Proxy "unAssetClass") <$> D.decode (D.record "unAssetClass"{ unAssetClass: D.value :: _ (Tuple CurrencySymbol TokenName)}) x
+  decodeJson x = wrap <<< get (Proxy :: Proxy "unAssetClass") <$> D.decode
+    ( D.record "unAssetClass "
+        { unAssetClass: D.value :: _ (Tuple CurrencySymbol TokenName) }
+    )
+    x
 
 --------------------------------------------------------------------------------
 
