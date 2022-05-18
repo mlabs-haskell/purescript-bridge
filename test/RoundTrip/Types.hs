@@ -26,16 +26,19 @@ module RoundTrip.Types (
   TestSum (..),
   TestTwoFields (..),
   TestPlutusData (..),
-  TestPlutusDataSum (..),
 ) where
 
+import ArbitraryLedger ()
 import Data.Aeson (FromJSON, ToJSON)
-import Data.Map (Map)
 import GHC.Generics (Generic)
+import Plutus.V1.Ledger.Api (Datum, Interval, POSIXTime, ScriptContext)
+import Plutus.V1.Ledger.Value (Value)
 import PlutusTx qualified as P
+import PlutusTx.AssocMap qualified as AssocMap
 import PlutusTx.Aux (unstableMakeIsData)
 import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
 import Test.QuickCheck (Arbitrary (arbitrary), chooseEnum, oneof, resize, sized)
+import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
 
 data TestData
   = Maybe (Maybe TestSum)
@@ -68,8 +71,8 @@ data TestSum
   | NTRecord TestNewtypeRecord
   | TwoFields TestTwoFields
   | --  | Set (Set Bool)
-    Map (Map String Bool)
-  | Unit ()
+    --    Map (Map String Bool)
+    Unit ()
   | MyUnit MyUnit
   | Pair (Bool, Double)
   | Triple (Bool, (), Integer)
@@ -98,8 +101,8 @@ instance Arbitrary TestSum where
       , NestedRecord <$> arbitrary
       , NT <$> arbitrary
       , NTRecord <$> arbitrary
-      , Map <$> arbitrary
-      , TwoFields <$> arbitrary
+      , --      , Map <$> arbitrary
+        TwoFields <$> arbitrary
       , pure $ Unit ()
       , Pair <$> arbitrary
       , Triple <$> arbitrary
@@ -270,7 +273,33 @@ instance Arbitrary ASum where
 unstableMakeIsData ''ARecord
 unstableMakeIsData ''ASum
 
+data TestPlutusData
+  = PdValue Value
+  | PdScriptContext ScriptContext
+  | PdInterval (Interval POSIXTime)
+  | PdDatum Datum
+  | PdMap (AssocMap.Map Integer Value)
+  deriving stock (Show, Eq, Generic)
+
+instance Arbitrary TestPlutusData where
+  arbitrary =
+    oneof
+      [ PdValue <$> arbitrary
+      , -- PdScriptContext <$> arbitrary
+        -- PdDatum <$> arbitrary
+        PdInterval <$> arbitrary
+      , PdMap <$> do
+          -- NOTE: Fails if not unique keys see https://github.com/ngua/cardano-serialization-lib/blob/8b7579084dd3eb401a14a3493aa2e91778d48b66/rust/src/plutus.rs#L901
+          (UniqueList keys) <- uniqueListOf 100
+          vals <- arbitrary
+          return (AssocMap.fromList (zip keys vals))
+      ]
+
+unstableMakeIsData ''TestPlutusData
+
+-- | IPC round trip protocol messages
 data RepType = RTJson | RTPlutusData deriving stock (Show, Eq, Generic)
+
 instance FromJSON RepType
 instance ToJSON RepType
 
@@ -290,26 +319,3 @@ response :: forall p. (String -> p) -> (String -> p) -> (String -> p) -> Respons
 response e _ _ (RespError err) = e err
 response _ js _ (RespSuccess RTJson payload) = js payload
 response _ _ pd (RespSuccess RTPlutusData payload) = pd payload
-
-data TestPlutusData
-  = PdMaybe (Maybe TestPlutusDataSum)
-  | PdEither (Either (Maybe Bool) (Maybe Bool))
-  deriving stock (Show, Eq, Generic)
-
-instance Arbitrary TestPlutusData where
-  arbitrary =
-    oneof
-      [ PdMaybe <$> arbitrary
-      , PdEither <$> arbitrary
-      ]
-
-data TestPlutusDataSum = A deriving stock (Show, Eq, Generic)
-
-instance Arbitrary TestPlutusDataSum where
-  arbitrary =
-    oneof
-      [ pure A
-      ]
-
-unstableMakeIsData ''TestPlutusData
-unstableMakeIsData ''TestPlutusDataSum

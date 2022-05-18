@@ -108,6 +108,11 @@ let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20211005/packages.dhall
         sha256:2ec351f17be14b3f6421fbba36f4f01d1681e5c7f46e0c981465c4cf222de5be
 
+let overrides =
+      { cardano-transaction-lib =
+          ../../../cardano-transaction-lib/spago.dhall as Location
+      }
+
 let additions =
       { cardano-transaction-lib =
         { dependencies =
@@ -175,7 +180,7 @@ let additions =
           , "variant"
           ]
         , repo = "https://github.com/plutonomicon/cardano-transaction-lib.git"
-        , version = "9cc8b10a9b5f49897ca3533f32f54f009f6b67a0"
+        , version = "e744b5e78d0d87d413bcca959e1b9a29771ee022"
         }
       , aeson =
         { dependencies =

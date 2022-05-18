@@ -18,6 +18,7 @@ import Language.PureScript.Bridge (
   argonaut,
   buildBridge,
   defaultBridge,
+  equal,
   genericShow,
   mkPlutusDataType,
   mkPlutusNewtype,
@@ -109,12 +110,19 @@ origToCtlNativePrimitivesBridge =
     <|> ctlBridgePart "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
     <|> ctlBridgePart "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
     <|> mapBridge
+    <|> intervalBridge
 
 mapBridge :: BridgePart
 mapBridge = do
   typeModule ^== "PlutusTx.AssocMap"
   typeName ^== "Map"
   TypeInfo "plutonomicon-cardano-transaction-lib" "Plutus.Types.AssocMap" "Map" <$> psTypeParameters
+
+intervalBridge :: BridgePart
+intervalBridge = do
+  typeModule ^== "Plutus.V1.Ledger.Interval"
+  typeName ^== "Interval"
+  TypeInfo "plutonomicon-cardano-transaction-lib" "Types.Interval" "Interval" <$> psTypeParameters
 
 origToCtlNativeOverriddenBridge :: BridgeBuilder PSType
 origToCtlNativeOverriddenBridge =
@@ -136,11 +144,15 @@ _overriddenTypes =
   , mkPlutusNewtype @Address
   , argonaut $ mkSumType @MintingPolicy
   , argonaut $ mkSumType @Validator
+  , unsafeMkPlutusDataType @(Interval A)
+  , unsafeMkPlutusDataType @(LowerBound A)
+  , unsafeMkPlutusDataType @(UpperBound A)
+  , mkPlutusDataType @(Extended A)
   ]
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  genericShow
+  equal . genericShow
     <$> [ order $ mkPlutusNewtype @AssetClass -- this might be a type synonym in the version of Plutus we're using at Cardax?
         , argonaut $ order $ unsafeMkPlutusDataType @TxId
         , unsafeMkPlutusDataType @TxOut
@@ -164,11 +176,7 @@ ledgerTypes =
         , unsafeMkPlutusDataType @ScriptContext
         , mkPlutusNewtype @LedgerBytes
         , mkPlutusNewtype @Ada
-        , unsafeMkPlutusDataType @(Interval A)
-        , unsafeMkPlutusDataType @(LowerBound A)
-        , unsafeMkPlutusDataType @(UpperBound A)
         , mkPlutusDataType @DCert
-        , mkPlutusDataType @(Extended A)
         , mkPlutusDataType @StakingCredential
         , mkPlutusDataType @Credential
         , mkPlutusDataType @ScriptPurpose
