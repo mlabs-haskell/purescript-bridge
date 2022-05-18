@@ -1,4 +1,4 @@
-{ src, system, pkgs, pkgs', easy-ps, inputs, extraSources }:
+{ src, system, pkgs, pkgs', easy-ps, extraSources }:
 pkgs'.haskell-nix.cabalProject' {
   inherit src;
   name = "purescript-bridge";

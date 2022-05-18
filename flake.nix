@@ -73,10 +73,9 @@
               ];
             }
           ]
-          ++ extraSources';
+          ++ extraSources'';
         haskellProject = import ./nix/haskell.nix {
           inherit src system pkgs pkgs' easy-ps extraSources;
-          inputs = inputs.bot-plutus-interface.inputs;
         };
         haskellFlake = haskellProject.flake { };
 

@@ -115,7 +115,9 @@ library
     , transformers
     , wl-pprint-text
 
-  ghc-options:      -Wall -fwarn-incomplete-patterns -Werror
+  ghc-options:
+    -ddump-minimal-imports -Wall -fwarn-incomplete-patterns -Werror
+
   hs-source-dirs:   src
   default-language: Haskell2010
 
@@ -124,10 +126,10 @@ test-suite tests
   type:             exitcode-stdio-1.0
   main-is:          Spec.hs
   other-modules:
+    ArbitraryLedger
     RoundTrip.Spec
     RoundTrip.Types
     TestData
-    ArbitraryLedger
 
   build-depends:
     , aeson
@@ -154,6 +156,7 @@ test-suite tests
 
   hs-source-dirs:   test
   default-language: Haskell2010
+  ghc-options:      -ddump-minimal-imports
 
 executable cli
   import:         common-lang
@@ -167,4 +170,4 @@ executable cli
   scope:          public
   hs-source-dirs: app
   main-is:        Main.hs
-  ghc-options:    -Wno-missing-home-modules
+  ghc-options:    -ddump-minimal-imports -Wno-missing-home-modules
