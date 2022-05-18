@@ -127,6 +127,7 @@ test-suite tests
     RoundTrip.Spec
     RoundTrip.Types
     TestData
+    ArbitraryLedger
 
   build-depends:
     , aeson
