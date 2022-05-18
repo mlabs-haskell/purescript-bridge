@@ -145,6 +145,7 @@ test-suite tests
     , process
     , purescript-bridge
     , QuickCheck
+    , quickcheck-plutus-instances
     , serialise
     , text
     , utf8-string

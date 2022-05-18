@@ -1361,6 +1361,22 @@
         "type": "github"
       }
     },
+    "plutus-extra": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1652734564,
+        "narHash": "sha256-r7ODYQthOv1j8yjXTGplgoOB00O7TOnm6AZE1IdKBnU=",
+        "owner": "Liqwid-Labs",
+        "repo": "plutus-extra",
+        "rev": "ad7e07b4c9bd223bb95ec565bb4f5191b3d3b73c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Liqwid-Labs",
+        "repo": "plutus-extra",
+        "type": "github"
+      }
+    },
     "purescript-bridge": {
       "flake": false,
       "locked": {
@@ -1385,6 +1401,7 @@
         "flake-utils": "flake-utils_3",
         "haskell-nix": "haskell-nix_2",
         "iohk-nix": "iohk-nix_2",
+        "plutus-extra": "plutus-extra",
         "servant-purescript": "servant-purescript_2"
       }
     },

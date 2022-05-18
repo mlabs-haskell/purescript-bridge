@@ -24,6 +24,11 @@
       flake = false;
     };
 
+    plutus-extra = {
+      url = "github:Liqwid-Labs/plutus-extra";
+      flake = false;
+    };
+
   };
 
   outputs = inputs@{ self, flake-utils, haskell-nix, ... }:
@@ -58,10 +63,20 @@
             then { src = inputs.servant-purescript; subdirs = e.subdirs; }
             else e)
           extraSources';
+
+        extraSources =
+          [
+            {
+              src = inputs.plutus-extra;
+              subdirs = [
+                "quickcheck-plutus-instances"
+              ];
+            }
+          ]
+          ++ extraSources';
         haskellProject = import ./nix/haskell.nix {
-          inherit src system pkgs pkgs' easy-ps;
+          inherit src system pkgs pkgs' easy-ps extraSources;
           inputs = inputs.bot-plutus-interface.inputs;
-          extraSources = extraSources'';
         };
         haskellFlake = haskellProject.flake { };
 

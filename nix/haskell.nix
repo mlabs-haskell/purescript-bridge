@@ -87,7 +87,7 @@ pkgs'.haskell-nix.cabalProject' {
     ];
 
     # Add here so `cabal build` can find them
-    additional = ps: [ ps.plutus-tx ps.plutus-ledger-api ];
+    additional = ps: [ ps.plutus-tx ps.plutus-ledger-api ps.quickcheck-plutus-instances ];
 
     tools = { haskell-language-server = "latest"; };
 
