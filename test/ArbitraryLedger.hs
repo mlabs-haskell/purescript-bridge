@@ -270,6 +270,81 @@ weq = go `on` from
     eq :: forall (a :: Type). WEq a => I a -> I a -> K Bool a
     eq (I a) (I b) = K (a @== b)
 
+-- this is basically a  Traversal over the list of tuples wrapped by a PlutusData Map constructor.
+-- the idea is that, since I couldn't figure out how to write a non-broken arbitrary instance
+-- (because we already have/need that broken instance in scope everywhere), we're going to use this class
+-- + SOP generics to to rip apart generated instances and fix the maps using fixMap
+class FixMap a where
+  fixMap :: forall f. Monad f => ([(P.Data, P.Data)] -> f [(P.Data, P.Data)]) -> a -> f a
+
+-- these are the "primitive" instances. some of these are functionally equivalent to 'pure'
+-- (sorry kmett, no laws in this type class) but we need them as starter instances so we can
+-- traverse types built up from them generically
+instance FixMap P.Data where
+  fixMap f = \case
+    P.Constr i ds -> P.Constr i <$> traverse g ds
+    P.Map ds -> P.Map <$> (traverse h ds >>= f)
+    P.List ds -> P.List <$> traverse g ds
+    other -> pure other
+    where
+      g = fixMap f
+      h (a, b) = (,) <$> g a <*> g b
+
+instance FixMap (PMap.Map k v) where
+  fixMap _ = pure
+
+instance FixMap PI.BuiltinByteString where
+  fixMap _ = pure
+
+instance (FixMap a, FixMap b) => FixMap (a, b) where
+  fixMap f (a, b) = (,) <$> fixMap f a <*> fixMap f b
+
+instance (FixMap a) => FixMap [a] where
+  fixMap f = traverse (fixMap f)
+
+instance FixMap PI.BuiltinData where
+  fixMap f (PI.BuiltinData d) = PI.BuiltinData <$> fixMap f d
+
+instance FixMap Datum where
+  fixMap f (Datum d) = Datum <$> fixMap f d
+
+instance FixMap Integer where
+  fixMap _ i = pure i
+
+-- this is incoherent because we want it to be the "last choice". morally abhorrent but practically necessary
+-- i feel like this is actually a cool trick?
+instance {-# INCOHERENT #-} (Generic a, All2 FixMap (Code a)) => FixMap a where
+  fixMap = gfixMap
+
+-- if every element in the SOP representation of a type has a FixMap instance, the whole type does
+-- (every ledger type we bridge with a generic instance below should satisfy that, as should every type built from
+-- those types provided any intermediary types also satisfy that constraint)
+gfixMap :: forall a m. (Generic a, All2 FixMap (Code a), Monad m) => ([(P.Data, P.Data)] -> m [(P.Data, P.Data)]) -> a -> m a
+gfixMap f = fmap to . go . from
+  where
+    go :: forall xss. (All2 FixMap xss, All SListI xss) => SOP I xss -> m (SOP I xss)
+    go = hctraverse' (Proxy @FixMap) g
+      where
+        g :: forall (b :: Type). FixMap b => I b -> m (I b)
+        g (I b) = I <$> fixMap f b
+
+-- dumb newtype wrapper to generate orderly arbitrary AssocMap instances
+newtype AssocMap = AssocMap {unMap :: PMap.Map Integer Value}
+
+instance Arbitrary AssocMap where
+  arbitrary =
+    AssocMap <$> do
+      (UniqueList keys) <- uniqueListOf 25
+      (PMap.fromList . zip keys) <$> arbitrary
+
+-- replace every argument to a Map constructor with the ToData'd contents of an arbitrarily generated AssocMap instance
+-- if you want to generate maps some other way, you can write a function with this type signature and use it w/ fixmap to modify every
+-- occurrence of a plutus data Map constructor in a given type (and all of the types it contains, recursively)
+reMap :: [(P.Data, P.Data)] -> Gen [(P.Data, P.Data)]
+reMap _ = do
+  aMap <- unMap <$> arbitrary @AssocMap
+  pure . map (bimap P.toData P.toData) . PMap.toList $ aMap
+
 instance Generic (Interval a)
 instance Generic POSIXTime
 instance Generic ScriptContext
@@ -304,64 +379,5 @@ instance Generic TxId
 instance Generic AssetClass
 instance Generic CurrencySymbol
 instance Generic TokenName
-
-class FixMap a where
-  fixMap :: forall f. Monad f => ([(P.Data, P.Data)] -> f [(P.Data, P.Data)]) -> a -> f a
-
-instance FixMap P.Data where
-  fixMap f = \case
-    P.Constr i ds -> P.Constr i <$> traverse g ds
-    P.Map ds -> P.Map <$> (traverse h ds >>= f)
-    P.List ds -> P.List <$> traverse g ds
-    other -> pure other
-    where
-      g = fixMap f
-      h (a, b) = (,) <$> g a <*> g b
-
-instance FixMap (PMap.Map k v) where
-  fixMap _ = pure
-
-instance FixMap PI.BuiltinByteString where
-  fixMap _ = pure
-
-instance (FixMap a, FixMap b) => FixMap (a, b) where
-  fixMap f (a, b) = (,) <$> fixMap f a <*> fixMap f b
-
-instance (FixMap a) => FixMap [a] where
-  fixMap f = traverse (fixMap f)
-
-instance FixMap PI.BuiltinData where
-  fixMap f (PI.BuiltinData d) = PI.BuiltinData <$> fixMap f d
-
-instance FixMap Datum where
-  fixMap f (Datum d) = Datum <$> fixMap f d
-
-instance FixMap Integer where
-  fixMap _ i = pure i
-
-instance {-# INCOHERENT #-} (Generic a, All2 FixMap (Code a)) => FixMap a where
-  fixMap = gfixMap
-
-gfixMap :: forall a m. (Generic a, All2 FixMap (Code a), Monad m) => ([(P.Data, P.Data)] -> m [(P.Data, P.Data)]) -> a -> m a
-gfixMap f = fmap to . go . from
-  where
-    go :: forall xss. (All2 FixMap xss, All SListI xss) => SOP I xss -> m (SOP I xss)
-    go = hctraverse' (Proxy @FixMap) g
-      where
-        g :: forall (b :: Type). FixMap b => I b -> m (I b)
-        g (I b) = I <$> fixMap f b
-
-newtype AssocMap = AssocMap {unMap :: PMap.Map Integer Value}
-
-instance Arbitrary AssocMap where
-  arbitrary =
-    AssocMap <$> do
-      (UniqueList keys) <- uniqueListOf 25
-      (PMap.fromList . zip keys) <$> arbitrary
-
-reMap :: [(P.Data, P.Data)] -> Gen [(P.Data, P.Data)]
-reMap _ = do
-  aMap <- unMap <$> arbitrary @AssocMap
-  pure . map (bimap P.toData P.toData) . PMap.toList $ aMap
 
 unstableMakeIsData ''ALedgerType
