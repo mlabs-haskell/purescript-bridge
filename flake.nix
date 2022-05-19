@@ -24,11 +24,7 @@
       flake = false;
     };
 
-    plutus-extra = {
-      url = "github:Liqwid-Labs/plutus-extra";
-      flake = false;
-    };
-
+    plutus-extra.url = "github:Liqwid-Labs/plutus-extra";
   };
 
   outputs = inputs@{ self, flake-utils, haskell-nix, ... }:

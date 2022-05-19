@@ -6,8 +6,6 @@
 
 module ArbitraryLedger (ALedgerType (..), WEq ((@==)), FixMap (fixMap), reMap) where
 
--- Ledger type imports
-
 import Data.Bifunctor (bimap)
 import Data.Function (on)
 import Data.Kind (Type)
@@ -50,7 +48,6 @@ import Test.QuickCheck (Arbitrary (arbitrary), Gen, oneof)
 import Test.QuickCheck.Plutus.Instances ()
 import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
 
-
 arbitrary' :: forall a. (FixMap a, Arbitrary a) => Gen a
 arbitrary' = fixMap reMap =<< arbitrary
 
@@ -71,17 +68,19 @@ instance Arbitrary ScriptContext where
 
 instance Arbitrary TxInfo where
   arbitrary =
-    fixMap reMap =<< (TxInfo
-      <$> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary)
+    fixMap reMap
+      =<< ( TxInfo
+              <$> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+              <*> arbitrary
+          )
 
 instance Arbitrary TxInInfo where
   arbitrary = TxInInfo <$> arbitrary' <*> arbitrary'
@@ -109,14 +108,14 @@ instance Arbitrary a => Arbitrary (Extended a) where
       , pure PosInf
       ]
 
-instance Arbitrary a =>  Arbitrary (LowerBound a) where
-  arbitrary =  (LowerBound <$> arbitrary <*> arbitrary)
+instance Arbitrary a => Arbitrary (LowerBound a) where
+  arbitrary = (LowerBound <$> arbitrary <*> arbitrary)
 
 instance Arbitrary a => Arbitrary (UpperBound a) where
-  arbitrary =  (UpperBound <$> arbitrary <*> arbitrary)
+  arbitrary = (UpperBound <$> arbitrary <*> arbitrary)
 
 instance Arbitrary a => Arbitrary (Interval a) where
-  arbitrary =  (Interval <$> arbitrary <*> arbitrary)
+  arbitrary = (Interval <$> arbitrary <*> arbitrary)
 
 instance Arbitrary Redeemer where
   arbitrary = Redeemer <$> arbitrary'
@@ -213,7 +212,6 @@ instance Arbitrary ALedgerType where
       , AValue <$> arbitrary
       ]
 
--- NOTE: seed = 1322691774
 class WEq a where
   (@==) :: a -> a -> Bool
 
@@ -223,12 +221,11 @@ instance WEq Integer where
 instance WEq PI.BuiltinByteString where
   (@==) = (==)
 
---AssocMap
 instance (Eq v, Ord k) => WEq (PMap.Map k v) where
   m1 @== m2 = m1' == m2'
     where
-      m1' = M.fromList $ PMap.toList m1
-      m2' = M.fromList $ PMap.toList m2
+      m1' = M.fromList . PMap.toList $ m1
+      m2' = M.fromList . PMap.toList $ m2
 
 normalize :: P.Data -> P.Data
 normalize d = case d of
@@ -254,12 +251,14 @@ instance (WEq a) => WEq [a] where
   (x : xs) @== (y : ys) = (x @== y) && xs @== ys
   _ @== _ = False
 
--- NOTE: If you derive SOP.Generic for a type (derive GHC.Generic then 'instance Generic MyType') which a SOP representation
--- such that all sums + products contain types with a WEq instance, that type will automatically be an instance of WEq as well
+-- NOTE: If you derive SOP.Generic for a type (derive GHC.Generic then 'instance
+-- Generic MyType') which a SOP representation such that all sums + products
+-- contain types with a WEq instance, that type will automatically be an
+-- instance of WEq as well.
 instance {-# INCOHERENT #-} (Generic a, All2 WEq (Code a)) => WEq a where
   a @== b = weq a b
 
--- adapted from basic-sop
+-- Adapted from basic-sop.
 weq :: (Generic a, All2 WEq (Code a)) => a -> a -> Bool
 weq = go `on` from
   where
@@ -274,23 +273,25 @@ weq = go `on` from
     eq :: forall (a :: Type). WEq a => I a -> I a -> K Bool a
     eq (I a) (I b) = K (a @== b)
 
--- this is basically a  Traversal over the list of tuples wrapped by a PlutusData Map constructor.
--- the idea is that, since I couldn't figure out how to write a non-broken arbitrary instance
--- (because we already have/need that broken instance in scope everywhere), we're going to use this class
--- + SOP generics to to rip apart generated instances and fix the maps using fixMap
+-- This is basically a Traversal over the list of tuples wrapped by a PlutusData
+-- Map constructor. the idea is that, since I couldn't figure out how to write a
+-- non-broken arbitrary instance (because we already have/need that broken
+-- instance in scope everywhere), we're going to use this class + SOP generics
+-- to to rip apart generated instances and fix the maps using fixMap.
 class FixMap a where
   fixMap :: forall f. Monad f => ([(P.Data, P.Data)] -> f [(P.Data, P.Data)]) -> a -> f a
 
--- these are the "primitive" instances. some of these are functionally equivalent to 'pure'
--- (sorry kmett, no laws in this type class) but we need them as starter instances so we can
--- traverse types built up from them generically
+-- These are the "primitive" instances. some of these are functionally
+-- equivalent to 'pure' (sorry kmett, no laws in this type class) but we need
+-- them as starter instances so we can traverse types built up from them
+-- generically.
 instance FixMap P.Data where
   fixMap f = \case
     P.Constr i ds -> P.Constr i <$> traverse g ds
-    P.Map ds -> P.Map <$> (traverse h  ds >>= f)
+    P.Map ds -> P.Map <$> (traverse h ds >>= f)
     P.List ds -> P.List <$> traverse g ds
-    -- maye this will chop things down to size?
-    P.B bs -> pure $ P.B  bs
+    -- maybe this will chop things down to size?
+    P.B bs -> pure $ P.B bs
     other -> pure other
     where
       g = fixMap f
@@ -317,14 +318,16 @@ instance FixMap Datum where
 instance FixMap Integer where
   fixMap _ i = pure i
 
--- this is incoherent because we want it to be the "last choice". morally abhorrent but practically necessary
--- i feel like this is actually a cool trick?
+-- This is incoherent because we want it to be the "last choice". morally
+-- abhorrent but practically necessary i feel like this is actually a cool
+-- trick?
 instance {-# INCOHERENT #-} (Generic a, All2 FixMap (Code a)) => FixMap a where
   fixMap = gfixMap
 
--- if every element in the SOP representation of a type has a FixMap instance, the whole type does
--- (every ledger type we bridge with a generic instance below should satisfy that, as should every type built from
--- those types provided any intermediary types also satisfy that constraint)
+-- If every element in the SOP representation of a type has a FixMap instance,
+-- the whole type does (every ledger type we bridge with a generic instance
+-- below should satisfy that, as should every type built from those types
+-- provided any intermediary types also satisfy that constraint).
 gfixMap :: forall a m. (Generic a, All2 FixMap (Code a), Monad m) => ([(P.Data, P.Data)] -> m [(P.Data, P.Data)]) -> a -> m a
 gfixMap f = fmap to . go . from
   where
@@ -334,7 +337,7 @@ gfixMap f = fmap to . go . from
         g :: forall (b :: Type). FixMap b => I b -> m (I b)
         g (I b) = I <$> fixMap f b
 
--- dumb newtype wrapper to generate orderly arbitrary AssocMap instances
+-- Dumb newtype wrapper to generate orderly arbitrary AssocMap instances.
 newtype AssocMap = AssocMap {unMap :: PMap.Map Integer Value}
 
 instance Arbitrary AssocMap where
@@ -343,9 +346,11 @@ instance Arbitrary AssocMap where
       (UniqueList keys) <- uniqueListOf 50
       PMap.fromList . zip keys <$> arbitrary
 
--- replace every argument to a Map constructor with the ToData'd contents of an arbitrarily generated AssocMap instance
--- if you want to generate maps some other way, you can write a function with this type signature and use it w/ fixmap to modify every
--- occurrence of a plutus data Map constructor in a given type (and all of the types it contains, recursively)
+-- Replace every argument to a Map constructor with the ToData'd contents of an
+-- arbitrarily generated AssocMap instance if you want to generate maps some
+-- other way, you can write a function with this type signature and use it w/
+-- fixmap to modify every occurrence of a plutus data Map constructor in a given
+-- type (and all of the types it contains, recursively)
 reMap :: [(P.Data, P.Data)] -> Gen [(P.Data, P.Data)]
 reMap _ = do
   aMap <- unMap <$> arbitrary @AssocMap
