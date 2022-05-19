@@ -1,9 +1,10 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module ArbitraryLedger (ALedgerType (..), WEq ((@==))) where
+module ArbitraryLedger (ALedgerType (..), WEq ((@==)), FixMap (fixMap), reMap) where
 
 -- Ledger type imports
 
@@ -13,7 +14,7 @@ import Data.Kind (Type)
 import Data.List (sort)
 import Data.Map qualified as M
 import GHC.Generics qualified as GHC
-import Generics.SOP (All, All2, Code, Generic, I (I), K (K), NS (S, Z), Proxy (Proxy), SListI, SOP (SOP), from, hcliftA2, hcollapse)
+import Generics.SOP (All, All2, Code, Generic, I (I), K (K), NS (S, Z), Proxy (Proxy), SListI, SOP (SOP), from, hcliftA2, hcollapse, hctraverse', to)
 import Plutus.V1.Ledger.Ada (Ada (Lovelace))
 import Plutus.V1.Ledger.Address (Address)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
@@ -45,8 +46,9 @@ import PlutusTx (unstableMakeIsData)
 import PlutusTx qualified as P
 import PlutusTx.AssocMap qualified as PMap
 import PlutusTx.Builtins.Internal qualified as PI
-import Test.QuickCheck (Arbitrary (arbitrary), oneof)
+import Test.QuickCheck (Arbitrary (arbitrary), Gen, oneof)
 import Test.QuickCheck.Plutus.Instances ()
+import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
 
 instance Arbitrary Ada where
   arbitrary = Lovelace <$> arbitrary
@@ -302,5 +304,64 @@ instance Generic TxId
 instance Generic AssetClass
 instance Generic CurrencySymbol
 instance Generic TokenName
+
+class FixMap a where
+  fixMap :: forall f. Monad f => ([(P.Data, P.Data)] -> f [(P.Data, P.Data)]) -> a -> f a
+
+instance FixMap P.Data where
+  fixMap f = \case
+    P.Constr i ds -> P.Constr i <$> traverse g ds
+    P.Map ds -> P.Map <$> (traverse h ds >>= f)
+    P.List ds -> P.List <$> traverse g ds
+    other -> pure other
+    where
+      g = fixMap f
+      h (a, b) = (,) <$> g a <*> g b
+
+instance FixMap (PMap.Map k v) where
+  fixMap _ = pure
+
+instance FixMap PI.BuiltinByteString where
+  fixMap _ = pure
+
+instance (FixMap a, FixMap b) => FixMap (a, b) where
+  fixMap f (a, b) = (,) <$> fixMap f a <*> fixMap f b
+
+instance (FixMap a) => FixMap [a] where
+  fixMap f = traverse (fixMap f)
+
+instance FixMap PI.BuiltinData where
+  fixMap f (PI.BuiltinData d) = PI.BuiltinData <$> fixMap f d
+
+instance FixMap Datum where
+  fixMap f (Datum d) = Datum <$> fixMap f d
+
+instance FixMap Integer where
+  fixMap _ i = pure i
+
+instance {-# INCOHERENT #-} (Generic a, All2 FixMap (Code a)) => FixMap a where
+  fixMap = gfixMap
+
+gfixMap :: forall a m. (Generic a, All2 FixMap (Code a), Monad m) => ([(P.Data, P.Data)] -> m [(P.Data, P.Data)]) -> a -> m a
+gfixMap f = fmap to . go . from
+  where
+    go :: forall xss. (All2 FixMap xss, All SListI xss) => SOP I xss -> m (SOP I xss)
+    go = hctraverse' (Proxy @FixMap) g
+      where
+        g :: forall (b :: Type). FixMap b => I b -> m (I b)
+        g (I b) = I <$> fixMap f b
+
+newtype AssocMap = AssocMap {unMap :: PMap.Map Integer Value}
+
+instance Arbitrary AssocMap where
+  arbitrary =
+    AssocMap <$> do
+      (UniqueList keys) <- uniqueListOf 25
+      (PMap.fromList . zip keys) <$> arbitrary
+
+reMap :: [(P.Data, P.Data)] -> Gen [(P.Data, P.Data)]
+reMap _ = do
+  aMap <- unMap <$> arbitrary @AssocMap
+  pure . map (bimap P.toData P.toData) . PMap.toList $ aMap
 
 unstableMakeIsData ''ALedgerType

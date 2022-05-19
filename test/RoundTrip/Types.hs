@@ -28,7 +28,7 @@ module RoundTrip.Types (
   TestPlutusData (..),
 ) where
 
-import ArbitraryLedger ()
+import ArbitraryLedger (FixMap (fixMap), reMap)
 import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
 import Generics.SOP qualified as SOP
@@ -286,16 +286,17 @@ instance SOP.Generic TestPlutusData
 
 instance Arbitrary TestPlutusData where
   arbitrary =
-    oneof
-      [ PdValue <$> arbitrary
-      , PdScriptContext <$> arbitrary
-      , PdDatum <$> arbitrary
-      , PdInterval <$> arbitrary
-      , PdMap <$> do
-          -- NOTE: Fails if not unique keys see https://github.com/ngua/cardano-serialization-lib/blob/8b7579084dd3eb401a14a3493aa2e91778d48b66/rust/src/plutus.rs#L901
-          (UniqueList keys) <- uniqueListOf 100
-          (AssocMap.fromList (zip keys vals)) <$> arbitrary
-      ]
+    fixMap reMap
+      =<< oneof
+        [ PdValue <$> arbitrary
+        , PdScriptContext <$> arbitrary
+        , PdDatum <$> arbitrary
+        , PdInterval <$> arbitrary
+        , PdMap <$> do
+            -- NOTE: Fails if not unique keys see https://github.com/ngua/cardano-serialization-lib/blob/8b7579084dd3eb401a14a3493aa2e91778d48b66/rust/src/plutus.rs#L901
+            (UniqueList keys) <- uniqueListOf 100
+            (AssocMap.fromList . zip keys) <$> arbitrary
+        ]
 
 unstableMakeIsData ''TestPlutusData
 
