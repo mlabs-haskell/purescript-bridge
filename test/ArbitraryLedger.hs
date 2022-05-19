@@ -50,8 +50,12 @@ import Test.QuickCheck (Arbitrary (arbitrary), Gen, oneof)
 import Test.QuickCheck.Plutus.Instances ()
 import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
 
+
+arbitrary' :: forall a. (FixMap a, Arbitrary a) => Gen a
+arbitrary' = fixMap reMap =<< arbitrary
+
 instance Arbitrary Ada where
-  arbitrary = Lovelace <$> arbitrary
+  arbitrary = Lovelace <$> arbitrary'
 
 instance Arbitrary ScriptPurpose where
   arbitrary =
@@ -67,7 +71,7 @@ instance Arbitrary ScriptContext where
 
 instance Arbitrary TxInfo where
   arbitrary =
-    TxInfo
+    fixMap reMap =<< (TxInfo
       <$> arbitrary
       <*> arbitrary
       <*> arbitrary
@@ -77,13 +81,13 @@ instance Arbitrary TxInfo where
       <*> arbitrary
       <*> arbitrary
       <*> arbitrary
-      <*> arbitrary
+      <*> arbitrary)
 
 instance Arbitrary TxInInfo where
-  arbitrary = TxInInfo <$> arbitrary <*> arbitrary
+  arbitrary = TxInInfo <$> arbitrary' <*> arbitrary'
 
 instance Arbitrary PrivateKey where
-  arbitrary = PrivateKey <$> arbitrary
+  arbitrary = PrivateKey <$> arbitrary'
 
 instance Arbitrary DCert where
   arbitrary =
@@ -105,17 +109,17 @@ instance Arbitrary a => Arbitrary (Extended a) where
       , pure PosInf
       ]
 
-instance Arbitrary a => Arbitrary (LowerBound a) where
-  arbitrary = LowerBound <$> arbitrary <*> arbitrary
+instance Arbitrary a =>  Arbitrary (LowerBound a) where
+  arbitrary =  (LowerBound <$> arbitrary <*> arbitrary)
 
 instance Arbitrary a => Arbitrary (UpperBound a) where
-  arbitrary = UpperBound <$> arbitrary <*> arbitrary
+  arbitrary =  (UpperBound <$> arbitrary <*> arbitrary)
 
 instance Arbitrary a => Arbitrary (Interval a) where
-  arbitrary = Interval <$> arbitrary <*> arbitrary
+  arbitrary =  (Interval <$> arbitrary <*> arbitrary)
 
 instance Arbitrary Redeemer where
-  arbitrary = Redeemer <$> arbitrary
+  arbitrary = Redeemer <$> arbitrary'
 
 instance Arbitrary MintingPolicyHash where
   arbitrary = MintingPolicyHash <$> arbitrary
@@ -283,8 +287,10 @@ class FixMap a where
 instance FixMap P.Data where
   fixMap f = \case
     P.Constr i ds -> P.Constr i <$> traverse g ds
-    P.Map ds -> P.Map <$> (traverse h ds >>= f)
+    P.Map ds -> P.Map <$> (traverse h  ds >>= f)
     P.List ds -> P.List <$> traverse g ds
+    -- maye this will chop things down to size?
+    P.B bs -> pure $ P.B  bs
     other -> pure other
     where
       g = fixMap f
@@ -334,8 +340,8 @@ newtype AssocMap = AssocMap {unMap :: PMap.Map Integer Value}
 instance Arbitrary AssocMap where
   arbitrary =
     AssocMap <$> do
-      (UniqueList keys) <- uniqueListOf 25
-      (PMap.fromList . zip keys) <$> arbitrary
+      (UniqueList keys) <- uniqueListOf 50
+      PMap.fromList . zip keys <$> arbitrary
 
 -- replace every argument to a Map constructor with the ToData'd contents of an arbitrarily generated AssocMap instance
 -- if you want to generate maps some other way, you can write a function with this type signature and use it w/ fixmap to modify every

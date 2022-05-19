@@ -83,7 +83,7 @@ class Equality (c :: Type -> Constraint) where
 instance Equality Eq where
   equals = (==)
 
-instance Equality (WEq) where
+instance Equality WEq where
   equals = (@==)
 
 assertEqualWith ::
@@ -96,7 +96,7 @@ assertEqualWith ::
   Assertion
 assertEqualWith fmt preface expected actual =
   unless (equals @c actual expected) $ do
-    (prefaceMsg `deepseq` expectedMsg `deepseq` actualMsg `deepseq` E.throwIO (HUnitFailure location $ ExpectedButGot prefaceMsg expectedMsg actualMsg))
+    prefaceMsg `deepseq` expectedMsg `deepseq` actualMsg `deepseq` E.throwIO (HUnitFailure location $ ExpectedButGot prefaceMsg expectedMsg actualMsg)
   where
     prefaceMsg
       | null preface = Nothing
@@ -113,47 +113,6 @@ location = case reverse callStack of
   (_, loc) : _ -> Just loc
   [] -> Nothing
 
-{-
-assertEqual' ::
-  HasCallStack =>
-  (WEq a, Show a) =>
-  -- | The message prefix
-  String ->
-  -- | The expected value
-  a ->
-  -- | The actual value
-  a ->
-  Assertion
-assertEqual' preface expected actual =
-  unless (actual @== expected) $ do
-    (prefaceMsg `deepseq` expectedMsg `deepseq` actualMsg `deepseq` E.throwIO (HUnitFailure location $ ExpectedButGot prefaceMsg expectedMsg actualMsg))
-  where
-    prefaceMsg
-      | null preface = Nothing
-      | otherwise = Just preface
-    expectedMsg = prettyShow expected
-    actualMsg = prettyShow actual
-
-assertEqual'' ::
-  HasCallStack =>
-  (Eq a, Show a) =>
-  -- | The message prefix
-  String ->
-  -- | The expected value
-  a ->
-  -- | The actual value
-  a ->
-  Assertion
-assertEqual'' preface expected actual =
-  unless (actual == expected) $ do
-    (prefaceMsg `deepseq` expectedMsg `deepseq` actualMsg `deepseq` E.throwIO (HUnitFailure location $ ExpectedButGot prefaceMsg expectedMsg actualMsg))
-  where
-    prefaceMsg
-      | null preface = Nothing
-      | otherwise = Just preface
-    expectedMsg = prettyShow expected
-    actualMsg = prettyShow actual
--}
 spec :: Spec
 spec = describe "Round trip tests (Purescript <-> Haskell)" roundTripSpec
 
