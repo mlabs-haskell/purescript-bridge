@@ -1,14 +1,15 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+
 module RoundTrip.Spec (spec) where
 
 -- (assertEqual, assertBool, assertFailure, Assertion)
 
-import ArbitraryLedger (WEq((@==)))
+import ArbitraryLedger (WEq ((@==)))
 import Codec.Serialise qualified as Cbor
 import Control.DeepSeq (deepseq)
 import Control.Exception qualified as E
@@ -17,10 +18,10 @@ import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Lazy (fromStrict, toStrict)
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
-import Data.CallStack (HasCallStack,SrcLoc, callStack)
+import Data.CallStack (HasCallStack, SrcLoc, callStack)
+import Data.Kind (Constraint, Type)
 import Data.List (isInfixOf)
 import Data.Text.Lazy qualified as T
-import Data.Kind (Constraint,Type)
 import Language.PureScript.Bridge.SumType (
   SumType,
   argonaut,
@@ -68,8 +69,8 @@ import System.Process (
   runInteractiveCommand,
   terminateProcess,
  )
-import Test.HUnit (Assertion,assertEqual,assertFailure,)
-import Test.HUnit.Lang (HUnitFailure(HUnitFailure),FailureReason(ExpectedButGot))
+import Test.HUnit (Assertion, assertEqual, assertFailure)
+import Test.HUnit.Lang (FailureReason (ExpectedButGot), HUnitFailure (HUnitFailure))
 import Test.Hspec (Spec, beforeAll, describe, it)
 import Test.QuickCheck.Property (Testable (property))
 import Text.Pretty.Simple (pShow)
@@ -85,13 +86,14 @@ instance Equality Eq where
 instance Equality (WEq) where
   equals = (@==)
 
-assertEqualWith :: forall (c :: Type -> Constraint) (a :: Type)
-                 . (Equality c, c a, Show a)
-                => PrinterFormat
-                -> String
-                -> a
-                -> a
-                -> Assertion
+assertEqualWith ::
+  forall (c :: Type -> Constraint) (a :: Type).
+  (Equality c, c a, Show a) =>
+  PrinterFormat ->
+  String ->
+  a ->
+  a ->
+  Assertion
 assertEqualWith fmt preface expected actual =
   unless (equals @c actual expected) $ do
     (prefaceMsg `deepseq` expectedMsg `deepseq` actualMsg `deepseq` E.throwIO (HUnitFailure location $ ExpectedButGot prefaceMsg expectedMsg actualMsg))
@@ -99,7 +101,7 @@ assertEqualWith fmt preface expected actual =
     prefaceMsg
       | null preface = Nothing
       | otherwise = Just preface
-    formatShow = \x -> case fmt of {Pretty -> prettyShow x; Ugly -> show x}
+    formatShow = \x -> case fmt of Pretty -> prettyShow x; Ugly -> show x
     expectedMsg = formatShow expected
     actualMsg = formatShow actual
 
@@ -110,6 +112,7 @@ location :: HasCallStack => Maybe SrcLoc
 location = case reverse callStack of
   (_, loc) : _ -> Just loc
   [] -> Nothing
+
 {-
 assertEqual' ::
   HasCallStack =>
@@ -179,7 +182,8 @@ roundTripSpec = do
                   return
                   (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
                   resp
-              assertEqualWith @Eq Pretty
+              assertEqualWith @Eq
+                Pretty
                 "hs> Round trip for payload should be ok"
                 (Right testData)
                 (eitherDecode @TestData (fromString jsonResp))
@@ -208,7 +212,8 @@ roundTripSpec = do
                   (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
                   return
                   (Cbor.deserialiseOrFail cbor)
-              assertEqualWith @WEq Pretty
+              assertEqualWith @WEq
+                Pretty
                 "hs> Round trip for payload should be ok"
                 (Just testPlutusData)
                 (fromData @TestPlutusData pd)

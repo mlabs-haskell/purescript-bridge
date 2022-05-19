@@ -13,7 +13,7 @@ import Data.Kind (Type)
 import Data.List (sort)
 import Data.Map qualified as M
 import GHC.Generics qualified as GHC
-import Generics.SOP (Generic,SOP(SOP),NS(S,Z),I(I),K(K),SListI,All,All2,Code,Proxy(Proxy),from,hcollapse,hcliftA2)
+import Generics.SOP (All, All2, Code, Generic, I (I), K (K), NS (S, Z), Proxy (Proxy), SListI, SOP (SOP), from, hcliftA2, hcollapse)
 import Plutus.V1.Ledger.Ada (Ada (Lovelace))
 import Plutus.V1.Ledger.Address (Address)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)

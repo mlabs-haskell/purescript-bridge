@@ -31,6 +31,7 @@ module RoundTrip.Types (
 import ArbitraryLedger ()
 import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
+import Generics.SOP qualified as SOP
 import Plutus.V1.Ledger.Api (Datum, Interval, POSIXTime, ScriptContext)
 import Plutus.V1.Ledger.Value (Value)
 import PlutusTx qualified as P
@@ -39,7 +40,7 @@ import PlutusTx.Aux (unstableMakeIsData)
 import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
 import Test.QuickCheck (Arbitrary (arbitrary), chooseEnum, oneof, resize, sized)
 import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
-import Generics.SOP qualified as SOP
+
 data TestData
   = Maybe (Maybe TestSum)
   | Either (Either (Maybe Bool) (Maybe Bool))
@@ -274,11 +275,11 @@ unstableMakeIsData ''ARecord
 unstableMakeIsData ''ASum
 
 data TestPlutusData
-  =  PdValue Value
-   | PdScriptContext ScriptContext
-   | PdInterval (Interval POSIXTime)
-   | PdDatum Datum
-   | PdMap (AssocMap.Map Integer Value)
+  = PdValue Value
+  | PdScriptContext ScriptContext
+  | PdInterval (Interval POSIXTime)
+  | PdDatum Datum
+  | PdMap (AssocMap.Map Integer Value)
   deriving stock (Show, Eq, Generic)
 
 instance SOP.Generic TestPlutusData
@@ -293,8 +294,7 @@ instance Arbitrary TestPlutusData where
       , PdMap <$> do
           -- NOTE: Fails if not unique keys see https://github.com/ngua/cardano-serialization-lib/blob/8b7579084dd3eb401a14a3493aa2e91778d48b66/rust/src/plutus.rs#L901
           (UniqueList keys) <- uniqueListOf 100
-          vals <- arbitrary
-          return (AssocMap.fromList (zip keys vals))
+          (AssocMap.fromList (zip keys vals)) <$> arbitrary
       ]
 
 unstableMakeIsData ''TestPlutusData
