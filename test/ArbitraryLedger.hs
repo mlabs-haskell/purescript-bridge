@@ -69,18 +69,17 @@ instance Arbitrary ScriptContext where
 instance Arbitrary TxInfo where
   arbitrary =
     fixMap reMap
-      =<< ( TxInfo
-              <$> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-              <*> arbitrary
-          )
+      =<< TxInfo
+        <$> arbitrary
+        <*> arbitrary
+        <*> arbitrary
+        <*> arbitrary
+        <*> arbitrary
+        <*> arbitrary
+        <*> arbitrary
+        <*> arbitrary
+        <*> arbitrary
+        <*> arbitrary
 
 instance Arbitrary TxInInfo where
   arbitrary = TxInInfo <$> arbitrary' <*> arbitrary'
@@ -109,13 +108,13 @@ instance Arbitrary a => Arbitrary (Extended a) where
       ]
 
 instance Arbitrary a => Arbitrary (LowerBound a) where
-  arbitrary = (LowerBound <$> arbitrary <*> arbitrary)
+  arbitrary = LowerBound <$> arbitrary <*> arbitrary
 
 instance Arbitrary a => Arbitrary (UpperBound a) where
-  arbitrary = (UpperBound <$> arbitrary <*> arbitrary)
+  arbitrary = UpperBound <$> arbitrary <*> arbitrary
 
 instance Arbitrary a => Arbitrary (Interval a) where
-  arbitrary = (Interval <$> arbitrary <*> arbitrary)
+  arbitrary = Interval <$> arbitrary <*> arbitrary
 
 instance Arbitrary Redeemer where
   arbitrary = Redeemer <$> arbitrary'
