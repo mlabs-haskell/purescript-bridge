@@ -21,8 +21,7 @@ common common-lang
     -Wincomplete-record-updates -Wmissing-deriving-strategies
     -Wno-name-shadowing -Wunused-foralls -fprint-explicit-foralls
     -fprint-explicit-kinds -fwarn-missing-import-lists -threaded
-
-  -- -Werror
+    -Werror
 
   build-depends:      base
   default-extensions:
@@ -136,8 +135,11 @@ test-suite tests
     , base
     , base16-bytestring
     , bytestring
+    , call-stack
     , containers
+    , deepseq
     , directory
+    , generics-sop
     , hspec
     , hspec-core
     , hspec-expectations
@@ -145,6 +147,7 @@ test-suite tests
     , plutus-core
     , plutus-ledger-api
     , plutus-tx
+    , pretty-simple
     , process
     , purescript-bridge
     , QuickCheck

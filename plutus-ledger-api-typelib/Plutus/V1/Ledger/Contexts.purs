@@ -36,7 +36,6 @@ import Plutus.Types.Value (Value)
 import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import Plutus.V1.Ledger.DCert (DCert)
-import Plutus.V1.Ledger.Interval (Interval)
 import Plutus.V1.Ledger.Scripts (Datum, DatumHash)
 import Plutus.V1.Ledger.Time (POSIXTime)
 import Plutus.V1.Ledger.Tx (TxOut, TxOutRef)
@@ -44,6 +43,7 @@ import Plutus.V1.Ledger.TxId (TxId)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
+import Types.Interval (Interval)
 
 newtype TxInfo = TxInfo
   { txInfoInputs :: Array TxInInfo
@@ -57,6 +57,8 @@ newtype TxInfo = TxInfo
   , txInfoData :: Array (Tuple DatumHash Datum)
   , txInfoId :: TxId
   }
+
+derive instance Eq TxInfo
 
 instance Show TxInfo where
   show a = genericShow a
@@ -124,6 +126,8 @@ newtype TxInInfo = TxInInfo
   , txInInfoResolved :: TxOut
   }
 
+derive instance Eq TxInInfo
+
 instance Show TxInInfo where
   show a = genericShow a
 
@@ -162,6 +166,8 @@ newtype ScriptContext = ScriptContext
   { scriptContextTxInfo :: TxInfo
   , scriptContextPurpose :: ScriptPurpose
   }
+
+derive instance Eq ScriptContext
 
 instance Show ScriptContext where
   show a = genericShow a
@@ -203,6 +209,8 @@ data ScriptPurpose
   | Spending TxOutRef
   | Rewarding StakingCredential
   | Certifying DCert
+
+derive instance Eq ScriptPurpose
 
 instance Show ScriptPurpose where
   show a = genericShow a

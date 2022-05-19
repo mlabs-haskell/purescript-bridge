@@ -1,9 +1,19 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UndecidableSuperClasses #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module ArbitraryLedger (ALedgerType (..)) where
+module ArbitraryLedger (ALedgerType (..), WEq ((@==))) where
 
 -- Ledger type imports
+
+import Data.Bifunctor (bimap)
+import Data.Function (on)
+import Data.Kind (Type)
+import Data.List (sort)
+import Data.Map qualified as M
+import GHC.Generics qualified as GHC
+import Generics.SOP (Generic,SOP(SOP),NS(S,Z),I(I),K(K),SListI,All,All2,Code,Proxy(Proxy),from,hcollapse,hcliftA2)
 import Plutus.V1.Ledger.Ada (Ada (Lovelace))
 import Plutus.V1.Ledger.Address (Address)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
@@ -13,7 +23,7 @@ import Plutus.V1.Ledger.Crypto (PrivateKey (PrivateKey), PubKey, PubKeyHash, Sig
 import Plutus.V1.Ledger.DCert (DCert (DCertDelegDeRegKey, DCertDelegDelegate, DCertDelegRegKey, DCertGenesis, DCertMir, DCertPoolRegister, DCertPoolRetire))
 import Plutus.V1.Ledger.Interval (Extended (Finite, NegInf, PosInf), Interval (Interval), LowerBound (LowerBound), UpperBound (UpperBound))
 import Plutus.V1.Ledger.Scripts (
-  Datum,
+  Datum (Datum),
   DatumHash,
   MintingPolicyHash (MintingPolicyHash),
   Redeemer (Redeemer),
@@ -31,9 +41,10 @@ import Plutus.V1.Ledger.Value (
   TokenName,
   Value,
  )
-
-import GHC.Generics (Generic)
 import PlutusTx (unstableMakeIsData)
+import PlutusTx qualified as P
+import PlutusTx.AssocMap qualified as PMap
+import PlutusTx.Builtins.Internal qualified as PI
 import Test.QuickCheck (Arbitrary (arbitrary), oneof)
 import Test.QuickCheck.Plutus.Instances ()
 
@@ -153,7 +164,7 @@ data ALedgerType
   | ACurrencySymbol CurrencySymbol
   | ATokenName TokenName
   | AValue Value
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Eq, GHC.Generic)
 
 instance Arbitrary ALedgerType where
   arbitrary =
@@ -195,5 +206,101 @@ instance Arbitrary ALedgerType where
       , ATokenName <$> arbitrary
       , AValue <$> arbitrary
       ]
+
+-- NOTE: seed = 1322691774
+class WEq a where
+  (@==) :: a -> a -> Bool
+
+instance WEq Integer where
+  (@==) = (==)
+
+instance WEq PI.BuiltinByteString where
+  (@==) = (==)
+
+--AssocMap
+instance (Eq v, Ord k) => WEq (PMap.Map k v) where
+  m1 @== m2 = m1' == m2'
+    where
+      m1' = M.fromList $ PMap.toList m1
+      m2' = M.fromList $ PMap.toList m2
+
+normalize :: P.Data -> P.Data
+normalize d = case d of
+  P.Map m1 -> P.Map (sort . map (bimap normalize normalize) $ m1)
+  P.Constr i1 ds1 -> P.Constr i1 (map normalize ds1)
+  P.List ds1 -> P.List (map normalize ds1)
+  other -> other
+
+instance WEq P.Data where
+  pa @== pb = normalize pa == normalize pb
+
+instance (WEq a, WEq b) => WEq (a, b) where
+  (a, b) @== (c, d) = a @== c && b @== d
+
+instance WEq Datum where
+  (Datum d1) @== (Datum d2) = d1 @== d2
+
+instance WEq PI.BuiltinData where
+  PI.BuiltinData d1 @== PI.BuiltinData d2 = d1 @== d2
+
+instance (WEq a) => WEq [a] where
+  [] @== [] = True
+  (x : xs) @== (y : ys) = (x @== y) && xs @== ys
+  _ @== _ = False
+
+-- NOTE: If you derive SOP.Generic for a type (derive GHC.Generic then 'instance Generic MyType') which a SOP representation
+-- such that all sums + products contain types with a WEq instance, that type will automatically be an instance of WEq as well
+instance {-# INCOHERENT #-} (Generic a, All2 WEq (Code a)) => WEq a where
+  a @== b = weq a b
+
+-- adapted from basic-sop
+weq :: (Generic a, All2 WEq (Code a)) => a -> a -> Bool
+weq = go `on` from
+  where
+    go :: forall xss. (All2 WEq xss, All SListI xss) => SOP I xss -> SOP I xss -> Bool
+    go (SOP (Z xs)) (SOP (Z ys)) = and . hcollapse $ hcliftA2 p eq xs ys
+    go (SOP (S xss)) (SOP (S yss)) = go (SOP xss) (SOP yss)
+    go _ _ = False
+
+    p :: Proxy WEq
+    p = Proxy
+
+    eq :: forall (a :: Type). WEq a => I a -> I a -> K Bool a
+    eq (I a) (I b) = K (a @== b)
+
+instance Generic (Interval a)
+instance Generic POSIXTime
+instance Generic ScriptContext
+instance Generic (LowerBound a)
+instance Generic (UpperBound a)
+instance Generic (Extended a)
+instance Generic Value
+instance Generic Ada
+instance Generic Address
+instance Generic LedgerBytes
+instance Generic ScriptPurpose
+instance Generic TxInInfo
+instance Generic TxInfo
+instance Generic Credential
+instance Generic StakingCredential
+instance Generic PrivateKey
+instance Generic PubKey
+instance Generic PubKeyHash
+instance Generic Signature
+instance Generic DCert
+instance Generic DatumHash
+instance Generic MintingPolicyHash
+instance Generic Redeemer
+instance Generic ScriptHash
+instance Generic StakeValidatorHash
+instance Generic ValidatorHash
+instance Generic Slot
+instance Generic DiffMilliSeconds
+instance Generic TxOut
+instance Generic TxOutRef
+instance Generic TxId
+instance Generic AssetClass
+instance Generic CurrencySymbol
+instance Generic TokenName
 
 unstableMakeIsData ''ALedgerType

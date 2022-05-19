@@ -35,6 +35,8 @@ import Data.Map as Map
 
 newtype PubKey = PubKey LedgerBytes
 
+derive instance Eq PubKey
+
 instance Show PubKey where
   show a = genericShow a
 
@@ -64,6 +66,8 @@ _PubKey = _Newtype
 --------------------------------------------------------------------------------
 
 newtype PubKeyHash = PubKeyHash ByteArray
+
+derive instance Eq PubKeyHash
 
 instance Show PubKeyHash where
   show a = genericShow a
@@ -95,6 +99,8 @@ _PubKeyHash = _Newtype
 
 newtype PrivateKey = PrivateKey LedgerBytes
 
+derive instance Eq PrivateKey
+
 instance Show PrivateKey where
   show a = genericShow a
 
@@ -124,6 +130,8 @@ _PrivateKey = _Newtype
 --------------------------------------------------------------------------------
 
 newtype Signature = Signature ByteArray
+
+derive instance Eq Signature
 
 instance Show Signature where
   show a = genericShow a

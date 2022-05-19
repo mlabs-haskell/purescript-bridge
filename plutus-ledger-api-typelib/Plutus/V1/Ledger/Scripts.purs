@@ -35,6 +35,8 @@ import Data.Map as Map
 
 newtype Redeemer = Redeemer PlutusData
 
+derive instance Eq Redeemer
+
 instance Show Redeemer where
   show a = genericShow a
 
@@ -64,6 +66,8 @@ _Redeemer = _Newtype
 --------------------------------------------------------------------------------
 
 newtype Datum = Datum PlutusData
+
+derive instance Eq Datum
 
 instance Show Datum where
   show a = genericShow a
@@ -95,6 +99,8 @@ _Datum = _Newtype
 
 newtype ScriptHash = ScriptHash ByteArray
 
+derive instance Eq ScriptHash
+
 instance Show ScriptHash where
   show a = genericShow a
 
@@ -125,6 +131,8 @@ _ScriptHash = _Newtype
 
 newtype ValidatorHash = ValidatorHash ByteArray
 
+derive instance Eq ValidatorHash
+
 instance Show ValidatorHash where
   show a = genericShow a
 
@@ -150,6 +158,8 @@ _ValidatorHash = _Newtype
 --------------------------------------------------------------------------------
 
 newtype DatumHash = DatumHash ByteArray
+
+derive instance Eq DatumHash
 
 instance Show DatumHash where
   show a = genericShow a
@@ -177,6 +187,8 @@ _DatumHash = _Newtype
 
 newtype MintingPolicyHash = MintingPolicyHash ByteArray
 
+derive instance Eq MintingPolicyHash
+
 instance Show MintingPolicyHash where
   show a = genericShow a
 
@@ -202,6 +214,8 @@ _MintingPolicyHash = _Newtype
 --------------------------------------------------------------------------------
 
 newtype StakeValidatorHash = StakeValidatorHash ByteArray
+
+derive instance Eq StakeValidatorHash
 
 instance Show StakeValidatorHash where
   show a = genericShow a

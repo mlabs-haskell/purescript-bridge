@@ -36,10 +36,10 @@ import Data.Map as Map
 
 newtype AssetClass = AssetClass (Tuple CurrencySymbol TokenName)
 
+derive instance Eq AssetClass
+
 instance Show AssetClass where
   show a = genericShow a
-
-derive instance Eq AssetClass
 
 derive instance Ord AssetClass
 

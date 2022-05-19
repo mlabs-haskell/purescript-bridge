@@ -34,6 +34,8 @@ import Data.Map as Map
 
 newtype Ada = Lovelace BigInt
 
+derive instance Eq Ada
+
 instance Show Ada where
   show a = genericShow a
 

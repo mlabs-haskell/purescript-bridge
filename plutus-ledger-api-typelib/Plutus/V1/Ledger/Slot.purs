@@ -34,10 +34,10 @@ import Data.Map as Map
 
 newtype Slot = Slot BigInt
 
+derive instance Eq Slot
+
 instance Show Slot where
   show a = genericShow a
-
-derive instance Eq Slot
 
 derive instance Ord Slot
 

@@ -45,6 +45,8 @@ newtype TxOut = TxOut
   , txOutDatumHash :: Maybe DatumHash
   }
 
+derive instance Eq TxOut
+
 instance Show TxOut where
   show a = genericShow a
 
@@ -89,6 +91,8 @@ newtype TxOutRef = TxOutRef
   { txOutRefId :: TxId
   , txOutRefIdx :: BigInt
   }
+
+derive instance Eq TxOutRef
 
 instance Show TxOutRef where
   show a = genericShow a

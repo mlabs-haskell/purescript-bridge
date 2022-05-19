@@ -34,6 +34,8 @@ import Data.Map as Map
 
 newtype LedgerBytes = LedgerBytes ByteArray
 
+derive instance Eq LedgerBytes
+
 instance Show LedgerBytes where
   show a = genericShow a
 

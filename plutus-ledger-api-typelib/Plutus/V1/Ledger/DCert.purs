@@ -45,6 +45,8 @@ data DCert
   | DCertGenesis
   | DCertMir
 
+derive instance Eq DCert
+
 instance Show DCert where
   show a = genericShow a
 

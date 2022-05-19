@@ -40,6 +40,8 @@ data StakingCredential
   = StakingHash Credential
   | StakingPtr BigInt BigInt BigInt
 
+derive instance Eq StakingCredential
+
 instance Show StakingCredential where
   show a = genericShow a
 
@@ -79,6 +81,8 @@ _StakingPtr = prism' (\{ a, b, c } -> (StakingPtr a b c)) case _ of
 data Credential
   = PubKeyCredential PubKeyHash
   | ScriptCredential ValidatorHash
+
+derive instance Eq Credential
 
 instance Show Credential where
   show a = genericShow a

@@ -53,6 +53,8 @@ import Data.Map as Map
 
 newtype TxId = TxId { getTxId :: ByteArray }
 
+derive instance Eq TxId
+
 instance Show TxId where
   show a = genericShow a
 
@@ -67,8 +69,6 @@ instance EncodeAeson TxId where
 instance DecodeAeson TxId where
   decodeAeson = defer \_ -> D.decode $
     (TxId <$> D.record "TxId" { getTxId: D.value :: _ ByteArray })
-
-derive instance Eq TxId
 
 derive instance Ord TxId
 

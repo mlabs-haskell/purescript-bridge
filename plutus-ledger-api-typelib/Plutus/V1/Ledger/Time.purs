@@ -33,10 +33,10 @@ import Data.Map as Map
 
 newtype DiffMilliSeconds = DiffMilliSeconds BigInt
 
+derive instance Eq DiffMilliSeconds
+
 instance Show DiffMilliSeconds where
   show a = genericShow a
-
-derive instance Eq DiffMilliSeconds
 
 derive instance Ord DiffMilliSeconds
 
@@ -63,10 +63,10 @@ _DiffMilliSeconds = _Newtype
 
 newtype POSIXTime = POSIXTime BigInt
 
+derive instance Eq POSIXTime
+
 instance Show POSIXTime where
   show a = genericShow a
-
-derive instance Eq POSIXTime
 
 derive instance Ord POSIXTime
 
