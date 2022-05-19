@@ -254,7 +254,7 @@ instance (WEq a) => WEq [a] where
 -- Generic MyType') which a SOP representation such that all sums + products
 -- contain types with a WEq instance, that type will automatically be an
 -- instance of WEq as well.
-instance {-# INCOHERENT #-} (Generic a, All2 WEq (Code a)) => WEq a where
+instance {-# OVERLAPPABLE #-} (Generic a, All2 WEq (Code a)) => WEq a where
   a @== b = weq a b
 
 -- Adapted from basic-sop.
@@ -320,7 +320,7 @@ instance FixMap Integer where
 -- This is incoherent because we want it to be the "last choice". morally
 -- abhorrent but practically necessary i feel like this is actually a cool
 -- trick?
-instance {-# INCOHERENT #-} (Generic a, All2 FixMap (Code a)) => FixMap a where
+instance {-# OVERLAPPABLE #-} (Generic a, All2 FixMap (Code a)) => FixMap a where
   fixMap = gfixMap
 
 -- If every element in the SOP representation of a type has a FixMap instance,
