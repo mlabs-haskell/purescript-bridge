@@ -6,8 +6,8 @@ current-system := $(shell nix eval --impure --expr builtins.currentSystem)
 
 NIX_BUILD:= nix -L --show-trace build
 NIX_RUN:= nix -L --show-trace run
-NIX_DEV:= nix -L --show-trace develop .#default
-NIX_DEV_RT:= nix -L --show-trace develop .#roundTripTest
+NIX_DEV:= nix -L --show-trace develop .\#default
+NIX_DEV_RT:= nix -L --show-trace develop .\#roundTripTest
 
 develop:
 	$(NIX_DEV)
