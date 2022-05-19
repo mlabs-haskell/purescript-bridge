@@ -44,7 +44,8 @@ import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
 data TestData
   = Maybe (Maybe TestSum)
   | Either (Either (Maybe Bool) (Maybe Bool))
-  deriving stock (Show, Eq, Ord, Generic)
+  | PlutusData TestPlutusData
+  deriving stock (Show, Eq, Generic)
 
 instance FromJSON TestData
 
@@ -55,6 +56,7 @@ instance Arbitrary TestData where
     oneof
       [ Maybe <$> arbitrary
       , Either <$> arbitrary
+      , PlutusData <$> arbitrary
       ]
 
 data TestSum
@@ -271,9 +273,6 @@ instance Arbitrary ASum where
       , ASumRec <$> arbitrary
       ]
 
-unstableMakeIsData ''ARecord
-unstableMakeIsData ''ASum
-
 data TestPlutusData
   = PdValue Value
   | PdScriptContext ScriptContext
@@ -303,6 +302,10 @@ instance Arbitrary TestPlutusData where
 
 unstableMakeIsData ''TestPlutusData
 
+instance FromJSON TestPlutusData
+
+instance ToJSON TestPlutusData
+
 -- | IPC round trip protocol messages
 data RepType = RTJson | RTPlutusData deriving stock (Show, Eq, Generic)
 
@@ -325,3 +328,8 @@ response :: forall p. (String -> p) -> (String -> p) -> (String -> p) -> Respons
 response e _ _ (RespError err) = e err
 response _ js _ (RespSuccess RTJson payload) = js payload
 response _ _ pd (RespSuccess RTPlutusData payload) = pd payload
+
+-- NOTE: I have to put TH stuff here because otherwise Haskell can't find local
+-- type definitions
+unstableMakeIsData ''ARecord
+unstableMakeIsData ''ASum

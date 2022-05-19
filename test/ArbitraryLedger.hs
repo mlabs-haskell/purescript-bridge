@@ -6,6 +6,8 @@
 
 module ArbitraryLedger (ALedgerType (..), WEq ((@==)), FixMap (fixMap), reMap) where
 
+import Data.Aeson (ToJSON)
+import Data.Aeson.Types (FromJSON)
 import Data.Bifunctor (bimap)
 import Data.Function (on)
 import Data.Kind (Type)
@@ -62,9 +64,14 @@ instance Arbitrary ScriptPurpose where
       , Rewarding <$> arbitrary
       , Certifying <$> arbitrary
       ]
+instance ToJSON ScriptPurpose
+instance FromJSON ScriptPurpose
 
 instance Arbitrary ScriptContext where
   arbitrary = ScriptContext <$> arbitrary <*> arbitrary
+
+instance ToJSON ScriptContext
+instance FromJSON ScriptContext
 
 instance Arbitrary TxInfo where
   arbitrary =
@@ -81,8 +88,14 @@ instance Arbitrary TxInfo where
         <*> arbitrary
         <*> arbitrary
 
+instance ToJSON TxInfo
+instance FromJSON TxInfo
+
 instance Arbitrary TxInInfo where
   arbitrary = TxInInfo <$> arbitrary' <*> arbitrary'
+
+instance ToJSON TxInInfo
+instance FromJSON TxInInfo
 
 instance Arbitrary PrivateKey where
   arbitrary = PrivateKey <$> arbitrary'

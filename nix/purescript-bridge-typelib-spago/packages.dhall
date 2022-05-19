@@ -180,7 +180,7 @@ let additions =
           , "variant"
           ]
         , repo = "https://github.com/plutonomicon/cardano-transaction-lib.git"
-        , version = "e744b5e78d0d87d413bcca959e1b9a29771ee022"
+        , version = "f7ceea10084b4dd0b4b396f01e33f4aa67e41a06"
         }
       , aeson =
         { dependencies =

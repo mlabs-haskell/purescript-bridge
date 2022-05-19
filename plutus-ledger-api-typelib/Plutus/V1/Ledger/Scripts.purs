@@ -3,14 +3,7 @@ module Plutus.V1.Ledger.Scripts where
 
 import Prelude
 
-import Aeson
-  ( Aeson
-  , aesonNull
-  , class DecodeAeson
-  , class EncodeAeson
-  , decodeAeson
-  , encodeAeson
-  )
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -40,23 +33,21 @@ derive instance Eq Redeemer
 instance Show Redeemer where
   show a = genericShow a
 
+instance EncodeAeson Redeemer where
+  encodeAeson' x = pure $ E.encode  (E.record {getRedeemer: E.value :: _ (PlutusData) }) {getRedeemer: unwrap x}
+
+instance DecodeAeson Redeemer where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getRedeemer") <$> D.decode (D.record "getRedeemer "{getRedeemer: D.value :: _ (PlutusData)}) x
+
 derive instance Generic Redeemer _
 
 derive instance Newtype Redeemer _
 
+
+
 derive newtype instance ToData Redeemer
 
 derive newtype instance FromData Redeemer
-
-instance EncodeAeson Redeemer where
-  encodeAeson' x = pure $ E.encode
-    (E.record { getRedeemer: E.value :: _ (PlutusData) })
-    { getRedeemer: unwrap x }
-
-instance DecodeAeson Redeemer where
-  decodeAeson x = wrap <<< get (Proxy :: Proxy "getRedeemer") <$> D.decode
-    (D.record "getRedeemer " { getRedeemer: D.value :: _ (PlutusData) })
-    x
 
 --------------------------------------------------------------------------------
 
@@ -72,23 +63,21 @@ derive instance Eq Datum
 instance Show Datum where
   show a = genericShow a
 
+instance EncodeAeson Datum where
+  encodeAeson' x = pure $ E.encode  (E.record {getDatum: E.value :: _ (PlutusData) }) {getDatum: unwrap x}
+
+instance DecodeAeson Datum where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getDatum") <$> D.decode (D.record "getDatum "{getDatum: D.value :: _ (PlutusData)}) x
+
 derive instance Generic Datum _
 
 derive instance Newtype Datum _
 
+
+
 derive newtype instance ToData Datum
 
 derive newtype instance FromData Datum
-
-instance EncodeAeson Datum where
-  encodeAeson' x = pure $ E.encode
-    (E.record { getDatum: E.value :: _ (PlutusData) })
-    { getDatum: unwrap x }
-
-instance DecodeAeson Datum where
-  decodeAeson x = wrap <<< get (Proxy :: Proxy "getDatum") <$> D.decode
-    (D.record "getDatum " { getDatum: D.value :: _ (PlutusData) })
-    x
 
 --------------------------------------------------------------------------------
 
@@ -104,23 +93,21 @@ derive instance Eq ScriptHash
 instance Show ScriptHash where
   show a = genericShow a
 
+instance EncodeAeson ScriptHash where
+  encodeAeson' x = pure $ E.encode  (E.record {getScriptHash: E.value :: _ (ByteArray) }) {getScriptHash: unwrap x}
+
+instance DecodeAeson ScriptHash where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getScriptHash") <$> D.decode (D.record "getScriptHash "{getScriptHash: D.value :: _ (ByteArray)}) x
+
 derive instance Generic ScriptHash _
 
 derive instance Newtype ScriptHash _
 
+
+
 derive newtype instance ToData ScriptHash
 
 derive newtype instance FromData ScriptHash
-
-instance EncodeAeson ScriptHash where
-  encodeAeson' x = pure $ E.encode
-    (E.record { getScriptHash: E.value :: _ (ByteArray) })
-    { getScriptHash: unwrap x }
-
-instance DecodeAeson ScriptHash where
-  decodeAeson x = wrap <<< get (Proxy :: Proxy "getScriptHash") <$> D.decode
-    (D.record "getScriptHash " { getScriptHash: D.value :: _ (ByteArray) })
-    x
 
 --------------------------------------------------------------------------------
 
@@ -136,19 +123,21 @@ derive instance Eq ValidatorHash
 instance Show ValidatorHash where
   show a = genericShow a
 
+instance EncodeAeson ValidatorHash where
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< E.value ) x
+
+instance DecodeAeson ValidatorHash where
+  decodeAeson = defer \_ -> D.decode $ (ValidatorHash <$> D.value)
+
 derive instance Generic ValidatorHash _
 
 derive instance Newtype ValidatorHash _
 
+
+
 derive newtype instance ToData ValidatorHash
 
 derive newtype instance FromData ValidatorHash
-
-instance EncodeAeson ValidatorHash where
-  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
-
-instance DecodeAeson ValidatorHash where
-  decodeAeson = defer \_ -> D.decode $ (ValidatorHash <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -164,19 +153,21 @@ derive instance Eq DatumHash
 instance Show DatumHash where
   show a = genericShow a
 
+instance EncodeAeson DatumHash where
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< E.value ) x
+
+instance DecodeAeson DatumHash where
+  decodeAeson = defer \_ -> D.decode $ (DatumHash <$> D.value)
+
 derive instance Generic DatumHash _
 
 derive instance Newtype DatumHash _
 
+
+
 derive newtype instance ToData DatumHash
 
 derive newtype instance FromData DatumHash
-
-instance EncodeAeson DatumHash where
-  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
-
-instance DecodeAeson DatumHash where
-  decodeAeson = defer \_ -> D.decode $ (DatumHash <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -192,19 +183,21 @@ derive instance Eq MintingPolicyHash
 instance Show MintingPolicyHash where
   show a = genericShow a
 
+instance EncodeAeson MintingPolicyHash where
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< E.value ) x
+
+instance DecodeAeson MintingPolicyHash where
+  decodeAeson = defer \_ -> D.decode $ (MintingPolicyHash <$> D.value)
+
 derive instance Generic MintingPolicyHash _
 
 derive instance Newtype MintingPolicyHash _
 
+
+
 derive newtype instance ToData MintingPolicyHash
 
 derive newtype instance FromData MintingPolicyHash
-
-instance EncodeAeson MintingPolicyHash where
-  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
-
-instance DecodeAeson MintingPolicyHash where
-  decodeAeson = defer \_ -> D.decode $ (MintingPolicyHash <$> D.value)
 
 --------------------------------------------------------------------------------
 
@@ -220,19 +213,21 @@ derive instance Eq StakeValidatorHash
 instance Show StakeValidatorHash where
   show a = genericShow a
 
+instance EncodeAeson StakeValidatorHash where
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< E.value ) x
+
+instance DecodeAeson StakeValidatorHash where
+  decodeAeson = defer \_ -> D.decode $ (StakeValidatorHash <$> D.value)
+
 derive instance Generic StakeValidatorHash _
 
 derive instance Newtype StakeValidatorHash _
 
+
+
 derive newtype instance ToData StakeValidatorHash
 
 derive newtype instance FromData StakeValidatorHash
-
-instance EncodeAeson StakeValidatorHash where
-  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
-
-instance DecodeAeson StakeValidatorHash where
-  decodeAeson = defer \_ -> D.decode $ (StakeValidatorHash <$> D.value)
 
 --------------------------------------------------------------------------------
 

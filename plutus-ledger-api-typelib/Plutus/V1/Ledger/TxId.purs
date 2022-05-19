@@ -3,14 +3,7 @@ module Plutus.V1.Ledger.TxId where
 
 import Prelude
 
-import Aeson
-  ( Aeson
-  , aesonNull
-  , class DecodeAeson
-  , class EncodeAeson
-  , decodeAeson
-  , encodeAeson
-  )
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -25,24 +18,7 @@ import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
 import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
-import Plutus.Types.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import Plutus.Types.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
@@ -59,16 +35,11 @@ instance Show TxId where
   show a = genericShow a
 
 instance EncodeAeson TxId where
-  encodeAeson' x = pure $
-    ( defer \_ -> E.encode $ unwrap >$<
-        ( E.record
-            { getTxId: E.value :: _ ByteArray }
-        )
-    ) x
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
+                                                              { getTxId: E.value :: _ ByteArray }) ) x
 
 instance DecodeAeson TxId where
-  decodeAeson = defer \_ -> D.decode $
-    (TxId <$> D.record "TxId" { getTxId: D.value :: _ ByteArray })
+  decodeAeson = defer \_ -> D.decode $ (TxId <$> D.record "TxId" { getTxId: D.value :: _ ByteArray })
 
 derive instance Ord TxId
 
@@ -76,16 +47,12 @@ derive instance Generic TxId _
 
 derive instance Newtype TxId _
 
-instance
-  HasPlutusSchema TxId
-    ( "TxId"
-        :=
-          ( "getTxId" := I ByteArray
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema TxId
+  ("TxId" :=
+     ("getTxId" := I ByteArray
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData TxId where
   toData x = genericToData x
@@ -95,5 +62,5 @@ instance FromData TxId where
 
 --------------------------------------------------------------------------------
 
-_TxId :: Iso' TxId { getTxId :: ByteArray }
+_TxId :: Iso' TxId {getTxId :: ByteArray}
 _TxId = _Newtype

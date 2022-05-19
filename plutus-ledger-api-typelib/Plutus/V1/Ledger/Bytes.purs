@@ -3,14 +3,7 @@ module Plutus.V1.Ledger.Bytes where
 
 import Prelude
 
-import Aeson
-  ( Aeson
-  , aesonNull
-  , class DecodeAeson
-  , class EncodeAeson
-  , decodeAeson
-  , encodeAeson
-  )
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -39,23 +32,21 @@ derive instance Eq LedgerBytes
 instance Show LedgerBytes where
   show a = genericShow a
 
+instance EncodeAeson LedgerBytes where
+  encodeAeson' x = pure $ E.encode  (E.record {getLedgerBytes: E.value :: _ (ByteArray) }) {getLedgerBytes: unwrap x}
+
+instance DecodeAeson LedgerBytes where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getLedgerBytes") <$> D.decode (D.record "getLedgerBytes "{getLedgerBytes: D.value :: _ (ByteArray)}) x
+
 derive instance Generic LedgerBytes _
 
 derive instance Newtype LedgerBytes _
 
+
+
 derive newtype instance ToData LedgerBytes
 
 derive newtype instance FromData LedgerBytes
-
-instance EncodeAeson LedgerBytes where
-  encodeAeson' x = pure $ E.encode
-    (E.record { getLedgerBytes: E.value :: _ (ByteArray) })
-    { getLedgerBytes: unwrap x }
-
-instance DecodeAeson LedgerBytes where
-  decodeAeson x = wrap <<< get (Proxy :: Proxy "getLedgerBytes") <$> D.decode
-    (D.record "getLedgerBytes " { getLedgerBytes: D.value :: _ (ByteArray) })
-    x
 
 --------------------------------------------------------------------------------
 

@@ -3,38 +3,31 @@ module Plutus.V1.Ledger.Credential where
 
 import Prelude
 
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
+import Control.Lazy (defer)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
+import Data.Newtype (unwrap, wrap)
+import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(Tuple))
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
-import Plutus.Types.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import Plutus.Types.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
 import Plutus.V1.Ledger.Scripts (ValidatorHash)
 import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
+import Aeson.Decode as D
+import Aeson.Encode as E
+import Data.Map as Map
 
 data StakingCredential
   = StakingHash Credential
@@ -45,17 +38,26 @@ derive instance Eq StakingCredential
 instance Show StakingCredential where
   show a = genericShow a
 
+instance EncodeAeson StakingCredential where
+  encodeAeson' x = pure $ (defer \_ ->  case _ of
+    StakingHash a -> E.encodeTagged "StakingHash" a E.value
+    StakingPtr a b c -> E.encodeTagged "StakingPtr" (a /\ b /\ c) (E.tuple (E.value >/\< E.value >/\< E.value)) ) x
+
+instance DecodeAeson StakingCredential where
+  decodeAeson = defer \_ -> D.decode
+    $ D.sumType "StakingCredential" $ Map.fromFoldable
+      [ "StakingHash" /\ D.content (StakingHash <$> D.value)
+      , "StakingPtr" /\ D.content (D.tuple $ StakingPtr </$\>D.value </*\> D.value </*\> D.value)
+      ]
+
 derive instance Generic StakingCredential _
 
-instance
-  HasPlutusSchema StakingCredential
-    ( "StakingHash" := PNil
-        @@ (Z)
-        :+ "StakingPtr"
-        := PNil
-        @@ (S (Z))
-        :+ PNil
-    )
+instance HasPlutusSchema StakingCredential
+  ("StakingHash" := PNil
+   @@ (Z)
+  :+ "StakingPtr" := PNil
+     @@ (S (Z))
+  :+ PNil)
 
 instance ToData StakingCredential where
   toData x = genericToData x
@@ -70,10 +72,9 @@ _StakingHash = prism' StakingHash case _ of
   (StakingHash a) -> Just a
   _ -> Nothing
 
-_StakingPtr
-  :: Prism' StakingCredential { a :: BigInt, b :: BigInt, c :: BigInt }
-_StakingPtr = prism' (\{ a, b, c } -> (StakingPtr a b c)) case _ of
-  (StakingPtr a b c) -> Just { a, b, c }
+_StakingPtr :: Prism' StakingCredential {a :: BigInt, b :: BigInt, c :: BigInt}
+_StakingPtr = prism' (\{a, b, c} -> (StakingPtr a b c)) case _ of
+  (StakingPtr a b c) -> Just {a, b, c}
   _ -> Nothing
 
 --------------------------------------------------------------------------------
@@ -87,17 +88,26 @@ derive instance Eq Credential
 instance Show Credential where
   show a = genericShow a
 
+instance EncodeAeson Credential where
+  encodeAeson' x = pure $ (defer \_ ->  case _ of
+    PubKeyCredential a -> E.encodeTagged "PubKeyCredential" a E.value
+    ScriptCredential a -> E.encodeTagged "ScriptCredential" a E.value ) x
+
+instance DecodeAeson Credential where
+  decodeAeson = defer \_ -> D.decode
+    $ D.sumType "Credential" $ Map.fromFoldable
+      [ "PubKeyCredential" /\ D.content (PubKeyCredential <$> D.value)
+      , "ScriptCredential" /\ D.content (ScriptCredential <$> D.value)
+      ]
+
 derive instance Generic Credential _
 
-instance
-  HasPlutusSchema Credential
-    ( "PubKeyCredential" := PNil
-        @@ (Z)
-        :+ "ScriptCredential"
-        := PNil
-        @@ (S (Z))
-        :+ PNil
-    )
+instance HasPlutusSchema Credential
+  ("PubKeyCredential" := PNil
+   @@ (Z)
+  :+ "ScriptCredential" := PNil
+     @@ (S (Z))
+  :+ PNil)
 
 instance ToData Credential where
   toData x = genericToData x

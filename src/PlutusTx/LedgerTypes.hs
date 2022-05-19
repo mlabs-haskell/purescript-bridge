@@ -152,7 +152,7 @@ _overriddenTypes =
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  equal . genericShow
+  equal . genericShow . argonaut
     <$> [ order $ mkPlutusNewtype @AssetClass -- this might be a type synonym in the version of Plutus we're using at Cardax?
         , argonaut $ order $ unsafeMkPlutusDataType @TxId
         , unsafeMkPlutusDataType @TxOut

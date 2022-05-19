@@ -179,17 +179,20 @@ roundTripSpec = do
   where
     doReq hin herr hout req = do
       let jsonReq = toString $ encode @Request req
-      -- putStrLn jsonReq -- DEBUG
+      putStrLn $ "hs> " <> show req -- DEBUG
       -- IPC
       hPutStrLn hin jsonReq
       err <- hGetLine herr
       assertEqual "hs> Purescript shouldn't report an error" "" err
       output <- hGetLine hout
       -- Assert response
-      either
-        (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
-        return
-        (eitherDecode @Response $ fromString output)
+      resp <-
+        either
+          (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
+          return
+          (eitherDecode @Response $ fromString output)
+      putStrLn $ "ps> " <> show resp -- DEBUG
+      return resp
 
     encodeBase16 = toString . fromStrict . Base16.encode . toStrict
     decodeBase16 str = do
@@ -237,7 +240,7 @@ rtProtoTypes =
 myTypes :: [SumType 'Haskell]
 myTypes =
   argonaut
-    <$> [ equal . genericShow . order $ mkSumType @TestData
+    <$> [ equal . genericShow $ mkSumType @TestData
         , equal . genericShow . order $ mkSumType @TestSum
         , equal . genericShow . order $ mkSumType @TestRecursiveA
         , equal . genericShow . order $ mkSumType @TestRecursiveB
@@ -256,5 +259,5 @@ myPlutusTypes =
   , argonaut . equal . genericShow $ mkPlutusNewtype @ANewtypeRec
   , argonaut . equal . genericShow $ mkPlutusDataType @ARecord
   , argonaut . equal . genericShow $ mkPlutusDataType @ASum
-  , equal . genericShow $ mkPlutusDataType @TestPlutusData
+  , argonaut . equal . genericShow $ mkPlutusDataType @TestPlutusData
   ]

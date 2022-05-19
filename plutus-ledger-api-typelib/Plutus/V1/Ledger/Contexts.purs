@@ -3,35 +3,24 @@ module Plutus.V1.Ledger.Contexts where
 
 import Prelude
 
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
+import Control.Lazy (defer)
 import Data.BigInt (BigInt)
 import Data.Generic.Rep (class Generic)
 import Data.Lens (Iso', Lens', Prism', iso, prism')
 import Data.Lens.Iso.Newtype (_Newtype)
 import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap, wrap)
+import Data.Op (Op(Op))
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple, Tuple(Tuple))
+import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import Plutus.Types.CurrencySymbol (CurrencySymbol)
-import Plutus.Types.DataSchema
-  ( ApPCons
-  , Field
-  , I
-  , Id
-  , IxK
-  , MkField
-  , MkField_
-  , MkIxK
-  , MkIxK_
-  , PCons
-  , PNil
-  , PSchema
-  , class HasPlutusSchema
-  , type (:+)
-  , type (:=)
-  , type (@@)
-  )
+import Plutus.Types.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import Plutus.Types.Value (Value)
 import Plutus.V1.Ledger.Credential (StakingCredential)
 import Plutus.V1.Ledger.Crypto (PubKeyHash)
@@ -44,6 +33,9 @@ import ToData (class ToData, genericToData)
 import Type.Proxy (Proxy(Proxy))
 import TypeLevel.Nat (S, Z)
 import Types.Interval (Interval)
+import Aeson.Decode as D
+import Aeson.Encode as E
+import Data.Map as Map
 
 newtype TxInfo = TxInfo
   { txInfoInputs :: Array TxInInfo
@@ -63,38 +55,53 @@ derive instance Eq TxInfo
 instance Show TxInfo where
   show a = genericShow a
 
+instance EncodeAeson TxInfo where
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
+                                                                { txInfoInputs: E.value :: _ (Array TxInInfo)
+                                                                , txInfoOutputs: E.value :: _ (Array TxOut)
+                                                                , txInfoFee: E.value :: _ Value
+                                                                , txInfoMint: E.value :: _ Value
+                                                                , txInfoDCert: E.value :: _ (Array DCert)
+                                                                , txInfoWdrl: E.value :: _ (Array (Tuple StakingCredential BigInt))
+                                                                , txInfoValidRange: E.value :: _ (Interval POSIXTime)
+                                                                , txInfoSignatories: E.value :: _ (Array PubKeyHash)
+                                                                , txInfoData: E.value :: _ (Array (Tuple DatumHash Datum))
+                                                                , txInfoId: E.value :: _ TxId
+                                                                }) ) x
+
+instance DecodeAeson TxInfo where
+  decodeAeson = defer \_ -> D.decode $ (TxInfo <$> D.record "TxInfo"
+      { txInfoInputs: D.value :: _ (Array TxInInfo)
+      , txInfoOutputs: D.value :: _ (Array TxOut)
+      , txInfoFee: D.value :: _ Value
+      , txInfoMint: D.value :: _ Value
+      , txInfoDCert: D.value :: _ (Array DCert)
+      , txInfoWdrl: D.value :: _ (Array (Tuple StakingCredential BigInt))
+      , txInfoValidRange: D.value :: _ (Interval POSIXTime)
+      , txInfoSignatories: D.value :: _ (Array PubKeyHash)
+      , txInfoData: D.value :: _ (Array (Tuple DatumHash Datum))
+      , txInfoId: D.value :: _ TxId
+      })
+
 derive instance Generic TxInfo _
 
 derive instance Newtype TxInfo _
 
-instance
-  HasPlutusSchema TxInfo
-    ( "TxInfo"
-        :=
-          ( "txInfoInputs" := I (Array TxInInfo)
-              :+ "txInfoOutputs"
-              := I (Array TxOut)
-              :+ "txInfoFee"
-              := I Value
-              :+ "txInfoMint"
-              := I Value
-              :+ "txInfoDCert"
-              := I (Array DCert)
-              :+ "txInfoWdrl"
-              := I (Array (Tuple StakingCredential BigInt))
-              :+ "txInfoValidRange"
-              := I (Interval POSIXTime)
-              :+ "txInfoSignatories"
-              := I (Array PubKeyHash)
-              :+ "txInfoData"
-              := I (Array (Tuple DatumHash Datum))
-              :+ "txInfoId"
-              := I TxId
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema TxInfo
+  ("TxInfo" :=
+     ("txInfoInputs" := I (Array TxInInfo)
+     :+ "txInfoOutputs" := I (Array TxOut)
+     :+ "txInfoFee" := I Value
+     :+ "txInfoMint" := I Value
+     :+ "txInfoDCert" := I (Array DCert)
+     :+ "txInfoWdrl" := I (Array (Tuple StakingCredential BigInt))
+     :+ "txInfoValidRange" := I (Interval POSIXTime)
+     :+ "txInfoSignatories" := I (Array PubKeyHash)
+     :+ "txInfoData" := I (Array (Tuple DatumHash Datum))
+     :+ "txInfoId" := I TxId
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData TxInfo where
   toData x = genericToData x
@@ -104,19 +111,7 @@ instance FromData TxInfo where
 
 --------------------------------------------------------------------------------
 
-_TxInfo
-  :: Iso' TxInfo
-       { txInfoInputs :: Array TxInInfo
-       , txInfoOutputs :: Array TxOut
-       , txInfoFee :: Value
-       , txInfoMint :: Value
-       , txInfoDCert :: Array DCert
-       , txInfoWdrl :: Array (Tuple StakingCredential BigInt)
-       , txInfoValidRange :: Interval POSIXTime
-       , txInfoSignatories :: Array PubKeyHash
-       , txInfoData :: Array (Tuple DatumHash Datum)
-       , txInfoId :: TxId
-       }
+_TxInfo :: Iso' TxInfo {txInfoInputs :: Array TxInInfo, txInfoOutputs :: Array TxOut, txInfoFee :: Value, txInfoMint :: Value, txInfoDCert :: Array DCert, txInfoWdrl :: Array (Tuple StakingCredential BigInt), txInfoValidRange :: Interval POSIXTime, txInfoSignatories :: Array PubKeyHash, txInfoData :: Array (Tuple DatumHash Datum), txInfoId :: TxId}
 _TxInfo = _Newtype
 
 --------------------------------------------------------------------------------
@@ -131,22 +126,29 @@ derive instance Eq TxInInfo
 instance Show TxInInfo where
   show a = genericShow a
 
+instance EncodeAeson TxInInfo where
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
+                                                                { txInInfoOutRef: E.value :: _ TxOutRef
+                                                                , txInInfoResolved: E.value :: _ TxOut
+                                                                }) ) x
+
+instance DecodeAeson TxInInfo where
+  decodeAeson = defer \_ -> D.decode $ (TxInInfo <$> D.record "TxInInfo"
+      { txInInfoOutRef: D.value :: _ TxOutRef
+      , txInInfoResolved: D.value :: _ TxOut
+      })
+
 derive instance Generic TxInInfo _
 
 derive instance Newtype TxInInfo _
 
-instance
-  HasPlutusSchema TxInInfo
-    ( "TxInInfo"
-        :=
-          ( "txInInfoOutRef" := I TxOutRef
-              :+ "txInInfoResolved"
-              := I TxOut
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema TxInInfo
+  ("TxInInfo" :=
+     ("txInInfoOutRef" := I TxOutRef
+     :+ "txInInfoResolved" := I TxOut
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData TxInInfo where
   toData x = genericToData x
@@ -156,8 +158,7 @@ instance FromData TxInInfo where
 
 --------------------------------------------------------------------------------
 
-_TxInInfo
-  :: Iso' TxInInfo { txInInfoOutRef :: TxOutRef, txInInfoResolved :: TxOut }
+_TxInInfo :: Iso' TxInInfo {txInInfoOutRef :: TxOutRef, txInInfoResolved :: TxOut}
 _TxInInfo = _Newtype
 
 --------------------------------------------------------------------------------
@@ -172,22 +173,29 @@ derive instance Eq ScriptContext
 instance Show ScriptContext where
   show a = genericShow a
 
+instance EncodeAeson ScriptContext where
+  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
+                                                                { scriptContextTxInfo: E.value :: _ TxInfo
+                                                                , scriptContextPurpose: E.value :: _ ScriptPurpose
+                                                                }) ) x
+
+instance DecodeAeson ScriptContext where
+  decodeAeson = defer \_ -> D.decode $ (ScriptContext <$> D.record "ScriptContext"
+      { scriptContextTxInfo: D.value :: _ TxInfo
+      , scriptContextPurpose: D.value :: _ ScriptPurpose
+      })
+
 derive instance Generic ScriptContext _
 
 derive instance Newtype ScriptContext _
 
-instance
-  HasPlutusSchema ScriptContext
-    ( "ScriptContext"
-        :=
-          ( "scriptContextTxInfo" := I TxInfo
-              :+ "scriptContextPurpose"
-              := I ScriptPurpose
-              :+ PNil
-          )
-        @@ (Z)
-        :+ PNil
-    )
+instance HasPlutusSchema ScriptContext
+  ("ScriptContext" :=
+     ("scriptContextTxInfo" := I TxInfo
+     :+ "scriptContextPurpose" := I ScriptPurpose
+     :+ PNil)
+   @@ (Z)
+  :+ PNil)
 
 instance ToData ScriptContext where
   toData x = genericToData x
@@ -197,9 +205,7 @@ instance FromData ScriptContext where
 
 --------------------------------------------------------------------------------
 
-_ScriptContext
-  :: Iso' ScriptContext
-       { scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose }
+_ScriptContext :: Iso' ScriptContext {scriptContextTxInfo :: TxInfo, scriptContextPurpose :: ScriptPurpose}
 _ScriptContext = _Newtype
 
 --------------------------------------------------------------------------------
@@ -215,23 +221,34 @@ derive instance Eq ScriptPurpose
 instance Show ScriptPurpose where
   show a = genericShow a
 
+instance EncodeAeson ScriptPurpose where
+  encodeAeson' x = pure $ (defer \_ ->  case _ of
+    Minting a -> E.encodeTagged "Minting" a E.value
+    Spending a -> E.encodeTagged "Spending" a E.value
+    Rewarding a -> E.encodeTagged "Rewarding" a E.value
+    Certifying a -> E.encodeTagged "Certifying" a E.value ) x
+
+instance DecodeAeson ScriptPurpose where
+  decodeAeson = defer \_ -> D.decode
+    $ D.sumType "ScriptPurpose" $ Map.fromFoldable
+      [ "Minting" /\ D.content (Minting <$> D.value)
+      , "Spending" /\ D.content (Spending <$> D.value)
+      , "Rewarding" /\ D.content (Rewarding <$> D.value)
+      , "Certifying" /\ D.content (Certifying <$> D.value)
+      ]
+
 derive instance Generic ScriptPurpose _
 
-instance
-  HasPlutusSchema ScriptPurpose
-    ( "Minting" := PNil
-        @@ (Z)
-        :+ "Spending"
-        := PNil
-        @@ (S (Z))
-        :+ "Rewarding"
-        := PNil
-        @@ (S (S (Z)))
-        :+ "Certifying"
-        := PNil
-        @@ (S (S (S (Z))))
-        :+ PNil
-    )
+instance HasPlutusSchema ScriptPurpose
+  ("Minting" := PNil
+   @@ (Z)
+  :+ "Spending" := PNil
+     @@ (S (Z))
+  :+ "Rewarding" := PNil
+     @@ (S (S (Z)))
+  :+ "Certifying" := PNil
+     @@ (S (S (S (Z))))
+  :+ PNil)
 
 instance ToData ScriptPurpose where
   toData x = genericToData x

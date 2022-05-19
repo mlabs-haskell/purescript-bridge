@@ -3,14 +3,7 @@ module Plutus.V1.Ledger.Ada where
 
 import Prelude
 
-import Aeson
-  ( Aeson
-  , aesonNull
-  , class DecodeAeson
-  , class EncodeAeson
-  , decodeAeson
-  , encodeAeson
-  )
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -39,23 +32,21 @@ derive instance Eq Ada
 instance Show Ada where
   show a = genericShow a
 
+instance EncodeAeson Ada where
+  encodeAeson' x = pure $ E.encode  (E.record {getLovelace: E.value :: _ (BigInt) }) {getLovelace: unwrap x}
+
+instance DecodeAeson Ada where
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getLovelace") <$> D.decode (D.record "getLovelace "{getLovelace: D.value :: _ (BigInt)}) x
+
 derive instance Generic Ada _
 
 derive instance Newtype Ada _
 
+
+
 derive newtype instance ToData Ada
 
 derive newtype instance FromData Ada
-
-instance EncodeAeson Ada where
-  encodeAeson' x = pure $ E.encode
-    (E.record { getLovelace: E.value :: _ (BigInt) })
-    { getLovelace: unwrap x }
-
-instance DecodeAeson Ada where
-  decodeAeson x = wrap <<< get (Proxy :: Proxy "getLovelace") <$> D.decode
-    (D.record "getLovelace " { getLovelace: D.value :: _ (BigInt) })
-    x
 
 --------------------------------------------------------------------------------
 
