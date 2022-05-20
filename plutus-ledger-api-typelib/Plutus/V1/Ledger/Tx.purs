@@ -3,7 +3,14 @@ module Plutus.V1.Ledger.Tx where
 
 import Prelude
 
-import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -20,7 +27,24 @@ import Data.Tuple (Tuple(Tuple))
 import Data.Tuple.Nested ((/\))
 import FromData (class FromData, genericFromData)
 import Plutus.Types.Address (Address)
-import Plutus.Types.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
+import Plutus.Types.DataSchema
+  ( ApPCons
+  , Field
+  , I
+  , Id
+  , IxK
+  , MkField
+  , MkField_
+  , MkIxK
+  , MkIxK_
+  , PCons
+  , PNil
+  , PSchema
+  , class HasPlutusSchema
+  , type (:+)
+  , type (:=)
+  , type (@@)
+  )
 import Plutus.Types.Value (Value)
 import Plutus.V1.Ledger.Scripts (DatumHash)
 import Plutus.V1.Ledger.TxId (TxId)
@@ -43,31 +67,43 @@ instance Show TxOut where
   show a = genericShow a
 
 instance EncodeAeson TxOut where
-  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
-                                                                { txOutAddress: E.value :: _ Address
-                                                                , txOutValue: E.value :: _ Value
-                                                                , txOutDatumHash: (E.maybe E.value) :: _ (Maybe DatumHash)
-                                                                }) ) x
+  encodeAeson' x = pure $
+    ( defer \_ -> E.encode $ unwrap >$<
+        ( E.record
+            { txOutAddress: E.value :: _ Address
+            , txOutValue: E.value :: _ Value
+            , txOutDatumHash: (E.maybe E.value) :: _ (Maybe DatumHash)
+            }
+        )
+    ) x
 
 instance DecodeAeson TxOut where
-  decodeAeson = defer \_ -> D.decode $ (TxOut <$> D.record "TxOut"
-      { txOutAddress: D.value :: _ Address
-      , txOutValue: D.value :: _ Value
-      , txOutDatumHash: (D.maybe D.value) :: _ (Maybe DatumHash)
-      })
+  decodeAeson = defer \_ -> D.decode $
+    ( TxOut <$> D.record "TxOut"
+        { txOutAddress: D.value :: _ Address
+        , txOutValue: D.value :: _ Value
+        , txOutDatumHash: (D.maybe D.value) :: _ (Maybe DatumHash)
+        }
+    )
 
 derive instance Generic TxOut _
 
 derive instance Newtype TxOut _
 
-instance HasPlutusSchema TxOut
-  ("TxOut" :=
-     ("txOutAddress" := I Address
-     :+ "txOutValue" := I Value
-     :+ "txOutDatumHash" := I (Maybe DatumHash)
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema TxOut
+    ( "TxOut"
+        :=
+          ( "txOutAddress" := I Address
+              :+ "txOutValue"
+              := I Value
+              :+ "txOutDatumHash"
+              := I (Maybe DatumHash)
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData TxOut where
   toData x = genericToData x
@@ -77,7 +113,12 @@ instance FromData TxOut where
 
 --------------------------------------------------------------------------------
 
-_TxOut :: Iso' TxOut {txOutAddress :: Address, txOutValue :: Value, txOutDatumHash :: Maybe DatumHash}
+_TxOut
+  :: Iso' TxOut
+       { txOutAddress :: Address
+       , txOutValue :: Value
+       , txOutDatumHash :: Maybe DatumHash
+       }
 _TxOut = _Newtype
 
 --------------------------------------------------------------------------------
@@ -93,28 +134,39 @@ instance Show TxOutRef where
   show a = genericShow a
 
 instance EncodeAeson TxOutRef where
-  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
-                                                                { txOutRefId: E.value :: _ TxId
-                                                                , txOutRefIdx: E.value :: _ BigInt
-                                                                }) ) x
+  encodeAeson' x = pure $
+    ( defer \_ -> E.encode $ unwrap >$<
+        ( E.record
+            { txOutRefId: E.value :: _ TxId
+            , txOutRefIdx: E.value :: _ BigInt
+            }
+        )
+    ) x
 
 instance DecodeAeson TxOutRef where
-  decodeAeson = defer \_ -> D.decode $ (TxOutRef <$> D.record "TxOutRef"
-      { txOutRefId: D.value :: _ TxId
-      , txOutRefIdx: D.value :: _ BigInt
-      })
+  decodeAeson = defer \_ -> D.decode $
+    ( TxOutRef <$> D.record "TxOutRef"
+        { txOutRefId: D.value :: _ TxId
+        , txOutRefIdx: D.value :: _ BigInt
+        }
+    )
 
 derive instance Generic TxOutRef _
 
 derive instance Newtype TxOutRef _
 
-instance HasPlutusSchema TxOutRef
-  ("TxOutRef" :=
-     ("txOutRefId" := I TxId
-     :+ "txOutRefIdx" := I BigInt
-     :+ PNil)
-   @@ (Z)
-  :+ PNil)
+instance
+  HasPlutusSchema TxOutRef
+    ( "TxOutRef"
+        :=
+          ( "txOutRefId" := I TxId
+              :+ "txOutRefIdx"
+              := I BigInt
+              :+ PNil
+          )
+        @@ (Z)
+        :+ PNil
+    )
 
 instance ToData TxOutRef where
   toData x = genericToData x
@@ -124,5 +176,5 @@ instance FromData TxOutRef where
 
 --------------------------------------------------------------------------------
 
-_TxOutRef :: Iso' TxOutRef {txOutRefId :: TxId, txOutRefIdx :: BigInt}
+_TxOutRef :: Iso' TxOutRef { txOutRefId :: TxId, txOutRefIdx :: BigInt }
 _TxOutRef = _Newtype

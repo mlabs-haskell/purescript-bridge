@@ -26,6 +26,7 @@ module RoundTrip.Types (
   TestSum (..),
   TestTwoFields (..),
   TestPlutusData (..),
+  TypesWithMap (..),
 ) where
 
 import ArbitraryLedger (FixMap (fixMap), reMap)
@@ -38,6 +39,7 @@ import PlutusTx qualified as P
 import PlutusTx.AssocMap qualified as AssocMap
 import PlutusTx.Aux (unstableMakeIsData)
 import PlutusTx.ConstrIndices (HasConstrIndices (getConstrIndices))
+import PlutusTx.Ratio (Rational)
 import Test.QuickCheck (Arbitrary (arbitrary), chooseEnum, oneof, resize, sized)
 import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
 
@@ -274,6 +276,13 @@ instance Arbitrary ASum where
       ]
 
 data TestPlutusData
+  = PdTypesWithMap TypesWithMap
+  | PdRational PlutusTx.Ratio.Rational
+  deriving stock (Show, Eq, Generic)
+
+instance SOP.Generic TestPlutusData
+
+data TypesWithMap
   = PdValue Value
   | PdScriptContext ScriptContext
   | PdInterval (Interval POSIXTime)
@@ -281,9 +290,9 @@ data TestPlutusData
   | PdMap (AssocMap.Map Integer Value)
   deriving stock (Show, Eq, Generic)
 
-instance SOP.Generic TestPlutusData
+instance SOP.Generic TypesWithMap
 
-instance Arbitrary TestPlutusData where
+instance Arbitrary TypesWithMap where
   arbitrary =
     fixMap reMap
       =<< resize
@@ -300,11 +309,23 @@ instance Arbitrary TestPlutusData where
             ]
         )
 
+instance Arbitrary TestPlutusData where
+  arbitrary =
+    oneof
+      [ PdTypesWithMap <$> arbitrary
+      , PdRational <$> arbitrary
+      ]
+
 unstableMakeIsData ''TestPlutusData
+unstableMakeIsData ''TypesWithMap
 
 instance FromJSON TestPlutusData
 
 instance ToJSON TestPlutusData
+
+instance FromJSON TypesWithMap
+
+instance ToJSON TypesWithMap
 
 -- | IPC round trip protocol messages
 data RepType = RTJson | RTPlutusData deriving stock (Show, Eq, Generic)

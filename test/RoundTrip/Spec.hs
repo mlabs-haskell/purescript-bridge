@@ -7,14 +7,13 @@
 
 module RoundTrip.Spec (spec) where
 
--- (assertEqual, assertBool, assertFailure, Assertion)
-
 import ArbitraryLedger (WEq ((@==)))
 import Codec.Serialise qualified as Cbor
 import Control.DeepSeq (deepseq)
 import Control.Exception qualified as E
-import Control.Monad (guard, unless)
+import Control.Monad (unless)
 import Data.Aeson (eitherDecode, encode)
+import Data.Bool (bool)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Lazy (fromStrict, toStrict)
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
@@ -58,6 +57,7 @@ import RoundTrip.Types (
   TestRecursiveB,
   TestSum,
   TestTwoFields,
+  TypesWithMap,
   response,
  )
 import System.Directory (createDirectoryIfMissing, withCurrentDirectory)
@@ -206,9 +206,12 @@ roundTripSpec = do
 
     spagoBuild = do
       (exitCode, _stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-      guard $ exitCode == ExitSuccess
-      guard $ not $ "[warn]" `isInfixOf` stderr
-      guard $ "[info] Build succeeded." `isInfixOf` stderr
+      if exitCode == ExitSuccess
+        then do
+          bool (putStrLn stderr) (return ()) (not $ "[warn]" `isInfixOf` stderr)
+          bool (putStrLn stderr) (return ()) (not $ "[info] Build succeeded." `isInfixOf` stderr)
+        else do
+          putStrLn stderr
 
     spagoRun = do
       (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
@@ -259,5 +262,6 @@ myPlutusTypes =
   , argonaut . equal . genericShow $ mkPlutusNewtype @ANewtypeRec
   , argonaut . equal . genericShow $ mkPlutusDataType @ARecord
   , argonaut . equal . genericShow $ mkPlutusDataType @ASum
+  , argonaut . equal . genericShow $ mkPlutusDataType @TypesWithMap
   , argonaut . equal . genericShow $ mkPlutusDataType @TestPlutusData
   ]

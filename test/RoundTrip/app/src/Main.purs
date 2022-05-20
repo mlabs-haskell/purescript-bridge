@@ -2,8 +2,7 @@ module Main
   ( main
   ) where
 
-import Aeson (decodeJsonString, encodeAeson, stringifyAeson)
-import Data.Argonaut (JsonDecodeError, printJsonDecodeError)
+import Aeson (decodeJsonString, encodeAeson, stringifyAeson, JsonDecodeError)
 import Data.Either (either, Either(Left, Right))
 import Data.Maybe (maybe, Maybe)
 import Deserialization.FromBytes (fromBytes', FromBytesError)
@@ -42,14 +41,14 @@ main = do
         reqOrErr = decodeJsonString input
       case reqOrErr of
         Left err -> do
-          error $ "ps> Wanted Request got error: " <> printJsonDecodeError err
+          error $ "ps> Wanted Request got error: " <> show err
             <> " on input: "
             <> input
           log ""
         Right req -> do
           either
             ( \err -> do
-                error err
+                error ""
                 log $ stringifyAeson $ encodeAeson $ RespError err
             )
             ( \resp -> do
@@ -62,7 +61,7 @@ main = do
 handleReq :: Request -> Either String Response
 handleReq (Req RTJson str) = do
   testData <- either
-    ( \err -> Left $ "ps> Wanted Json got err: " <> printJsonDecodeError err
+    ( \err -> Left $ "ps> Wanted Json got err: " <> show err
         <> " on input: "
         <> str
     )

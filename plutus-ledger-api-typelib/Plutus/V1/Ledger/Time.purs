@@ -3,7 +3,14 @@ module Plutus.V1.Ledger.Time where
 
 import Prelude
 
-import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -32,7 +39,7 @@ instance Show DiffMilliSeconds where
   show a = genericShow a
 
 instance EncodeAeson DiffMilliSeconds where
-  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< E.value ) x
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson DiffMilliSeconds where
   decodeAeson = defer \_ -> D.decode $ (DiffMilliSeconds <$> D.value)
@@ -42,8 +49,6 @@ derive instance Ord DiffMilliSeconds
 derive instance Generic DiffMilliSeconds _
 
 derive instance Newtype DiffMilliSeconds _
-
-
 
 derive newtype instance ToData DiffMilliSeconds
 
@@ -64,7 +69,7 @@ instance Show POSIXTime where
   show a = genericShow a
 
 instance EncodeAeson POSIXTime where
-  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< E.value ) x
+  encodeAeson' x = pure $ (defer \_ -> E.encode $ unwrap >$< E.value) x
 
 instance DecodeAeson POSIXTime where
   decodeAeson = defer \_ -> D.decode $ (POSIXTime <$> D.value)
@@ -74,8 +79,6 @@ derive instance Ord POSIXTime
 derive instance Generic POSIXTime _
 
 derive instance Newtype POSIXTime _
-
-
 
 derive newtype instance ToData POSIXTime
 

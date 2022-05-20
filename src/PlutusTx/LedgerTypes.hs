@@ -37,6 +37,8 @@ import Language.PureScript.Bridge.TypeParameters (A)
 import PlutusTx.ConstrIndices ()
 
 -- Ledger type imports
+
+import Data.Text (Text)
 import Plutus.V1.Ledger.Ada (Ada)
 import Plutus.V1.Ledger.Address (Address)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
@@ -66,8 +68,6 @@ import Plutus.V1.Ledger.Value (
   TokenName,
   Value,
  )
-
-import Data.Text (Text)
 
 {- | Ledger types translation
  Ledger types exist in several forms and it's useful to formulate a language
@@ -130,6 +130,7 @@ origToCtlNativeOverriddenBridge =
     <|> ctlBridgePart "Plutus.V1.Ledger.Value" "CurrencySymbol" "Plutus.Types.CurrencySymbol" "CurrencySymbol"
     <|> ctlBridgePart "Plutus.V1.Ledger.Value" "TokenName" "Types.TokenName" "TokenName"
     <|> ctlBridgePart "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
+    <|> ctlBridgePart "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
 
 origToCtlNativeScriptsBridge :: BridgeBuilder PSType
 origToCtlNativeScriptsBridge =

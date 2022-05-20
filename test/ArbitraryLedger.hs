@@ -46,6 +46,7 @@ import PlutusTx (unstableMakeIsData)
 import PlutusTx qualified as P
 import PlutusTx.AssocMap qualified as PMap
 import PlutusTx.Builtins.Internal qualified as PI
+import PlutusTx.Ratio qualified as PRatio
 import Test.QuickCheck (Arbitrary (arbitrary), Gen, oneof)
 import Test.QuickCheck.Plutus.Instances ()
 import Test.QuickCheck.Plutus.Modifiers (UniqueList (UniqueList), uniqueListOf)
@@ -226,6 +227,9 @@ instance Arbitrary ALedgerType where
 
 class WEq a where
   (@==) :: a -> a -> Bool
+
+instance WEq PRatio.Rational where
+  (@==) = (==)
 
 instance WEq Integer where
   (@==) = (==)
