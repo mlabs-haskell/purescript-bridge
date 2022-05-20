@@ -6,7 +6,7 @@ let
       mkdir $out
       mkdir $out/generated
       cp ${./purescript-bridge-typelib-spago}/* $out
-      cp -r ${generatedPursFiles} $out/generated/
+      cp -r ${generatedPursFiles}/* $out/generated/
     '';
 
   # Node
