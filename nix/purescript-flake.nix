@@ -67,6 +67,7 @@ rec {
     installPhase = ''touch $out'';
 
     shellHook = ''
+      set -vox
       export XDG_CACHE_HOME=$TMPDIR
       export XDG_RUNTIME_DIR=$TMPDIR
 

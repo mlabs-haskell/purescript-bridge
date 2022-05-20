@@ -1,6 +1,6 @@
 ctl: { pkgs, generatedPursFiles, purs, spago }:
 let
-  spagoProjectDir = pkgs.runCommand "prepare-spago-directory"
+  spagoProjectDir = pkgs.runCommand "spago-project-dir"
     { }
     ''
       mkdir $out
