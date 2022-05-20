@@ -23,8 +23,11 @@ let
   };
 
 in
-pursLib.buildPursProject {
-  projectDir = spagoProjectDir;
-  pursSubDirs = [ "/generated" ];
-  checkWarnings = false;
+{
+  inherit spagoProjectDir;
+  build = pursLib.buildPursProject {
+    projectDir = spagoProjectDir;
+    pursSubDirs = [ "/generated" ];
+    checkWarnings = false;
+  };
 }

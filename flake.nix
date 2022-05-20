@@ -102,10 +102,10 @@
             ctl = inputs.cardano-transaction-lib;
             purs = easy-ps.${pursVersion};
           in
-          (import ./nix/purescript-bridge-typelib.nix) ctl {
+          (import ./nix/purescript-bridge-typelib.nix ctl {
             inherit pkgs purs spago;
             generatedPursFiles = generatedLedgerPursFiles;
-          };
+          }).build;
 
         sampleLedgerTypelib =
           let
@@ -113,10 +113,10 @@
             ctl = inputs.cardano-transaction-lib;
             purs = easy-ps.${pursVersion};
           in
-          (import ./nix/purescript-bridge-typelib.nix) ctl {
+          (import ./nix/purescript-bridge-typelib.nix ctl {
             inherit pkgs purs spago;
             generatedPursFiles = ./plutus-ledger-api-typelib;
-          };
+          }).build;
 
         # Purescript - Haskell round trip test purs flake
         roundTripTestPursFlake =
