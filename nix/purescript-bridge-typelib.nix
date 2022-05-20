@@ -1,20 +1,30 @@
-{ pkgs, pursDir, purs }:
-with import ./purescript-bridge-typelib-spago/spago-packages.nix { inherit pkgs; };
-pkgs.stdenv.mkDerivation {
-  name = "purescript-bridge-typelib-spago-build";
-  src = ./purescript-bridge-typelib-spago;
-  buildInputs = [ purs installSpagoStyle buildFromNixStore ];
-  doCheck = true;
-  buildPhase = ''
-    mkdir src
-    cp -r ${pursDir} src/
-  '';
-  checkPhase = ''
-    install-spago-style
-    build-from-store $(find src -name "*.purs")
-  '';
-  installPhase = ''
-    mkdir $out
-    cp -r * $out
-  '';
+ctl: { pkgs, generatedPursFiles, purs, spago }:
+let
+  spagoProjectDir = pkgs.runCommand "prepare-spago-directory"
+    { }
+    ''
+      mkdir $out
+      mkdir $out/generated
+      cp ${./purescript-bridge-typelib-spago}/* $out
+      cp -r ${generatedPursFiles} $out/generated/
+    '';
+
+  # Node
+  nodeModules = [ ];
+  nodejs = pkgs.nodejs-14_x;
+
+  # Spago
+  spagoPkgs = import (./purescript-bridge-typelib-spago/spago-packages.nix) { inherit pkgs; };
+  spagoLocalPkgs = [ ctl ];
+
+  # Purescript
+  pursLib = import ./purescript-lib.nix {
+    inherit pkgs nodejs nodeModules spago spagoPkgs spagoLocalPkgs purs;
+  };
+
+in
+pursLib.buildPursProject {
+  projectDir = spagoProjectDir;
+  pursSubDirs = [ "/generated" ];
+  checkWarnings = false;
 }

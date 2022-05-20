@@ -85,24 +85,38 @@
         fileFixers = cq.fixers pkgs;
 
         pursVersion = "purs-0_14_5";
-        # plutus-ledger-api Purescript typelib
-        sampleLedgerTypelib = import ./nix/purescript-bridge-typelib.nix {
-          inherit pkgs;
-          purs = easy-ps.${pursVersion};
-          pursDir = ./plutus-ledger-api-typelib;
-        };
-        ledgerTypelib = import ./nix/purescript-bridge-typelib.nix {
-          inherit pkgs;
-          purs = easy-ps.${pursVersion};
-          pursDir = (pkgs.runCommand "generate-plutus-ledger-api-typelib"
-            {
-              cli = haskellProject.getComponent "purescript-bridge:exe:cli";
-            }
-            ''
-              mkdir $out
-              $cli/bin/cli generate-plutus-ledger-api-types --purs-dir $out
-            '');
-        };
+
+        # Generated plutus-ledger-api Purescript typelib
+        generatedLedgerPursFiles = pkgs.runCommand "generate-plutus-ledger-api-purs-files"
+          {
+            cli = haskellProject.getComponent "purescript-bridge:exe:cli";
+          }
+          ''
+            mkdir $out
+            $cli/bin/cli generate-plutus-ledger-api-types --purs-dir $out
+          '';
+
+        generatedLedgerTypelib =
+          let
+            spago = easy-ps.spago;
+            ctl = inputs.cardano-transaction-lib;
+            purs = easy-ps.${pursVersion};
+          in
+          (import ./nix/purescript-bridge-typelib.nix) ctl {
+            inherit pkgs purs spago;
+            generatedPursFiles = generatedLedgerPursFiles;
+          };
+
+        sampleLedgerTypelib =
+          let
+            spago = easy-ps.spago;
+            ctl = inputs.cardano-transaction-lib;
+            purs = easy-ps.${pursVersion};
+          in
+          (import ./nix/purescript-bridge-typelib.nix) ctl {
+            inherit pkgs purs spago;
+            generatedPursFiles = ./plutus-ledger-api-typelib;
+          };
 
         # Purescript - Haskell round trip test purs flake
         roundTripTestPursFlake =
@@ -112,7 +126,7 @@
             pursSubDirs = [ "/src" "/generated" ];
             nodejs = pkgs.nodejs-14_x;
             spagoPkgs = import (src + "/spago-packages.nix") { inherit pkgs; };
-            spagoLocalPkgs = [ ];
+            spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
             nodePkgs =
               import (src + "/node2nix.nix") { inherit pkgs system nodejs; };
             purs = easy-ps.${pursVersion};
@@ -145,7 +159,7 @@
         # Flake standard attributes
         packages = haskellFlake.packages // {
           sample-plutus-ledger-api-typelib = sampleLedgerTypelib;
-          plutus-ledger-api-typelib = ledgerTypelib;
+          plutus-ledger-api-typelib = generatedLedgerTypelib;
         };
         checks = haskellFlake.checks;
         devShells = {
@@ -188,7 +202,7 @@
 
         # Purescript and bridge Nix libs
         lib = {
-          bridgeTypelib = import ./nix/purescript-bridge-typelib.nix;
+          bridgeTypelib = (import ./nix/purescript-bridge-typelib.nix) inputs.cardano-transaction-lib;
           pursFlake = import ./nix/purescript-flake.nix;
           pursLib = import ./nix/purescript-lib.nix;
         };
