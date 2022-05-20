@@ -15,6 +15,7 @@
       flake = false;
     };
 
+    cardano-transaction-lib.url = github:Plutonomicon/cardano-transaction-lib/c106ebb328461ace81e302b535d5bdb174b942fe;
     # We're reusing inputs from bot-plutus-interface as it's currently the source of nix truth.
     bot-plutus-interface.url = "github:mlabs-haskell/bot-plutus-interface";
 
@@ -121,6 +122,7 @@
             inherit src pursSubDirs pkgs system easy-ps spagoPkgs spagoLocalPkgs
               nodejs nodePkgs purs;
           };
+
         combineDevShells = hsShell: pursShell:
           hsShell.overrideAttrs
             (
@@ -129,6 +131,7 @@
                 shellHook = ''
                   ${old.shellHook}
                   ${pursShell.shellHook}
+                  export CTL_SPAGO_DHALL=${inputs.cardano-transaction-lib}/spago.dhall
                 '';
               }
             ) // {
@@ -146,8 +149,7 @@
         };
         checks = haskellFlake.checks;
         devShells = {
-          default = haskellFlake.devShell;
-          roundTripTest = combineDevShells haskellFlake.devShell roundTripTestPursFlake.devShell;
+          default = combineDevShells haskellFlake.devShell roundTripTestPursFlake.devShell;
         };
 
         # Used by CI

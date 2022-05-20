@@ -4,7 +4,8 @@ You can edit this file as you like.
 -}
 { name = "purescript-bridge-typelib-cbtx"
 , dependencies =
-  [ "aeson-helpers"
+  [ "aeson"
+  , "aeson-helpers"
   , "cardano-transaction-lib"
   , "enums"
   , "maybe"

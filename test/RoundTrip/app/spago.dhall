@@ -2,7 +2,6 @@
 , dependencies =
   [ "aeson"
   , "aeson-helpers"
-  , "argonaut"
   , "bigints"
   , "cardano-transaction-lib"
   , "console"
