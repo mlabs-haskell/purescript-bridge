@@ -2,7 +2,7 @@
 Welcome to a Spago project!
 You can edit this file as you like.
 -}
-{ name = "purescript-bridge-typelib-cbtx"
+{ name = "purescript-bridge-typelib"
 , dependencies =
   [ "aeson"
   , "aeson-helpers"

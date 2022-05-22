@@ -4,10 +4,10 @@
 , pkgs
 , system
 , easy-ps
-, spagoPkgs
+, spagoPkgs ? import (src + "/spago-packages.nix") { inherit pkgs; }
 , spagoLocalPkgs ? [ ]
 , nodejs
-, nodePkgs
+, nodePkgs ? import (src + "/node2nix.nix") { inherit pkgs system nodejs; }
 , purs ? easy-ps.purs-0_14_5
 }:
 
@@ -45,7 +45,8 @@ rec {
 
     } "touch $out";
 
-  devShell = pkgs.mkShell {
+  devShell = devShellComposeWith { shellHook = ""; buildInputs = [ ]; };
+  devShellComposeWith = otherShell: pkgs.mkShell {
     buildInputs = (with easy-ps; [
       spago
       purs-tidy
@@ -59,7 +60,7 @@ rec {
       nodejs # includes npm
       nodePackages.node2nix
       nodePackages.jsonlint
-    ]) ++ [ purs ];
+    ]) ++ [ purs ] ++ otherShell.buildInputs;
 
     inherit spagoLocalPkgs;
 
@@ -67,6 +68,7 @@ rec {
     installPhase = ''touch $out'';
 
     shellHook = ''
+      ${otherShell.shellHook}
       export XDG_CACHE_HOME=$TMPDIR
       export XDG_RUNTIME_DIR=$TMPDIR
 
@@ -76,11 +78,23 @@ rec {
       export PATH="$nodeModules/bin:$PATH"
 
       echo "Setting up local Spago packages"
-      mkdir $TMPDIR/spagoLocals
+      export LOCALS_DHALL=$TMPDIR/locals.dhall
+      touch $LOCALS_DHALL
+      cat <<DHALL > $LOCALS_DHALL
+      let Location =
+            https://prelude.dhall-lang.org/v15.0.0/Location/Type
+              sha256:613ebb491aeef4ff06368058b4f0e6e3bb8a58d8c145131fc0b947aac045a529
+      in
+      DHALL
       for slp in $spagoLocalPkgs; do
         slpName=$(dhall repl <<< "($slp/spago.dhall).name" | grep \" | tr -d '"')
-        ln -s $slp $TMPDIR/spagoLocals/$slpName
+        cat <<DHALL >> $LOCALS_DHALL
+          {
+            $slpName = Location.Local "$slp/spago.dhall"
+          } // ($slp/spago.dhall).packages //
+      DHALL
       done
+      echo "{=}" >> $LOCALS_DHALL
     '';
   };
 }

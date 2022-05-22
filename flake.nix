@@ -125,16 +125,13 @@
             src = ./test/RoundTrip/app;
             pursSubDirs = [ "/src" "/generated" ];
             nodejs = pkgs.nodejs-14_x;
-            spagoPkgs = import (src + "/spago-packages.nix") { inherit pkgs; };
             spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
-            nodePkgs =
-              import (src + "/node2nix.nix") { inherit pkgs system nodejs; };
             purs = easy-ps.${pursVersion};
           in
           import ./nix/purescript-flake.nix {
             name = "purescript-bridge-roundtrip-test";
-            inherit src pursSubDirs pkgs system easy-ps spagoPkgs spagoLocalPkgs
-              nodejs nodePkgs purs;
+            inherit src pursSubDirs pkgs system easy-ps spagoLocalPkgs
+              nodejs purs;
           };
 
         combineDevShells = hsShell: pursShell:
@@ -149,7 +146,7 @@
                 '';
               }
             ) // {
-            inherit (pursShell) spagoPkgs;
+            inherit (pursShell) spagoPkgs spagoLocalPkgs;
           };
       in
       {
@@ -163,7 +160,7 @@
         };
         checks = haskellFlake.checks;
         devShells = {
-          default = combineDevShells haskellFlake.devShell roundTripTestPursFlake.devShell;
+          default = roundTripTestPursFlake.devShellComposeWith haskellFlake.devShell;
         };
 
         # Used by CI
