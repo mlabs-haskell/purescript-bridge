@@ -86,8 +86,7 @@ rec {
         let Location = $preludeLocation
         in
         DHALL
-        echo $spagoLocalPkgs
-        for slp in "$spagoLocalPkgs"; do
+        for slp in $spagoLocalPkgs; do
           # FIXME: Want to use `dhall repl` but it does network IO
           slpName=$(grep name $slp/spago.dhall | cut -d "\"" -f 2)
           cat <<DHALL >> $LOCALS_DHALL
