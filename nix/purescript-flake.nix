@@ -62,10 +62,42 @@ rec {
       nodePackages.jsonlint
     ]) ++ [ purs ] ++ otherShell.buildInputs;
 
-    inherit spagoLocalPkgs;
-
     phases = [ "installPhase" ];
     installPhase = ''touch $out'';
+
+    localsDhall = pkgs.runCommand "locals-dhall"
+      {
+        inherit spagoLocalPkgs;
+        preludeLocation = (pkgs.stdenv.mkDerivation {
+          name = "dhall-prelude-location";
+          version = "v15.0.0";
+          src = pkgs.fetchurl {
+            url = "https://prelude.dhall-lang.org/v15.0.0/Location/Type";
+            sha256 = "uTa98yh//jqU/XcdUQ0RGHuZttABMDfL0FOyMhCxDss=";
+          };
+          phases = "installPhase";
+          installPhase = "ln -s $src $out";
+        });
+      }
+      ''
+        export LOCALS_DHALL=$out
+        touch $LOCALS_DHALL
+        cat <<DHALL > $LOCALS_DHALL
+        let Location = $preludeLocation
+        in
+        DHALL
+        echo $spagoLocalPkgs
+        for slp in "$spagoLocalPkgs"; do
+          # FIXME: Want to use `dhall repl` but it does network IO
+          slpName=$(grep name $slp/spago.dhall | cut -d "\"" -f 2)
+          cat <<DHALL >> $LOCALS_DHALL
+            {
+              $slpName = Location.Local "$slp/spago.dhall"
+            } // ($slp/spago.dhall).packages //
+        DHALL
+        done
+        echo "{=}" >> $LOCALS_DHALL
+      '';
 
     shellHook = ''
       ${otherShell.shellHook}
@@ -78,23 +110,7 @@ rec {
       export PATH="$nodeModules/bin:$PATH"
 
       echo "Setting up local Spago packages"
-      export LOCALS_DHALL=$TMPDIR/locals.dhall
-      touch $LOCALS_DHALL
-      cat <<DHALL > $LOCALS_DHALL
-      let Location =
-            https://prelude.dhall-lang.org/v15.0.0/Location/Type
-              sha256:613ebb491aeef4ff06368058b4f0e6e3bb8a58d8c145131fc0b947aac045a529
-      in
-      DHALL
-      for slp in $spagoLocalPkgs; do
-        slpName=$(dhall repl <<< "($slp/spago.dhall).name" | grep \" | tr -d '"')
-        cat <<DHALL >> $LOCALS_DHALL
-          {
-            $slpName = Location.Local "$slp/spago.dhall"
-          } // ($slp/spago.dhall).packages //
-      DHALL
-      done
-      echo "{=}" >> $LOCALS_DHALL
+      export LOCALS_DHALL=$localsDhall
     '';
   };
 }

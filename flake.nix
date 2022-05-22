@@ -133,21 +133,6 @@
             inherit src pursSubDirs pkgs system easy-ps spagoLocalPkgs
               nodejs purs;
           };
-
-        combineDevShells = hsShell: pursShell:
-          hsShell.overrideAttrs
-            (
-              old: {
-                buildInputs = old.buildInputs ++ pursShell.buildInputs;
-                shellHook = ''
-                  ${old.shellHook}
-                  ${pursShell.shellHook}
-                  export CTL_SPAGO_DHALL=${inputs.cardano-transaction-lib}/spago.dhall
-                '';
-              }
-            ) // {
-            inherit (pursShell) spagoPkgs spagoLocalPkgs;
-          };
       in
       {
         # Useful attributes
