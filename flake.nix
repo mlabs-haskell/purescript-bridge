@@ -140,7 +140,7 @@
             inherit pkgs easy-ps;
             src = ./nix/purescript-bridge-typelib-spago;
             workDir = "./nix/purescript-bridge-typelib-spago";
-            pursSubDirs = [ "/generated" ];
+            pursSubDirs = [ ];
             nodejs = pkgs.nodejs-14_x;
             spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
             purs = easy-ps.${pursVersion};

@@ -10,3 +10,6 @@ update-deps: clean
 
 fix-files:
 	@make -C ../../../ $@
+
+run-cabal-test:
+	cd ../../../ && cabal run test:tests

@@ -15,5 +15,5 @@ You can edit this file as you like.
   , "tuples"
   ]
 , packages = ./packages.dhall
-, sources = [ "generated/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 }

@@ -15,6 +15,9 @@ develop:
 test:
 	$(NIX_BUILD) .#checks.${current-system}."purescript-bridge:test:tests"
 
+test-rt:
+	$(NIX_DEV) -c make run-cabal-test
+
 test-all: test
 
 # Build all
@@ -42,8 +45,7 @@ update-all:
 	nix -L --show-trace develop .#default -c make
 
 # Run what CI would
-ci: check-files build-all
-	$(NIX_DEV) -c cabal run test:tests
+ci: check-files build-all test-rt
 
 # Clean local folder.
 clean:

@@ -4,9 +4,9 @@ let
     { }
     ''
       mkdir $out
-      mkdir $out/generated
+      mkdir $out/src
       cp ${./purescript-bridge-typelib-spago}/* $out
-      cp -r ${generatedPursFiles}/* $out/generated/
+      cp -r ${generatedPursFiles}/* $out/src/
     '';
 
   # Node
@@ -25,6 +25,6 @@ let
 in
 pursLib.buildPursProject {
   projectDir = spagoProjectDir;
-  pursSubDirs = [ "/generated" ];
+  pursSubDirs = [ "/src" ];
   checkWarnings = false;
 }

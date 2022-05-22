@@ -46,40 +46,43 @@ rec {
 
     } "touch $out";
 
-  devShell = devShellComposeWith { shellHook = ""; buildInputs = [ ]; };
-  devShellComposeWith = otherShell: pkgs.mkShell {
-    buildInputs = (with easy-ps; [
-      spago
-      purs-tidy
-      purescript-language-server
-      pscid
-      spago2nix
-      psc-package
-    ]) ++ (with pkgs; [
-      dhall
-      dhall-lsp-server
-      nodejs # includes npm
-      nodePackages.node2nix
-      nodePackages.jsonlint
-    ]) ++ [ purs ] ++ otherShell.buildInputs;
+  devShell = devShellComposeWith (pkgs.mkShell { installPhase = ""; });
+  devShellComposeWith = otherShell: otherShell.overrideAttrs (old:
+    {
+      buildInputs = (with easy-ps; [
+        spago
+        purs-tidy
+        purescript-language-server
+        pscid
+        spago2nix
+        psc-package
+      ]) ++ (with pkgs; [
+        dhall
+        dhall-lsp-server
+        nodejs # includes npm
+        nodePackages.node2nix
+        nodePackages.jsonlint
+      ]) ++ [ purs ] ++ old.buildInputs;
 
-    phases = [ "installPhase" ];
-    installPhase = ''touch $out'';
+      phases = [ "installPhase" ] ++ old.phases;
+      installPhase = ''
+        touch $out
+        ${old.installPhase}
+      '';
+      shellHook = ''
+        ${old.shellHook}
+        export XDG_CACHE_HOME=$TMPDIR
+        export XDG_RUNTIME_DIR=$TMPDIR
 
-    shellHook = ''
-      ${otherShell.shellHook}
-      export XDG_CACHE_HOME=$TMPDIR
-      export XDG_RUNTIME_DIR=$TMPDIR
+        echo "Setting up Nodejs dependencies"
+        ln -s ${nodeModules}/lib/node_modules $TMPDIR/node_modules
+        export NODE_PATH="$TMPDIR/node_modules:$NODE_PATH"
+        export PATH="$nodeModules/bin:$PATH"
 
-      echo "Setting up Nodejs dependencies"
-      ln -s ${nodeModules}/lib/node_modules $TMPDIR/node_modules
-      export NODE_PATH="$TMPDIR/node_modules:$NODE_PATH"
-      export PATH="$nodeModules/bin:$PATH"
-
-      echo "Setting up local Spago packages"
-      cd ${workDir}
-      ln -fs ${ps-lib.localsDhall} ./locals.dhall
-    '';
-  };
+        echo "Setting up local Spago packages"
+        cd ${workDir}
+        ln -fs ${ps-lib.localsDhall} ./locals.dhall
+      '';
+    });
 }
 
