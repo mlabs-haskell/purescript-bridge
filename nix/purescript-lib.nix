@@ -9,9 +9,43 @@
 rec {
   pursFilterSource = pursDirs: builtins.filterSource (path: type: type == "regular" && builtins.elem (builtins.baseNameOf path) pursDirs) ./.;
 
+  localsDhall = pkgs.runCommand "locals-dhall"
+    {
+      inherit spagoLocalPkgs;
+      preludeLocation = (pkgs.stdenv.mkDerivation {
+        name = "dhall-prelude-location";
+        version = "v15.0.0";
+        src = pkgs.fetchurl {
+          url = "https://prelude.dhall-lang.org/v15.0.0/Location/Type";
+          sha256 = "uTa98yh//jqU/XcdUQ0RGHuZttABMDfL0FOyMhCxDss=";
+        };
+        phases = "installPhase";
+        installPhase = "ln -s $src $out";
+      });
+    }
+    ''
+      export LOCALS_DHALL=$out
+      touch $LOCALS_DHALL
+      cat <<DHALL > $LOCALS_DHALL
+      let Location = $preludeLocation
+      in
+      DHALL
+      for slp in $spagoLocalPkgs; do
+        # FIXME: Want to use `dhall repl` but it does network IO
+        slpName=$(grep name $slp/spago.dhall | cut -d "\"" -f 2)
+        cat <<DHALL >> $LOCALS_DHALL
+          {
+            $slpName = Location.Local "$slp/spago.dhall"
+          } // ($slp/spago.dhall).packages //
+      DHALL
+      done
+      echo "{=}" >> $LOCALS_DHALL
+    '';
+
   buildPursProject = { projectDir, pursSubDirs ? [ "/src" "/test" ], checkWarnings ? true }:
     pkgs.stdenv.mkDerivation rec {
       name = "purescript-lib-build-purs-project";
+      outputs = [ "out" "spagoProjectDir" ];
       pursDirs = (builtins.map (sd: projectDir + sd) pursSubDirs);
       src = pursFilterSource pursDirs;
       inherit spagoLocalPkgs;
@@ -27,6 +61,11 @@ rec {
       phases = [ "buildPhase" "checkPhase" "installPhase" ];
       doCheck = checkWarnings;
       buildPhase = ''
+        set -vox
+        mkdir $spagoProjectDir
+        cp -r ${projectDir}/* $spagoProjectDir
+        ln -s ${localsDhall} $spagoProjectDir/locals.dhall
+
         install-spago-style
         PURS_SOURCES=$(for pursDir in $pursDirs; do find $pursDir -name "*.purs"; done)
         SPL_PURS_SOURCES=$(for slp in $spagoLocalPkgs; do find $slp -name "*.purs"; done)

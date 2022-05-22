@@ -102,10 +102,10 @@
             ctl = inputs.cardano-transaction-lib;
             purs = easy-ps.${pursVersion};
           in
-          (import ./nix/purescript-bridge-typelib.nix ctl {
+          import ./nix/purescript-bridge-typelib.nix ctl {
             inherit pkgs purs spago;
             generatedPursFiles = generatedLedgerPursFiles;
-          }).build;
+          };
 
         sampleLedgerTypelib =
           let
@@ -113,16 +113,17 @@
             ctl = inputs.cardano-transaction-lib;
             purs = easy-ps.${pursVersion};
           in
-          (import ./nix/purescript-bridge-typelib.nix ctl {
+          import ./nix/purescript-bridge-typelib.nix ctl {
             inherit pkgs purs spago;
             generatedPursFiles = ./plutus-ledger-api-typelib;
-          }).build;
+          };
 
         # Purescript - Haskell round trip test purs flake
         roundTripTestPursFlake =
           let
             inherit pkgs easy-ps;
             src = ./test/RoundTrip/app;
+            workDir = "./test/RoundTrip/app";
             pursSubDirs = [ "/src" "/generated" ];
             nodejs = pkgs.nodejs-14_x;
             spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
@@ -130,7 +131,23 @@
           in
           import ./nix/purescript-flake.nix {
             name = "purescript-bridge-roundtrip-test";
-            inherit src pursSubDirs pkgs system easy-ps spagoLocalPkgs
+            inherit src workDir pursSubDirs pkgs system easy-ps spagoLocalPkgs
+              nodejs purs;
+          };
+        # purescript-bridge-typelib.nix flake
+        purescriptBridgeTypelibFlake =
+          let
+            inherit pkgs easy-ps;
+            src = ./nix/purescript-bridge-typelib-spago;
+            workDir = "./nix/purescript-bridge-typelib-spago";
+            pursSubDirs = [ "/generated" ];
+            nodejs = pkgs.nodejs-14_x;
+            spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
+            purs = easy-ps.${pursVersion};
+          in
+          import ./nix/purescript-flake.nix {
+            name = "purescript-bridge-typelib-nix";
+            inherit src workDir pursSubDirs pkgs system easy-ps spagoLocalPkgs
               nodejs purs;
           };
       in
@@ -146,6 +163,7 @@
         checks = haskellFlake.checks;
         devShells = {
           default = roundTripTestPursFlake.devShellComposeWith haskellFlake.devShell;
+          typelibNix = purescriptBridgeTypelibFlake.devShell;
         };
 
         # Used by CI

@@ -1,6 +1,7 @@
 { name
 , src
 , pursSubDirs ? [ "/src" "/test" ]
+, workDir # FIXME: This is awkward; to cd into and attach a locals.dhall link
 , pkgs
 , system
 , easy-ps
@@ -65,39 +66,6 @@ rec {
     phases = [ "installPhase" ];
     installPhase = ''touch $out'';
 
-    localsDhall = pkgs.runCommand "locals-dhall"
-      {
-        inherit spagoLocalPkgs;
-        preludeLocation = (pkgs.stdenv.mkDerivation {
-          name = "dhall-prelude-location";
-          version = "v15.0.0";
-          src = pkgs.fetchurl {
-            url = "https://prelude.dhall-lang.org/v15.0.0/Location/Type";
-            sha256 = "uTa98yh//jqU/XcdUQ0RGHuZttABMDfL0FOyMhCxDss=";
-          };
-          phases = "installPhase";
-          installPhase = "ln -s $src $out";
-        });
-      }
-      ''
-        export LOCALS_DHALL=$out
-        touch $LOCALS_DHALL
-        cat <<DHALL > $LOCALS_DHALL
-        let Location = $preludeLocation
-        in
-        DHALL
-        for slp in $spagoLocalPkgs; do
-          # FIXME: Want to use `dhall repl` but it does network IO
-          slpName=$(grep name $slp/spago.dhall | cut -d "\"" -f 2)
-          cat <<DHALL >> $LOCALS_DHALL
-            {
-              $slpName = Location.Local "$slp/spago.dhall"
-            } // ($slp/spago.dhall).packages //
-        DHALL
-        done
-        echo "{=}" >> $LOCALS_DHALL
-      '';
-
     shellHook = ''
       ${otherShell.shellHook}
       export XDG_CACHE_HOME=$TMPDIR
@@ -109,7 +77,8 @@ rec {
       export PATH="$nodeModules/bin:$PATH"
 
       echo "Setting up local Spago packages"
-      export LOCALS_DHALL=$localsDhall
+      cd ${workDir}
+      ln -fs ${ps-lib.localsDhall} ./locals.dhall
     '';
   };
 }

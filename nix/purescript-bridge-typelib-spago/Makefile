@@ -1,10 +1,12 @@
-all: clean spago2nix fix-files
+all: clean update-deps fix-files
 
 clean:
-	rm -fR node_modules .spago2nix/ .spago outputs .psci_modules
+	rm -fR node_modules .spago2nix/ .spago output .psci_modules generated
 
-spago2nix: clean
-	nix shell --impure --expr "let easy-ps = import (builtins.fetchGit "https://www.github.com/justinwoo/easy-purescript-nix") {}; in easy-ps.spago2nix" -c spago2nix generate
+update-deps: clean
+	spago2nix generate
+	npm i --package-lock-only
+	node2nix -l package-lock.json -d -c node2nix.nix
 
 fix-files:
 	@make -C ../../ $@

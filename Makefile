@@ -37,6 +37,10 @@ fix-files: clean
 check-files:
 	$(NIX_BUILD) .#$@.${current-system}
 
+update-all:
+	nix -L --show-trace develop .#typelibNix -c make
+	nix -L --show-trace develop .#default -c make
+
 # Run what CI would
 ci: check-files build-all
 	$(NIX_DEV) -c cabal run test:tests
@@ -45,18 +49,9 @@ ci: check-files build-all
 clean:
 	@ rm -rf dist-newstyle                  || true
 	@ rm -rf .psc-ide-port                  || true
-	@ rm -rf ./test/RoundTrip/app/dist    || true
-	@ rm -rf ./test/RoundTrip/app/output    || true
-	@ rm -rf ./test/RoundTrip/app/.spago    || true
-	@ rm -rf ./test/RoundTrip/app/.psci_modules    || true
-	@ rm -rf ./test/RoundTrip/app/.spago2nix    || true
-	@ rm -rf ./test/RoundTrip/app/node_modules || true
-	@ rm -rf ./test/RoundTrip/app/generated || true
 	@ rm -rf .spago || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago2nix || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/output || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/node_modules || true
+	@ make -C ./test/RoundTrip/app clean   || true
+	@ make -C ./nix/purescript-bridge-typelib-spago clean    || true
 
 generate-plutus-ledger-api-typelib:
 	@ if [ -d plutus-ledger-api-typelib ]; then git rm -r --cached plutus-ledger-api-typelib; else echo "skip"; fi
