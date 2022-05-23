@@ -49,7 +49,7 @@ rec {
   devShell = devShellComposeWith (pkgs.mkShell { installPhase = ""; });
   devShellComposeWith = otherShell: otherShell.overrideAttrs (old:
     {
-      buildInputs = (with easy-ps; [
+      buildInputs = pkgs.lib.lists.unique ((with easy-ps; [
         spago
         purs-tidy
         purescript-language-server
@@ -62,12 +62,14 @@ rec {
         nodejs # includes npm
         nodePackages.node2nix
         nodePackages.jsonlint
-      ]) ++ [ purs ] ++ old.buildInputs;
+      ]) ++ [ purs ] ++ old.buildInputs);
 
-      phases = [ "installPhase" ] ++ old.phases;
+      phases = pkgs.lib.lists.unique ([ "installPhase" ] ++ old.phases);
       installPhase = ''
-        touch $out
         ${old.installPhase}
+        if [ ! -f $out ]; then
+           touch $out;
+        fi
       '';
       shellHook = ''
         ${old.shellHook}
