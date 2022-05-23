@@ -206,6 +206,12 @@
           pursFlake = import ./nix/purescript-flake.nix;
           pursLib = import ./nix/purescript-lib.nix;
         };
+
+        check = nixpkgs.lib.genAttrs "x86_64-linux" (system:
+        pkgs.runCommand "combined-test"
+          {
+            nativeBuildInputs = builtins.attrValues self.checks.${system};
+          } "touch $out");
       }
     );
 }
