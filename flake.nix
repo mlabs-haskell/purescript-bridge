@@ -210,10 +210,10 @@
         };
 
         check = nixpkgs.lib.genAttrs "x86_64-linux" (system:
-        pkgs.runCommand "combined-test"
-          {
-            nativeBuildInputs = builtins.attrValues self.checks.${system};
-          } "touch $out");
+          pkgs.runCommand "combined-test"
+            {
+              nativeBuildInputs = builtins.attrValues self.checks.${system};
+            } "touch $out");
       }
     );
 }
