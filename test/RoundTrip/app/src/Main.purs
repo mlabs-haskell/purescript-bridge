@@ -41,10 +41,12 @@ main = do
         reqOrErr = decodeJsonString input
       case reqOrErr of
         Left err -> do
-          error $ "ps> Wanted Request got error: " <> show err
-            <> " on input: "
-            <> input
-          log ""
+          error ""
+          log $ stringifyAeson $ encodeAeson $ RespError
+            ( show "ps> Wanted Request got error: " <> show err
+                <> " on input: "
+                <> input
+            )
         Right req -> do
           either
             ( \err -> do
