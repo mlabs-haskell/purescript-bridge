@@ -1,6 +1,7 @@
 { name
 , src
-, pursSubDirs ? [ "/src" "/test" ]
+, pursSubDirs ? [ "/src" ]
+, pursSubDirsTest ? [ "/test" ]
 , workDir # FIXME: This is awkward; to cd into and attach a locals.dhall link
 , pkgs
 , system
@@ -37,7 +38,8 @@ rec {
   };
 
   checks."${name}-check" = ps-lib.runPursTest {
-    inherit projectDir pursSubDirs;
+    inherit projectDir;
+    pursSubDirs = pursSubDirs ++ pursSubDirsTest;
   };
 
   check = pkgs.runCommand "combined-check"

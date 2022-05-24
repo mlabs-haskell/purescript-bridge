@@ -42,7 +42,7 @@ rec {
       echo "{=}" >> $LOCALS_DHALL
     '';
 
-  buildPursProject = { projectDir, pursSubDirs ? [ "/src" "/test" ], checkWarnings ? true }:
+  buildPursProject = { projectDir, pursSubDirs ? [ "/src" ], checkWarnings ? true }:
     pkgs.stdenv.mkDerivation rec {
       name = "purescript-lib-build-purs-project";
       outputs = [ "out" "spagoProjectDir" ];
@@ -61,7 +61,6 @@ rec {
       phases = [ "buildPhase" "checkPhase" "installPhase" ];
       doCheck = checkWarnings;
       buildPhase = ''
-        set -vox
         mkdir $spagoProjectDir
         cp -r ${projectDir}/* $spagoProjectDir
         ln -s ${localsDhall} $spagoProjectDir/locals.dhall
@@ -91,7 +90,7 @@ rec {
       '';
     };
 
-  runPursTest = args:
+  runPursTest = args@{ projectDir, pursSubDirs ? [ "/src" "/test" ], checkWarnings ? false }:
     let
       pursProject = buildPursProject args;
     in

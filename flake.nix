@@ -15,7 +15,7 @@
       flake = false;
     };
 
-    cardano-transaction-lib.url = github:Plutonomicon/cardano-transaction-lib/37d53f81584cb3ccaa0ce8d6f09b0b0d13360d35;
+    cardano-transaction-lib.url = github:Plutonomicon/cardano-transaction-lib/bladyjoker/use_aeson;
     # We're reusing inputs from bot-plutus-interface as it's currently the source of nix truth.
     bot-plutus-interface.url = "github:mlabs-haskell/bot-plutus-interface";
 
@@ -125,13 +125,14 @@
             src = ./test/RoundTrip/app;
             workDir = "./test/RoundTrip/app";
             pursSubDirs = [ "/src" "/generated" ];
+            pursSubDirsTest = [ ];
             nodejs = pkgs.nodejs-14_x;
             spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
             purs = easy-ps.${pursVersion};
           in
           import ./nix/purescript-flake.nix {
             name = "purescript-bridge-roundtrip-test";
-            inherit src workDir pursSubDirs pkgs system easy-ps spagoLocalPkgs
+            inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
               nodejs purs;
           };
         # purescript-bridge-typelib.nix flake
@@ -141,13 +142,14 @@
             src = ./nix/purescript-bridge-typelib-spago;
             workDir = "./nix/purescript-bridge-typelib-spago";
             pursSubDirs = [ ];
+            pursSubDirsTest = [ ];
             nodejs = pkgs.nodejs-14_x;
             spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
             purs = easy-ps.${pursVersion};
           in
           import ./nix/purescript-flake.nix {
             name = "purescript-bridge-typelib-nix";
-            inherit src workDir pursSubDirs pkgs system easy-ps spagoLocalPkgs
+            inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
               nodejs purs;
           };
       in
