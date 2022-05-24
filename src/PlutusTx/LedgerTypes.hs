@@ -162,7 +162,7 @@ ledgerTypes =
         , order $ mkPlutusNewtype_ @POSIXTime
         , order $ mkPlutusNewtype @Slot
         , mkPlutusNewtype @Redeemer
-        , mkPlutusNewtype @Datum
+        , mkPlutusNewtype_ @Datum
         , mkPlutusNewtype @ScriptHash
         , mkPlutusNewtype @ValidatorHash
         , mkPlutusNewtype @DatumHash
