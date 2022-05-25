@@ -61,15 +61,14 @@ rec {
       phases = [ "buildPhase" "checkPhase" "installPhase" ];
       doCheck = checkWarnings;
       buildPhase = ''
+        set -vox
         mkdir $spagoProjectDir
         cp -r ${projectDir}/* $spagoProjectDir
         ln -s ${localsDhall} $spagoProjectDir/locals.dhall
 
-        set -vox
         install-spago-style
         PURS_SOURCES=$(for pursDir in $pursDirs; do find $pursDir -name "*.purs"; done)
         LOCALS_GLOBS=$(for slp in $spagoLocalPkgs; do find $slp/src -name "*.purs"; done)
-        echo $LOCALS_GLOBS
         build-from-store $PURS_SOURCES $LOCALS_GLOBS --json-errors | grep '\{\"' > errors.json || build-from-store $PURS_SOURCES $LOCALS_GLOBS
       '';
       checkPhase = ''
