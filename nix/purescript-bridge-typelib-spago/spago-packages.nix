@@ -197,7 +197,7 @@ let
       installPhase = "ln -s $src $out";
     };
 
-    # cardano-transaction-lib is a Local package in (Local "/nix/store/ap3h4dqkik30185wdp34pzq3apklrmm0-source")
+    # cardano-transaction-lib is a Local package in (Local "/nix/store/1c1k19820f2xdsi2jvplhsnw8is8yb85-source")
 
     "catenable-lists" = pkgs.stdenv.mkDerivation {
       name = "catenable-lists";
@@ -1154,6 +1154,18 @@ let
         url = "https://github.com/purescript/purescript-tailrec.git";
         rev = "5fbf0ac05dc6ab1a228b2897630195eb7483b962";
         sha256 = "1jjl2q2hyhjcdxpamzr1cdlxhmq2bl170x5p3jajb9zgwkqx0x22";
+      };
+      phases = "installPhase";
+      installPhase = "ln -s $src $out";
+    };
+
+    "text-encoding" = pkgs.stdenv.mkDerivation {
+      name = "text-encoding";
+      version = "v1.0.0";
+      src = pkgs.fetchgit {
+        url = "https://github.com/AlexaDeWit/purescript-text-encoding.git";
+        rev = "609ea0916f6817971d4a6c11b991b59715aaa096";
+        sha256 = "1r6ihj6m6ahp1cjf4i25pq9a00r2mvgrd8794xiapzsaigljz42c";
       };
       phases = "installPhase";
       installPhase = "ln -s $src $out";
