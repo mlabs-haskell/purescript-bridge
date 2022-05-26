@@ -33,7 +33,7 @@ import ArbitraryLedger (FixMap (fixMap), reMap)
 import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
 import Generics.SOP qualified as SOP
-import Plutus.V1.Ledger.Api (Datum, Interval, POSIXTime, ScriptContext)
+import Plutus.V1.Ledger.Api (Credential, Datum, Interval, POSIXTime, ScriptContext)
 import Plutus.V1.Ledger.Value (Value)
 import PlutusTx qualified as P
 import PlutusTx.AssocMap qualified as AssocMap
@@ -288,6 +288,7 @@ data TypesWithMap
   | PdInterval (Interval POSIXTime)
   | PdDatum Datum
   | PdMap (AssocMap.Map Integer Value)
+  | PdCredential Credential
   deriving stock (Show, Eq, Generic)
 
 instance SOP.Generic TypesWithMap
@@ -298,7 +299,8 @@ instance Arbitrary TypesWithMap where
       =<< resize
         15
         ( oneof
-            [ PdValue <$> arbitrary
+            [ PdCredential <$> arbitrary
+            , PdValue <$> arbitrary
             , PdScriptContext <$> arbitrary
             , PdDatum <$> arbitrary
             , PdInterval <$> arbitrary
