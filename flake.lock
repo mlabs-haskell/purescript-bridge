@@ -971,11 +971,11 @@
         "servant-purescript": "servant-purescript_2"
       },
       "locked": {
-        "lastModified": 1653517011,
-        "narHash": "sha256-Vi1r6WyLOqA3ex6jP3aNmPl18Hl8QaqZne4Bm2UAt/Y=",
+        "lastModified": 1653568526,
+        "narHash": "sha256-g54ryUvZwVUTGR7DsIlGKNqM/QSscuWQvYBvXsULttc=",
         "owner": "Plutonomicon",
         "repo": "cardano-transaction-lib",
-        "rev": "1f505712f0cf1af61a384af5d2c26836b12188ec",
+        "rev": "d0e2752d969037f8d3a2a519d50affe27676d98f",
         "type": "github"
       },
       "original": {
