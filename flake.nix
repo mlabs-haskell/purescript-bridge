@@ -93,7 +93,7 @@
           }
           ''
             mkdir $out
-            $cli/bin/cli generate-plutus-ledger-api-types --purs-dir $out
+            $cli/bin/cli generate-types --generated-dir $out
           '';
 
         generatedLedgerTypelib =

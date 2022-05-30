@@ -87,6 +87,7 @@ library
     Language.PureScript.Bridge
     Language.PureScript.Bridge.Builder
     Language.PureScript.Bridge.CodeGenSwitches
+    Language.PureScript.Bridge.Commands
     Language.PureScript.Bridge.Primitives
     Language.PureScript.Bridge.Printer
     Language.PureScript.Bridge.PSTypes
@@ -99,13 +100,14 @@ library
     PlutusTx.LedgerTypes
 
   build-depends:
-    , base               >=4.8 && <6.0
+    , base                  >=4.8 && <6.0
     , containers
     , directory
     , filepath
     , generic-deriving
     , lens
     , mtl
+    , optparse-applicative
     , plutus-ledger-api
     , plutus-tx
     , template-haskell
