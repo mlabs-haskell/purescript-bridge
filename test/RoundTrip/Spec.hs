@@ -69,6 +69,7 @@ import System.Process (
   runInteractiveCommand,
   terminateProcess,
  )
+import Data.Aeson (ToJSON(toJSON))
 import Test.HUnit (Assertion, assertEqual, assertFailure)
 import Test.HUnit.Lang (FailureReason (ExpectedButGot), HUnitFailure (HUnitFailure))
 import Test.Hspec (Spec, beforeAll, describe, it)
@@ -87,23 +88,24 @@ instance Equality WEq where
   equals = (@==)
 
 assertEqualWith ::
-  forall (c :: Type -> Constraint) (a :: Type).
-  (Equality c, c a, Show a) =>
+  forall (c :: Type -> Constraint) (a :: Type) (b :: Type).
+  (Equality c, c a, Show a, ToJSON b) =>
   PrinterFormat ->
   String ->
+  b ->
   a ->
   a ->
   Assertion
-assertEqualWith fmt preface expected actual =
+assertEqualWith fmt preface raw  expected actual =
   unless (equals @c actual expected) $ do
     prefaceMsg `deepseq` expectedMsg `deepseq` actualMsg `deepseq` E.throwIO (HUnitFailure location $ ExpectedButGot prefaceMsg expectedMsg actualMsg)
   where
     prefaceMsg
       | null preface = Nothing
-      | otherwise = Just preface
+      | otherwise = Just (preface <>  "\nJSON\n" <> show (toJSON @b raw) <> "\n")
     formatShow = \x -> case fmt of Pretty -> prettyShow x; Ugly -> show x
     expectedMsg = formatShow expected
-    actualMsg = formatShow actual
+    actualMsg   = formatShow actual
 
 prettyShow :: Show a => a -> String
 prettyShow = T.unpack . pShow
@@ -142,8 +144,9 @@ roundTripSpec = do
                   (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
                   resp
               assertEqualWith @Eq
-                Pretty
+                Ugly
                 "hs> Round trip for payload should be ok"
+                testData
                 (Right testData)
                 (eitherDecode @TestData (fromString jsonResp))
       it "should produce PlutusData compatible representations" $ \(hin, hout, herr, _hproc) -> do
@@ -172,8 +175,9 @@ roundTripSpec = do
                   return
                   (Cbor.deserialiseOrFail cbor)
               assertEqualWith @WEq
-                Pretty
+                Ugly
                 "hs> Round trip for payload should be ok"
+                testPlutusData
                 (Just testPlutusData)
                 (fromData @TestPlutusData pd)
   where

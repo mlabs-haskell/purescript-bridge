@@ -4,6 +4,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module RoundTrip.Types (
   TestData (..),
@@ -33,7 +34,7 @@ import ArbitraryLedger (FixMap (fixMap), reMap)
 import Data.Aeson (FromJSON, ToJSON)
 import GHC.Generics (Generic)
 import Generics.SOP qualified as SOP
-import Plutus.V1.Ledger.Api (Credential, Datum, Interval, POSIXTime, ScriptContext)
+import Plutus.V1.Ledger.Api (Credential, Datum, Interval, TxInfo(..),POSIXTime, ScriptContext(..),TxInInfo(..),TxOutRef(..))
 import Plutus.V1.Ledger.Value (Value)
 import PlutusTx qualified as P
 import PlutusTx.AssocMap qualified as AssocMap
@@ -293,20 +294,32 @@ data TypesWithMap
 
 instance SOP.Generic TypesWithMap
 
+aBigInteger :: Integer
+aBigInteger = (10 :: Integer) ^ (100 :: Integer)
+
+overflowTxOutRefIdx :: ScriptContext -> ScriptContext
+overflowTxOutRefIdx (ScriptContext ctx ps)  = ScriptContext (ctx {txInfoInputs = map go $ txInfoInputs ctx}) ps
+  where
+    go :: TxInInfo -> TxInInfo
+    go ininfo = ininfo {txInInfoOutRef = go' $ txInInfoOutRef ininfo }
+     where
+       go' :: TxOutRef -> TxOutRef
+       go' outref = outref {txOutRefIdx = aBigInteger}
+
 instance Arbitrary TypesWithMap where
   arbitrary =
     fixMap reMap
       =<< resize
-        15
+        2
         ( oneof
             [ PdCredential <$> arbitrary
             , PdValue <$> arbitrary
-            , PdScriptContext <$> arbitrary
+            , (PdScriptContext . overflowTxOutRefIdx) <$> arbitrary
             , PdDatum <$> arbitrary
             , PdInterval <$> arbitrary
             , PdMap <$> do
                 -- NOTE: Fails if not unique keys see https://github.com/ngua/cardano-serialization-lib/blob/8b7579084dd3eb401a14a3493aa2e91778d48b66/rust/src/plutus.rs#L901
-                (UniqueList keys) <- uniqueListOf 100
+                (UniqueList keys) <- uniqueListOf 25
                 AssocMap.fromList . zip keys <$> arbitrary
             ]
         )

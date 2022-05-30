@@ -21,7 +21,7 @@ common common-lang
     -Wincomplete-record-updates -Wmissing-deriving-strategies
     -Wno-name-shadowing -Wunused-foralls -fprint-explicit-foralls
     -fprint-explicit-kinds -fwarn-missing-import-lists -threaded
-    -Werror
+    -- -Werror
 
   build-depends:      base
   default-extensions:
