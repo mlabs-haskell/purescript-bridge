@@ -9,7 +9,7 @@ update-deps: clean
 	node2nix -l package-lock.json -d -c node2nix.nix
 
 fix-files:
-	@make -C ../../../ $@
+	@make -C ../../ $@
 
-run-cabal-test:
-	cd ../../../ && cabal run test:tests
+test:
+	cd ../../ && cabal run test:roundtrip-test

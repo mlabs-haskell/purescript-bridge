@@ -23,7 +23,8 @@ import Options.Applicative (
   value,
   (<$>),
  )
-import Prelude (FilePath, IO, String)
+import System.Directory (createDirectoryIfMissing)
+import Prelude (Bool (True), FilePath, IO, String)
 
 newtype Command
   = GenerateTypes GenerateTypesOpts
@@ -59,4 +60,6 @@ mainWith :: String -> (FilePath -> IO ()) -> IO ()
 mainWith desc act = do
   cmd <- customExecParser (prefs (showHelpOnEmpty <> showHelpOnError)) (parserInfo desc)
   case cmd of
-    GenerateTypes (GenerateTypesOpts pursDir) -> act pursDir
+    GenerateTypes (GenerateTypesOpts pursDir) -> do
+      createDirectoryIfMissing True pursDir
+      act pursDir

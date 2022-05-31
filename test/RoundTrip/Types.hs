@@ -5,7 +5,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module RoundTrip.Types (
+module Types (
   TestData (..),
   RepType (..),
   Request (..),

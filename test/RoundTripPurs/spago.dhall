@@ -1,26 +1,17 @@
 { name = "roundtip-test"
 , dependencies =
   [ "aeson"
-  , "aeson-helpers"
-  , "bigints"
   , "cardano-transaction-lib"
   , "console"
-  , "contravariant"
-  , "control"
   , "effect"
   , "either"
-  , "enums"
   , "maybe"
-  , "newtype"
   , "node-readline"
-  , "ordered-collections"
   , "prelude"
-  , "profunctor-lenses"
-  , "record"
-  , "tuples"
   , "typelevel-prelude"
   , "untagged-union"
+  , "purescript-bridge-typelib"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs", "generated/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 }

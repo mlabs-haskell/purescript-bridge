@@ -46,7 +46,6 @@ import Language.PureScript.Bridge.CodeGenSwitches (
 import Language.PureScript.Bridge.SumType (mkPlutusDataType)
 import Language.PureScript.Bridge.TypeParameters (A, B, C, M1)
 import PlutusTx.LedgerTypes (plutusLedgerApiBridge)
-import RoundTrip.Spec as RoundTrip (spec)
 import Test.Hspec (
   Example (Arg),
   Spec,
@@ -76,7 +75,7 @@ import Prelude hiding (readFile)
 
 main :: IO ()
 main = do
-  hspec $ plutusTests *> allTests *> RoundTrip.spec
+  hspec $ plutusTests *> allTests
 
 custom :: SumType 'Haskell -> SumType 'Haskell
 custom (SumType t cs is) = SumType t cs $ customInstance : is

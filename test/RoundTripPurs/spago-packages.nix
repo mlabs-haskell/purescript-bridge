@@ -1027,6 +1027,8 @@ let
       installPhase = "ln -s $src $out";
     };
 
+    # purescript-bridge-typelib is a Local package in (Local "/nix/store/b9fxln5dg6px9ra1r4ixnac8q0rdnxap-purescript-lib-build-purs-project")
+
     "quickcheck" = pkgs.stdenv.mkDerivation {
       name = "quickcheck";
       version = "v7.1.0";

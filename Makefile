@@ -13,10 +13,10 @@ develop:
 
 # Tests
 test:
-	$(NIX_BUILD) .#checks.${current-system}."purescript-bridge:test:tests"
+	$(NIX_BUILD) .#test-all.${current-system}
 
 test-rt:
-	$(NIX_DEV) -c make run-cabal-test
+	$(NIX_BUILD) .#checks.${current-system}.purescript-bridge:test:roundtrip-test
 
 test-all: test
 
@@ -52,8 +52,8 @@ clean:
 	@ rm -rf dist-newstyle                  || true
 	@ rm -rf .psc-ide-port                  || true
 	@ rm -rf .spago || true
-	@ make -C ./test/RoundTrip/app clean   || true
-	@ make -C ./nix/purescript-bridge-typelib-spago clean    || true
+	@ make -C ./test/RoundTripPurs clean   || true
+	@ make -C ./nix/purescript-bridge-nix-spago clean    || true
 
 generate-plutus-ledger-api-typelib:
 	@ if [ -d plutus-ledger-api-typelib ]; then git rm -r --cached plutus-ledger-api-typelib; else echo "skip"; fi

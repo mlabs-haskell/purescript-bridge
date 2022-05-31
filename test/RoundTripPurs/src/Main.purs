@@ -13,7 +13,7 @@ import Error (E)
 import FromData (fromData)
 import Node.ReadLine (createConsoleInterface, noCompletion, question)
 import Prelude (Unit, bind, discard, pure, show, (#), ($), (<<<), (<>))
-import RoundTrip.Types
+import Types
   ( TestData
   , TestPlutusData
   , Request(..)

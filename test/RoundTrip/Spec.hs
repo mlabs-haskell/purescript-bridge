@@ -5,7 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
-module RoundTrip.Spec (spec) where
+module Spec (main) where
 
 import ArbitraryLedger (WEq ((@==)))
 import Codec.Serialise qualified as Cbor
@@ -13,67 +13,33 @@ import Control.DeepSeq (deepseq)
 import Control.Exception qualified as E
 import Control.Monad (unless)
 import Data.Aeson (eitherDecode, encode)
-import Data.Bool (bool)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Lazy (fromStrict, toStrict)
 import Data.ByteString.Lazy.UTF8 (fromString, toString)
 import Data.CallStack (HasCallStack, SrcLoc, callStack)
 import Data.Kind (Constraint, Type)
-import Data.List (isInfixOf)
 import Data.Text.Lazy qualified as T
-import Language.PureScript.Bridge.SumType (
-  SumType,
-  argonaut,
-  equal,
-  functor,
-  genericShow,
-  mkPlutusDataType,
-  mkPlutusNewtype,
-  mkSumType,
-  order,
- )
-import Language.PureScript.Bridge.TypeInfo (Language (Haskell))
-import Language.PureScript.Bridge.TypeParameters (A)
 import PlutusTx (toData)
 import PlutusTx.IsData.Class (fromData)
-import PlutusTx.LedgerTypes (writeLedgerTypesAnd)
-import RoundTrip.Types (
-  ANewtype,
-  ANewtypeRec,
-  ARecord,
-  ASum,
-  MyUnit,
-  RepType (RTJson, RTPlutusData),
-  Request (Req),
-  Response,
-  TestData,
-  TestEnum,
-  TestMultiInlineRecords,
-  TestNewtype,
-  TestNewtypeRecord,
-  TestPlutusData,
-  TestRecord,
-  TestRecursiveA,
-  TestRecursiveB,
-  TestSum,
-  TestTwoFields,
-  TypesWithMap,
-  response,
- )
-import System.Directory (createDirectoryIfMissing, withCurrentDirectory)
-import System.Exit (ExitCode (ExitSuccess))
 import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
   getPid,
-  readProcessWithExitCode,
   runInteractiveCommand,
   terminateProcess,
  )
 import Test.HUnit (Assertion, assertEqual, assertFailure)
 import Test.HUnit.Lang (FailureReason (ExpectedButGot), HUnitFailure (HUnitFailure))
-import Test.Hspec (Spec, beforeAll, describe, it)
+import Test.Hspec (Spec, beforeAll, describe, hspec, it)
 import Test.QuickCheck.Property (Testable (property))
 import Text.Pretty.Simple (pShow)
+import Types (
+  RepType (RTJson, RTPlutusData),
+  Request (Req),
+  Response,
+  TestData,
+  TestPlutusData,
+  response,
+ )
 
 data PrinterFormat = Pretty | Ugly
 
@@ -113,12 +79,9 @@ location = case reverse callStack of
   (_, loc) : _ -> Just loc
   [] -> Nothing
 
-spec :: Spec
-spec = describe "Round trip tests (Purescript <-> Haskell)" roundTripSpec
-
 roundTripSpec :: Spec
 roundTripSpec = do
-  beforeAll (startPurescript $ rtProtoTypes <> myTypes <> myPlutusTypes) $
+  beforeAll startPurescript $
     describe "With plutus-ledger-api bridge" do
       it "should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
         mayPid <- getPid hproc
@@ -126,7 +89,7 @@ roundTripSpec = do
           (assertFailure "No process running")
           (\_ -> return ())
           mayPid
-      it "should produce Aeson-compatible representations" $ \(hin, hout, herr, _hproc) -> do
+      it "should be Aeson compatible" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testData ->
             do
@@ -146,7 +109,7 @@ roundTripSpec = do
                 "hs> Round trip for payload should be ok"
                 (Right testData)
                 (eitherDecode @TestData (fromString jsonResp))
-      it "should produce PlutusData compatible representations" $ \(hin, hout, herr, _hproc) -> do
+      it "should be PlutusData compatible" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testPlutusData ->
             do
@@ -204,64 +167,14 @@ roundTripSpec = do
       putStrLn $ "hs > waitUntil> " <> l
       Control.Monad.unless (pred l) (waitUntil pred fd)
 
-    spagoBuild = do
-      (exitCode, _stdout, stderr) <- readProcessWithExitCode "spago" ["build"] ""
-      if exitCode == ExitSuccess
-        then do
-          bool (putStrLn stderr) (return ()) (not $ "[warn]" `isInfixOf` stderr)
-          bool (putStrLn stderr) (return ()) (not $ "[info] Build succeeded." `isInfixOf` stderr)
-        else do
-          putStrLn stderr
-
-    spagoRun = do
-      (hin, hout, herr, hproc) <- runInteractiveCommand "spago run"
+    startPurescript = do
+      (hin, hout, herr, hproc) <- runInteractiveCommand "roundtrip-test-run-with-node"
       mapM_ (`hSetBuffering` LineBuffering) [hin, hout, herr]
-      -- Wait until Spago is done with the build
-      waitUntil (== "[info] Build succeeded.") herr
       -- Wait for initial "ready" log message
       waitUntil (== "I was born ready") hout
       pure (hin, hout, herr, hproc)
 
     _stopPurescript = terminateProcess -- TODO: Figure out `after` cleanup
-    startPurescript types = do
-      withCurrentDirectory "test/RoundTrip/app" do
-        createDirectoryIfMissing True "generated"
-        writeLedgerTypesAnd
-          "generated"
-          types
-        spagoBuild
-        spagoRun
 
-rtProtoTypes :: [SumType 'Haskell]
-rtProtoTypes =
-  argonaut . equal . genericShow . order
-    <$> [ mkSumType @Request
-        , mkSumType @Response
-        , mkSumType @RepType
-        ]
-
-myTypes :: [SumType 'Haskell]
-myTypes =
-  argonaut
-    <$> [ equal . genericShow $ mkSumType @TestData
-        , equal . genericShow . order $ mkSumType @TestSum
-        , equal . genericShow . order $ mkSumType @TestRecursiveA
-        , equal . genericShow . order $ mkSumType @TestRecursiveB
-        , functor . equal . genericShow . order $ mkSumType @(TestRecord A)
-        , equal . genericShow . order $ mkSumType @TestNewtype
-        , equal . genericShow . order $ mkSumType @TestNewtypeRecord
-        , equal . genericShow . order $ mkSumType @TestMultiInlineRecords
-        , equal . genericShow . order $ mkSumType @TestTwoFields
-        , equal . genericShow . order $ mkSumType @TestEnum
-        , equal . genericShow . order $ mkSumType @MyUnit
-        ]
-
-myPlutusTypes :: [SumType 'Haskell]
-myPlutusTypes =
-  [ argonaut . equal . genericShow $ mkPlutusNewtype @ANewtype
-  , argonaut . equal . genericShow $ mkPlutusNewtype @ANewtypeRec
-  , argonaut . equal . genericShow $ mkPlutusDataType @ARecord
-  , argonaut . equal . genericShow $ mkPlutusDataType @ASum
-  , argonaut . equal . genericShow $ mkPlutusDataType @TypesWithMap
-  , argonaut . equal . genericShow $ mkPlutusDataType @TestPlutusData
-  ]
+main :: IO ()
+main = hspec roundTripSpec

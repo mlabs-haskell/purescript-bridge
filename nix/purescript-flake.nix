@@ -1,4 +1,4 @@
-{ name
+{ projectName
 , src
 , pursSubDirs ? [ "/src" ]
 , pursSubDirsTest ? [ "/test" ]
@@ -11,6 +11,8 @@
 , nodejs
 , nodePkgs ? import (src + "/node2nix.nix") { inherit pkgs system nodejs; }
 , purs ? easy-ps.purs-0_14_5
+, mainModule ? "Main"
+, testModule ? "Test.Main"
 }:
 
 let
@@ -22,31 +24,34 @@ let
   };
   nodeModules = nodePkgs'.shell.nodeDependencies;
   ps-lib = import ./purescript-lib.nix {
-    inherit pkgs spagoPkgs spagoLocalPkgs nodejs nodeModules purs;
+    inherit pkgs projectName spagoPkgs spagoLocalPkgs nodejs nodeModules purs mainModule testModule;
     spago = easy-ps.spago;
   };
   projectDir = src;
+  indexByField = field: pkgs.lib.lists.foldl (attrs: x: let k = x.${field}; in { ${k} = x; } // attrs) { };
 in
 rec {
-  defaultPackage = packages.${system}.${name};
+  defaultPackage = packages."${projectName}-build-purs-project";
+  packages = indexByField "name" [
+    (ps-lib.buildPursProject {
+      inherit projectDir pursSubDirs;
+    })
 
-  packages.${name} = ps-lib.buildPursProject {
-    inherit projectDir pursSubDirs;
-  };
-  packages."${name}-bundle-commonjs" = ps-lib.bundlePursProjectCommonJs {
-    inherit projectDir pursSubDirs;
-  };
+    (ps-lib.bundleCommonJs {
+      inherit projectDir pursSubDirs;
+    })
 
-  checks."${name}-check" = ps-lib.runPursTest {
-    inherit projectDir;
-    pursSubDirs = pursSubDirs ++ pursSubDirsTest;
-  };
+    (ps-lib.runWithNode {
+      inherit projectDir pursSubDirs;
+    })
+  ];
 
-  check = pkgs.runCommand "combined-check"
-    {
-      nativeBuildInputs = builtins.attrValues packages.${name};
-
-    } "touch $out";
+  checks = indexByField "name" [
+    (ps-lib.testWithNode {
+      inherit projectDir;
+      pursSubDirs = pursSubDirs ++ pursSubDirsTest;
+    })
+  ];
 
   devShell = devShellComposeWith (pkgs.mkShell { installPhase = ""; });
   devShellComposeWith = otherShell: otherShell.overrideAttrs (old:
