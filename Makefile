@@ -41,6 +41,7 @@ check-files:
 	$(NIX_BUILD) .#$@.${current-system}
 
 update-all:
+	nix -L flake lock --update-input cardano-transaction-lib
 	nix -L --show-trace develop .#typelibNix -c make
 	nix -L --show-trace develop .#default -c make
 
