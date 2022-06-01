@@ -207,6 +207,7 @@ instanceToQualifiedImports Json =
     [ ("Aeson.Decode", "D")
     , ("Aeson.Encode", "E")
     , ("Data.Map", "Map")
+    , ("Aeson", "Aeson")
     ]
 instanceToQualifiedImports _ = Map.empty
 
@@ -449,7 +450,7 @@ instances st@(SumType t cs is) = go <$> is
                   [ mkInstance
                       (mkType "EncodeAeson" [t])
                       encodeJsonConstraints
-                      [ "encodeAeson' x = pure $ E.encode  (E.record {"
+                      [ "encodeAeson' x = Aeson.encodeAeson' $ E.encode  (E.record {"
                           <> fname
                           <> ": E.value :: _ "
                           <> parens (signature_' tp)
@@ -481,7 +482,7 @@ instances st@(SumType t cs is) = go <$> is
             [ mkInstance
                 (mkType "EncodeAeson" [t])
                 encodeJsonConstraints
-                ["encodeAeson' x = pure $ (defer \\_ -> " <+> sumTypeToEncode st <+> ") x"]
+                ["encodeAeson' x = Aeson.encodeAeson' $ (defer \\_ -> " <+> sumTypeToEncode st <+> ") x"]
             , mkInstance
                 (mkType "DecodeAeson" [t])
                 decodeJsonConstraints
