@@ -13,6 +13,7 @@ import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Op (Op(Op))
 import Data.Tuple.Nested ((/\))
 import Types.Scripts (MintingPolicy, Validator)
+import Aeson as Aeson
 import Aeson.Decode as D
 import Aeson.Encode as E
 import Data.Map as Map
@@ -23,10 +24,11 @@ newtype RecordWithPlutusScripts = RecordWithPlutusScripts
   }
 
 instance EncodeAeson RecordWithPlutusScripts where
-  encodeAeson' x = pure $ (defer \_ ->  E.encode $ unwrap >$< (E.record
-                                                                { mintingPolicy: E.value :: _ MintingPolicy
-                                                                , validator: E.value :: _ Validator
-                                                                }) ) x
+  encodeAeson' x = Aeson.encodeAeson' $ (defer \_ ->  E.encode $ unwrap >$< (E.record
+                                                                           
+                                                                              { mintingPolicy: E.value :: _ MintingPolicy
+                                                                              , validator: E.value :: _ Validator
+                                                                              }) ) x
 
 instance DecodeAeson RecordWithPlutusScripts where
   decodeAeson = defer \_ -> D.decode $ (RecordWithPlutusScripts <$> D.record "RecordWithPlutusScripts"

@@ -18,6 +18,7 @@ import FromData (class FromData, genericFromData)
 import Plutus.Types.DataSchema (ApPCons, Field, I, Id, IxK, MkField, MkField_, MkIxK, MkIxK_, PCons, PNil, PSchema, class HasPlutusSchema, type (:+), type (:=), type (@@))
 import ToData (class ToData, genericToData)
 import TypeLevel.Nat (S, Z)
+import Aeson as Aeson
 import Aeson.Decode as D
 import Aeson.Encode as E
 import Data.Map as Map
@@ -33,7 +34,7 @@ data TwoRecords
     }
 
 instance EncodeAeson TwoRecords where
-  encodeAeson' x = pure $ (defer \_ ->  case _ of
+  encodeAeson' x = Aeson.encodeAeson' $ (defer \_ ->  case _ of
     FirstRecord {_fra, _frb} -> encodeAeson
       { tag: "FirstRecord"
       , _fra: flip E.encode _fra E.value
