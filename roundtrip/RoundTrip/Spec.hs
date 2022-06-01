@@ -104,7 +104,6 @@ roundTripSpec = do
                   return
                   (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
                   resp
-              runIO $ putStrLn $ show jsonResp
               assertEqualWith @Eq
                 Pretty
                 "hs> Round trip for payload should be ok"
