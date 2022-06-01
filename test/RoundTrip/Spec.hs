@@ -75,7 +75,8 @@ import Test.HUnit.Lang (FailureReason (ExpectedButGot), HUnitFailure (HUnitFailu
 import Test.Hspec (Spec, beforeAll, describe, it)
 import Test.QuickCheck.Property (Testable (property))
 import Text.Pretty.Simple (pShow)
-
+import Data.Text.Encoding as TE
+import Data.Text qualified as TS
 data PrinterFormat = Pretty | Ugly
 
 class Equality (c :: Type -> Constraint) where
@@ -102,7 +103,13 @@ assertEqualWith fmt preface raw  expected actual =
   where
     prefaceMsg
       | null preface = Nothing
-      | otherwise = Just (preface <>  "\nJSON\n" <> show (toJSON @b raw) <> "\n")
+      | otherwise = Just
+                  $ preface
+                 <> "\nJSON\n"
+                 <> show (toJSON @b raw)
+                 <> "\nJSON (String)\n"
+                 <> show (encode @b raw)
+                 <> "\n"
     formatShow = \x -> case fmt of Pretty -> prettyShow x; Ugly -> show x
     expectedMsg = formatShow expected
     actualMsg   = formatShow actual
@@ -154,7 +161,7 @@ roundTripSpec = do
           \testPlutusData ->
             do
               -- Prepare request
-              let payload = encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
+              let payload = TS.unpack . encodeBase16 $ Cbor.serialise $ toData @TestPlutusData testPlutusData
               -- IPC
               resp <- doReq hin herr hout (Req RTPlutusData payload)
               -- Assert response
@@ -168,7 +175,7 @@ roundTripSpec = do
                 either
                   (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
                   return
-                  (decodeBase16 pdResp)
+                  (decodeBase16 . TS.pack $ pdResp)
               pd <-
                 either
                   (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
@@ -198,9 +205,10 @@ roundTripSpec = do
       putStrLn $ "ps> " <> show resp -- DEBUG
       return resp
 
-    encodeBase16 = toString . fromStrict . Base16.encode . toStrict
+    encodeBase16 = TE.decodeUtf8  . Base16.encode . toStrict
+
     decodeBase16 str = do
-      bs <- Base16.decode $ toStrict . fromString $ str
+      bs <- Base16.decode $ TE.encodeUtf8  $ str
       return $ fromStrict bs
 
     waitUntil pred fd = do

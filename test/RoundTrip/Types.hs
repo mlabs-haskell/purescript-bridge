@@ -288,14 +288,14 @@ data TypesWithMap
   | PdScriptContext ScriptContext
   | PdInterval (Interval POSIXTime)
   | PdDatum Datum
-  | PdMap (AssocMap.Map Integer Value)
+  | PdMap (AssocMap.Map Integer Integer) -- (AssocMap.Map Integer Value)
   | PdCredential Credential
   deriving stock (Show, Eq, Generic)
 
 instance SOP.Generic TypesWithMap
 
 aBigInteger :: Integer
-aBigInteger = (10 :: Integer) ^ (100 :: Integer)
+aBigInteger = (2 :: Integer) ^ (126 :: Integer)
 
 overflowTxOutRefIdx :: ScriptContext -> ScriptContext
 overflowTxOutRefIdx (ScriptContext ctx ps)  = ScriptContext (ctx {txInfoInputs = map go $ txInfoInputs ctx}) ps
@@ -319,7 +319,7 @@ instance Arbitrary TypesWithMap where
             , PdInterval <$> arbitrary
             , PdMap <$> do
                 -- NOTE: Fails if not unique keys see https://github.com/ngua/cardano-serialization-lib/blob/8b7579084dd3eb401a14a3493aa2e91778d48b66/rust/src/plutus.rs#L901
-                (UniqueList keys) <- uniqueListOf 25
+                (UniqueList keys) <- uniqueListOf 5
                 AssocMap.fromList . zip keys <$> arbitrary
             ]
         )
