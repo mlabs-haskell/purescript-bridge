@@ -148,8 +148,8 @@
         roundTripTestPursFlake =
           let
             inherit pkgs easy-ps;
-            src = ./test/RoundTripPurs;
-            workDir = "./test/RoundTripPurs";
+            src = ./roundtrip/RoundTripPurs;
+            workDir = "./roundtrip/RoundTripPurs";
             pursSubDirs = [ "/src" ];
             pursSubDirsTest = [ "/test" ];
             nodejs = pkgs.nodejs-14_x;
@@ -215,7 +215,7 @@
               (fileCheckers.checkShellFiles src)
               (fileCheckers.checkDhallFiles src)
               (fileCheckers.checkPurescriptFiles ./plutus-ledger-api-typelib)
-              (fileCheckers.checkPurescriptFiles ./test/RoundTripPurs)
+              (fileCheckers.checkPurescriptFiles ./roundtrip/RoundTripPurs)
             ];
           })
           "touch $out";
@@ -230,7 +230,7 @@
             ${fileFixers.fixShellFiles}/bin/fix-shell-files-bundle $@
             ${fileFixers.fixDhallFiles}/bin/fix-dhall-files-bundle $@
             ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/plutus-ledger-api-typelib
-            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/test/RoundTripPurs
+            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/roundtrip/RoundTripPurs
           '';
         };
 

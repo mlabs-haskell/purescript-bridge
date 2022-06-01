@@ -53,7 +53,7 @@ clean:
 	@ rm -rf dist-newstyle                  || true
 	@ rm -rf .psc-ide-port                  || true
 	@ rm -rf .spago || true
-	@ make -C ./test/RoundTripPurs clean   || true
+	@ make -C ./roundtrip/RoundTripPurs clean   || true
 	@ make -C ./nix/purescript-bridge-nix-spago clean    || true
 
 generate-plutus-ledger-api-typelib:

@@ -205,7 +205,7 @@ common common-roundtrip
 executable roundtrip
   import:         common-roundtrip
   scope:          public
-  hs-source-dirs: test/RoundTrip
+  hs-source-dirs: roundtrip/RoundTrip
   main-is:        Main.hs
   ghc-options:    -Wno-missing-home-modules
   other-modules:
@@ -215,7 +215,7 @@ executable roundtrip
 
 test-suite roundtrip-test
   import:         common-roundtrip
-  hs-source-dirs: test/RoundTrip
+  hs-source-dirs: roundtrip/RoundTrip
   type:           exitcode-stdio-1.0
   main-is:        Spec.hs
   ghc-options:    -Wno-missing-home-modules -main-is Spec
