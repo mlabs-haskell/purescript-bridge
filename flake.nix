@@ -240,6 +240,11 @@
           pursFlake = import ./nix/purescript-flake.nix;
           pursLib = import ./nix/purescript-lib.nix;
         };
+
+        hydraJobs = {
+          builds = self.buildAll;
+          tests = self.testAll;
+        };
       }
     );
 }
