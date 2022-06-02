@@ -179,7 +179,7 @@
             inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
               nodejs purs mainModule projectName;
           };
-      in
+      in rec
       {
         # Useful attributes
         inherit pkgs easy-ps haskellProject haskellFlake;
@@ -239,6 +239,10 @@
           bridgeTypelib = (import ./nix/purescript-bridge.nix) inputs.cardano-transaction-lib;
           pursFlake = import ./nix/purescript-flake.nix;
           pursLib = import ./nix/purescript-lib.nix;
+        };
+
+        hydraJobs = {
+          inherit build-all checks;
         };
       }
     );
