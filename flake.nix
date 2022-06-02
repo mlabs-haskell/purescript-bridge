@@ -119,7 +119,7 @@
           in
           import ./nix/purescript-bridge.nix ctl {
             inherit pkgs purs spago typelibName;
-            generatedPursFiles = ./plutus-ledger-api-typelib;
+            generatedPursFiles = ./generated;
           };
 
         # Purescript - Haskell round trip generated typelib
@@ -179,7 +179,8 @@
             inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
               nodejs purs mainModule projectName;
           };
-      in rec
+      in
+      rec
       {
         # Useful attributes
         inherit pkgs easy-ps haskellProject haskellFlake;
@@ -214,7 +215,7 @@
               (fileCheckers.checkCabalFiles src)
               (fileCheckers.checkShellFiles src)
               (fileCheckers.checkDhallFiles src)
-              (fileCheckers.checkPurescriptFiles ./plutus-ledger-api-typelib)
+              (fileCheckers.checkPurescriptFiles ./generated)
               (fileCheckers.checkPurescriptFiles ./roundtrip/RoundTripPurs)
             ];
           })
@@ -229,7 +230,7 @@
             ${fileFixers.fixCabalFiles}/bin/fix-cabal-files-bundle $@
             ${fileFixers.fixShellFiles}/bin/fix-shell-files-bundle $@
             ${fileFixers.fixDhallFiles}/bin/fix-dhall-files-bundle $@
-            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/plutus-ledger-api-typelib
+            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/generated
             ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/roundtrip/RoundTripPurs
           '';
         };
