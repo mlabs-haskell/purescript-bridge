@@ -59,5 +59,5 @@ clean:
 generate-plutus-ledger-api-typelib:
 	@ if [ -d plutus-ledger-api-typelib ]; then git rm -r --cached plutus-ledger-api-typelib; else echo "skip"; fi
 	@ if [ -d plutus-ledger-api-typelib ]; then rm -rf plutus-ledger-api-typelib; else echo "skip 1"; fi
-	@ cabal run cli -- generate-plutus-ledger-api-types
-	@ git add plutus-ledger-api-typelib
+	@ cabal run cli -- generate-types
+	@ git add generated
