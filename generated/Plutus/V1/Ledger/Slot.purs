@@ -3,7 +3,14 @@ module Plutus.V1.Ledger.Slot where
 
 import Prelude
 
-import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -34,18 +41,20 @@ instance Show Slot where
   show a = genericShow a
 
 instance EncodeAeson Slot where
-  encodeAeson' x = Aeson.encodeAeson' $ E.encode  (E.record {getSlot: E.value :: _ (BigInt) }) {getSlot: unwrap x}
+  encodeAeson' x = Aeson.encodeAeson' $ E.encode
+    (E.record { getSlot: E.value :: _ (BigInt) })
+    { getSlot: unwrap x }
 
 instance DecodeAeson Slot where
-  decodeAeson x = wrap <<< get (Proxy :: Proxy "getSlot") <$> D.decode (D.record "getSlot "{getSlot: D.value :: _ (BigInt)}) x
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "getSlot") <$> D.decode
+    (D.record "getSlot " { getSlot: D.value :: _ (BigInt) })
+    x
 
 derive instance Ord Slot
 
 derive instance Generic Slot _
 
 derive instance Newtype Slot _
-
-
 
 derive newtype instance ToData Slot
 

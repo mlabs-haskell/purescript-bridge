@@ -3,7 +3,14 @@ module Plutus.V1.Ledger.Value where
 
 import Prelude
 
-import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson
+  ( Aeson
+  , aesonNull
+  , class DecodeAeson
+  , class EncodeAeson
+  , decodeAeson
+  , encodeAeson
+  )
 import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
 import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
@@ -36,18 +43,22 @@ instance Show AssetClass where
   show a = genericShow a
 
 instance EncodeAeson AssetClass where
-  encodeAeson' x = Aeson.encodeAeson' $ E.encode  (E.record {unAssetClass: E.value :: _ (Tuple CurrencySymbol TokenName) }) {unAssetClass: unwrap x}
+  encodeAeson' x = Aeson.encodeAeson' $ E.encode
+    (E.record { unAssetClass: E.value :: _ (Tuple CurrencySymbol TokenName) })
+    { unAssetClass: unwrap x }
 
 instance DecodeAeson AssetClass where
-  decodeAeson x = wrap <<< get (Proxy :: Proxy "unAssetClass") <$> D.decode (D.record "unAssetClass "{unAssetClass: D.value :: _ (Tuple CurrencySymbol TokenName)}) x
+  decodeAeson x = wrap <<< get (Proxy :: Proxy "unAssetClass") <$> D.decode
+    ( D.record "unAssetClass "
+        { unAssetClass: D.value :: _ (Tuple CurrencySymbol TokenName) }
+    )
+    x
 
 derive instance Ord AssetClass
 
 derive instance Generic AssetClass _
 
 derive instance Newtype AssetClass _
-
-
 
 derive newtype instance ToData AssetClass
 
