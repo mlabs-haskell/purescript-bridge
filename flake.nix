@@ -242,7 +242,7 @@
         };
 
         hydraJobs = {
-          builds = self.buildAll;
+          build.x86_64-linux = self.buildAll;
           tests = self.testAll;
         };
       }
