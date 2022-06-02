@@ -242,8 +242,7 @@
         };
 
         hydraJobs = {
-          build.x86_64-linux = buildAll;
-          tests = testAll;
+          inherit build-all test-all;
         };
       }
     );
