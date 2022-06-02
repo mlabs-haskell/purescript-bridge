@@ -179,7 +179,7 @@
             inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
               nodejs purs mainModule projectName;
           };
-      in
+      in rec
       {
         # Useful attributes
         inherit pkgs easy-ps haskellProject haskellFlake;
@@ -242,8 +242,8 @@
         };
 
         hydraJobs = {
-          build.x86_64-linux = self.buildAll;
-          tests = self.testAll;
+          build.x86_64-linux = buildAll;
+          tests = testAll;
         };
       }
     );
