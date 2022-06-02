@@ -179,6 +179,7 @@
             inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
               nodejs purs mainModule projectName;
           };
+        filterCiSystems = with nixpkgs.lib; filterAttrs (n: _: elem n ciSystems);
       in
       {
         # Useful attributes
@@ -239,6 +240,13 @@
           bridgeTypelib = (import ./nix/purescript-bridge.nix) inputs.cardano-transaction-lib;
           pursFlake = import ./nix/purescript-flake.nix;
           pursLib = import ./nix/purescript-lib.nix;
+        };
+
+        hydraJobs.required = nixpkgs.legacyPackages.x86_64-linux.mkShell {
+          buildInputs = 
+            builtins.concatLists (builtins.attrValues (builtins.mapAttrs (_: builtins.attrValues) (filterCiSystems self.build-all)))
+            ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs (_: builtins.attrValues) (filterCiSystems self.test-all)));
+
         };
       }
     );
