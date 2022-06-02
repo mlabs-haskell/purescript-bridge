@@ -179,6 +179,8 @@
             inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
               nodejs purs mainModule projectName;
           };
+        # remove 
+        ciSystems = ["x68_64-linux"];
         filterCiSystems = with nixpkgs.lib; filterAttrs (n: _: elem n ciSystems);
       in
       {
@@ -242,7 +244,7 @@
           pursLib = import ./nix/purescript-lib.nix;
         };
 
-        hydraJobs.required = nixpkgs.legacyPackages.x86_64-linux.mkShell {
+        hydraJobs.required = nixpkgs.legacyPackages.${system}.mkShell {
           buildInputs = 
             builtins.concatLists (builtins.attrValues (builtins.mapAttrs (_: builtins.attrValues) (filterCiSystems self.build-all)))
             ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs (_: builtins.attrValues) (filterCiSystems self.test-all)));
