@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module PlutusTx.LedgerTypes (writeLedgerTypes, writeLedgerTypesAnd, plutusLedgerApiBridge, writePlutusTypes) where
+module PlutusTx.LedgerTypes (writeLedgerTypes, writeLedgerTypesAnd, writeLedgerTypesWithPartAnd, plutusLedgerApiBridge, writePlutusTypes) where
 
 import Language.PureScript.Bridge (
   BridgeBuilder,
@@ -91,6 +91,13 @@ writeLedgerTypesAnd fp myTypes =
   writePSTypes
     fp
     (buildBridge plutusLedgerApiBridge)
+    (ledgerTypes <> myTypes)
+
+writeLedgerTypesWithPartAnd :: FilePath -> BridgeBuilder PSType -> [SumType 'Haskell] -> IO ()
+writeLedgerTypesWithPartAnd fp bridgePart myTypes =
+  writePSTypes
+    fp
+    (buildBridge $ plutusLedgerApiBridge <|> bridgePart)
     (ledgerTypes <> myTypes)
 
 plutusLedgerApiBridge :: BridgeBuilder PSType
