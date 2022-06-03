@@ -1,2 +1,23 @@
 cradle:
-  cabal:
+  multi:
+    - path: ./Setup.hs
+      config:
+        cradle:
+          direct:
+            arguments:
+              - "-package Cabal"
+              - "-package base"
+    - path:  "./src"
+      config: { cradle: { cabal:  } }
+    - path:  "./app"
+      config: { cradle: { cabal:  } }
+    - path: "./test"
+      config:
+        cradle:
+          cabal:
+    - path: "./roundtrip"
+      config:
+        cradle:
+          cabal:
+            - path: "./roundtrip/RoundTrip"
+              component: "purescript-bridge:exe:roundtrip"

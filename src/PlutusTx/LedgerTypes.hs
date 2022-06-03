@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module PlutusTx.LedgerTypes (writeLedgerTypes, writeLedgerTypesAnd, plutusLedgerApiBridge, writePlutusTypes) where
+module PlutusTx.LedgerTypes (writeLedgerTypes, writeLedgerTypesAnd, writeLedgerTypesWithPartAnd, plutusLedgerApiBridge, writePlutusTypes) where
 
 import Language.PureScript.Bridge (
   BridgeBuilder,
@@ -18,9 +18,11 @@ import Language.PureScript.Bridge (
   argonaut,
   buildBridge,
   defaultBridge,
+  equal,
   genericShow,
   mkPlutusDataType,
   mkPlutusNewtype,
+  mkPlutusNewtype_,
   mkSumType,
   order,
   psTypeParameters,
@@ -35,6 +37,8 @@ import Language.PureScript.Bridge.TypeParameters (A)
 import PlutusTx.ConstrIndices ()
 
 -- Ledger type imports
+
+import Data.Text (Text)
 import Plutus.V1.Ledger.Ada (Ada)
 import Plutus.V1.Ledger.Address (Address)
 import Plutus.V1.Ledger.Bytes (LedgerBytes)
@@ -65,8 +69,6 @@ import Plutus.V1.Ledger.Value (
   Value,
  )
 
-import Data.Text (Text)
-
 {- | Ledger types translation
  Ledger types exist in several forms and it's useful to formulate a language
  to differentiate them:
@@ -91,6 +93,13 @@ writeLedgerTypesAnd fp myTypes =
     (buildBridge plutusLedgerApiBridge)
     (ledgerTypes <> myTypes)
 
+writeLedgerTypesWithPartAnd :: FilePath -> BridgeBuilder PSType -> [SumType 'Haskell] -> IO ()
+writeLedgerTypesWithPartAnd fp bridgePart myTypes =
+  writePSTypes
+    fp
+    (buildBridge $ plutusLedgerApiBridge <|> bridgePart)
+    (ledgerTypes <> myTypes)
+
 plutusLedgerApiBridge :: BridgeBuilder PSType
 plutusLedgerApiBridge = defaultBridge <|> origToCtlNativePrimitivesBridge <|> origToCtlNativeOverriddenBridge <|> origToCtlNativeScriptsBridge
 
@@ -108,6 +117,7 @@ origToCtlNativePrimitivesBridge =
     <|> ctlBridgePart "GHC.Integer.Type" "Integer" "Data.BigInt" "BigInt"
     <|> ctlBridgePart "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
     <|> mapBridge
+    <|> intervalBridge
 
 mapBridge :: BridgePart
 mapBridge = do
@@ -115,12 +125,19 @@ mapBridge = do
   typeName ^== "Map"
   TypeInfo "plutonomicon-cardano-transaction-lib" "Plutus.Types.AssocMap" "Map" <$> psTypeParameters
 
+intervalBridge :: BridgePart
+intervalBridge = do
+  typeModule ^== "Plutus.V1.Ledger.Interval"
+  typeName ^== "Interval"
+  TypeInfo "plutonomicon-cardano-transaction-lib" "Types.Interval" "Interval" <$> psTypeParameters
+
 origToCtlNativeOverriddenBridge :: BridgeBuilder PSType
 origToCtlNativeOverriddenBridge =
   ctlBridgePart "Plutus.V1.Ledger.Value" "Value" "Plutus.Types.Value" "Value"
     <|> ctlBridgePart "Plutus.V1.Ledger.Value" "CurrencySymbol" "Plutus.Types.CurrencySymbol" "CurrencySymbol"
     <|> ctlBridgePart "Plutus.V1.Ledger.Value" "TokenName" "Types.TokenName" "TokenName"
     <|> ctlBridgePart "Plutus.V1.Ledger.Address" "Address" "Plutus.Types.Address" "Address"
+    <|> ctlBridgePart "PlutusTx.Ratio" "Rational" "Types.Rational" "Rational"
 
 origToCtlNativeScriptsBridge :: BridgeBuilder PSType
 origToCtlNativeScriptsBridge =
@@ -135,20 +152,24 @@ _overriddenTypes =
   , mkPlutusNewtype @Address
   , argonaut $ mkSumType @MintingPolicy
   , argonaut $ mkSumType @Validator
+  , unsafeMkPlutusDataType @(Interval A)
+  , unsafeMkPlutusDataType @(LowerBound A)
+  , unsafeMkPlutusDataType @(UpperBound A)
+  , mkPlutusDataType @(Extended A)
   ]
 
 ledgerTypes :: [SumType 'Haskell]
 ledgerTypes =
-  genericShow
+  equal . genericShow . argonaut
     <$> [ order $ mkPlutusNewtype @AssetClass -- this might be a type synonym in the version of Plutus we're using at Cardax?
-        , order $ unsafeMkPlutusDataType @TxId
+        , argonaut $ order $ unsafeMkPlutusDataType @TxId
         , unsafeMkPlutusDataType @TxOut
         , unsafeMkPlutusDataType @TxOutRef
         , order $ mkPlutusNewtype @DiffMilliSeconds
-        , order $ mkPlutusNewtype @POSIXTime
+        , order $ mkPlutusNewtype_ @POSIXTime
         , order $ mkPlutusNewtype @Slot
         , mkPlutusNewtype @Redeemer
-        , mkPlutusNewtype @Datum
+        , mkPlutusNewtype_ @Datum
         , mkPlutusNewtype @ScriptHash
         , mkPlutusNewtype @ValidatorHash
         , mkPlutusNewtype @DatumHash
@@ -163,11 +184,7 @@ ledgerTypes =
         , unsafeMkPlutusDataType @ScriptContext
         , mkPlutusNewtype @LedgerBytes
         , mkPlutusNewtype @Ada
-        , unsafeMkPlutusDataType @(Interval A)
-        , unsafeMkPlutusDataType @(LowerBound A)
-        , unsafeMkPlutusDataType @(UpperBound A)
         , mkPlutusDataType @DCert
-        , mkPlutusDataType @(Extended A)
         , mkPlutusDataType @StakingCredential
         , mkPlutusDataType @Credential
         , mkPlutusDataType @ScriptPurpose

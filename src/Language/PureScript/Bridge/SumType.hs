@@ -26,7 +26,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
 import Data.Map qualified as M
 import Data.Map qualified as Map
-import Data.Maybe (maybeToList)
+import Data.Maybe (isJust, maybeToList)
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Text (Text)
@@ -121,13 +121,29 @@ mkPlutusNewtype ::
   SumType 'Haskell
 mkPlutusNewtype = case mkSumType @t of
   SumType tInfo cs is -> case cs of
-    [(0, DataConstructor sc (Record [RecordEntry _ ti]))] ->
-      SumType tInfo [(0, DataConstructor sc (Normal [ti]))] (is <> [GenericShow, PlutusNewtype, ToData, FromData])
-    [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [GenericShow, PlutusNewtype, ToData, FromData])
+    [(0, DataConstructor st (Record [RecordEntry rname rval]))] ->
+      SumType
+        tInfo
+        [(0, DataConstructor st (Normal [rval]))]
+        (is <> [GenericShow, PlutusNewtype (Just rname), ToData, FromData, Json])
+    [(0, DataConstructor _ (Normal [_]))] -> SumType tInfo cs (is <> [GenericShow, PlutusNewtype Nothing, ToData, FromData, Json])
     _ ->
       error $
         "Cannot generate a PureScript newtype for type "
           <> T.unpack (_typeName tInfo)
+
+mkPlutusNewtype_ ::
+  forall t.
+  (Generic t, Typeable t, GDataConstructor (Rep t)) =>
+  SumType 'Haskell
+mkPlutusNewtype_ = case mkSumType @t of
+  SumType tInfo cs is -> case cs of
+    [(0, DataConstructor st (Record [RecordEntry _ rval]))] ->
+      SumType
+        tInfo
+        [(0, DataConstructor st (Normal [rval]))]
+        (is <> [GenericShow, PlutusNewtype Nothing, ToData, FromData, Json])
+    _ -> error "Don't use mkPlutusNewtype_ on things that aren't a single field record newtype. Probably don't use mkPlutusNewtype_ at all - it's here to get the JSON to line up for Plutus.Ledger.V1.POSIXTime"
 
 {- | Variant of @mkSumType@ which constructs a SumType using a Haskell type class that can provide constructor
    index information.
@@ -176,7 +192,7 @@ data Instance (lang :: Language)
   | Enum
   | Bounded
   | PlutusData
-  | PlutusNewtype
+  | PlutusNewtype {fieldName :: Maybe T.Text}
   | ToData
   | FromData
   | Custom (CustomInstance lang)
@@ -214,8 +230,17 @@ nootype [DataConstructor _ (Record _)] = Just Newtype
 nootype [DataConstructor _ (Normal [_])] = Just Newtype
 nootype _ = Nothing
 
+getNewtypeRecField :: [Instance lang] -> Maybe Text
+getNewtypeRecField is = getNewtypeInstance is >>= fieldName
+
+getNewtypeInstance :: [Instance lang] -> Maybe (Instance lang)
+getNewtypeInstance = \case
+  [] -> Nothing
+  (PlutusNewtype fname : _) -> Just (PlutusNewtype fname)
+  (_ : xs) -> getNewtypeInstance xs
+
 isPlutusNewtype :: SumType lang -> Bool
-isPlutusNewtype (SumType _ _ is) = PlutusNewtype `elem` is
+isPlutusNewtype (SumType _ _ is) = isJust . getNewtypeInstance $ is
 
 -- | Ensure that aeson-compatible `EncodeJson` and `DecodeJson` instances are generated for your type.
 argonaut :: SumType t -> SumType t
@@ -326,8 +351,8 @@ instanceToTypes Generic = pure $ constraintToType $ TypeInfo "purescript-prelude
 instanceToTypes GenericShow = pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Show" []
 instanceToTypes Json =
   constraintToType
-    <$> [ TypeInfo "purescript-argonaut-codecs" "Data.Argonaut.Decode" "DecodeJson" []
-        , TypeInfo "purescript-argonaut-codecs" "Data.Argonaut.Encode" "EncodeJson" []
+    <$> [ TypeInfo "purescript-aeson" "Aeson" "DecodeAeson" []
+        , TypeInfo "purescript-aeson" "Aeson" "EncodeAeson" []
         ]
 instanceToTypes Newtype =
   pure $ constraintToType $ TypeInfo "purescript-newtype" "Data.Newtype" "Newtype" []
@@ -345,8 +370,8 @@ instanceToTypes Bounded =
   pure $ constraintToType $ TypeInfo "purescript-prelude" "Prelude" "Bounded" []
 -- fix this later (i don't think it matters now)
 instanceToTypes PlutusData =
-  pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "TypeLevel.DataSchema" "HasPlutusSchema" []
-instanceToTypes PlutusNewtype = instanceToTypes Newtype
+  pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "Plutus.Types.DataSchema" "HasPlutusSchema" []
+instanceToTypes (PlutusNewtype _) = instanceToTypes Newtype
 instanceToTypes ToData =
   pure $ constraintToType $ TypeInfo "plutonomicon-cardano-transaction-lib" "ToData" "ToData" []
 instanceToTypes FromData =
@@ -367,13 +392,12 @@ instanceToImportLines GenericShow =
 instanceToImportLines Json =
   importsFromList
     [ ImportLine "Control.Lazy" $ Set.singleton "defer"
-    , ImportLine "Data.Argonaut.Core" $ Set.fromList ["jsonNull"]
-    , ImportLine "Data.Argonaut.Encode" $ Set.fromList ["encodeJson"]
-    , ImportLine "Data.Argonaut.Decode" $ Set.fromList ["decodeJson"]
-    , ImportLine "Data.Argonaut.Decode.Aeson" $ Set.fromList ["null", "decode", "(</$\\>)", "(</*\\>)", "(</\\>)"]
-    , ImportLine "Data.Argonaut.Encode.Aeson" $ Set.fromList ["null", "encode", "(>$<)", "(>/\\<)"]
-    , ImportLine "Data.Newtype" $ Set.singleton "unwrap"
+    , ImportLine "Aeson" $ Set.fromList ["aesonNull", "Aeson", "encodeAeson", "decodeAeson"]
+    , ImportLine "Aeson.Decode" $ Set.fromList ["null", "decode", "(</$\\>)", "(</*\\>)", "(</\\>)"]
+    , ImportLine "Aeson.Encode" $ Set.fromList ["null", "encode", "(>$<)", "(>/\\<)"]
+    , ImportLine "Data.Newtype" $ Set.fromList ["unwrap", "wrap"]
     , ImportLine "Data.Tuple.Nested" $ Set.singleton "(/\\)"
+    , ImportLine "Data.Op" $ Set.singleton "Op(Op)"
     ]
 instanceToImportLines Enum =
   importsFromList
@@ -385,7 +409,7 @@ instanceToImportLines Bounded =
     ]
 instanceToImportLines PlutusData =
   importsFromList
-    [ ImportLine "TypeLevel.DataSchema" $
+    [ ImportLine "Plutus.Types.DataSchema" $
         Set.fromList
           [ "PSchema"
           , "PNil"
@@ -413,6 +437,10 @@ instanceToImportLines ToData =
 instanceToImportLines FromData =
   importsFromList
     [ ImportLine "FromData" $ Set.fromList ["genericFromData"]
+    ]
+instanceToImportLines (PlutusNewtype (Just _)) =
+  importsFromList
+    [ ImportLine "Record" $ Set.fromList ["get"]
     ]
 instanceToImportLines (Custom CustomInstance {_customImplementation = Explicit members}) =
   importsFromList $ concatMap (Map.elems . _memberImportLines) members

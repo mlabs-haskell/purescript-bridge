@@ -181,6 +181,7 @@ import Language.PureScript.Bridge.SumType as Bridge (
   memberName,
   mkPlutusDataType,
   mkPlutusNewtype,
+  mkPlutusNewtype_,
   mkSumType,
   nootype,
   order,
@@ -328,7 +329,7 @@ bridgeSumType br (SumType t cs is) =
     bridgeInstance Generic = Generic
     bridgeInstance Newtype = Newtype
     bridgeInstance PlutusData = PlutusData
-    bridgeInstance PlutusNewtype = PlutusNewtype
+    bridgeInstance (PlutusNewtype fname) = PlutusNewtype fname
     bridgeInstance ToData = ToData
     bridgeInstance FromData = FromData
 

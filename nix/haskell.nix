@@ -1,4 +1,4 @@
-{ src, system, pkgs, pkgs', easy-ps, inputs, extraSources }:
+{ src, system, pkgs, pkgs', easy-ps, extraSources, rtPurs }:
 pkgs'.haskell-nix.cabalProject' {
   inherit src;
   name = "purescript-bridge";
@@ -29,13 +29,11 @@ pkgs'.haskell-nix.cabalProject' {
         cardano-config.components.library.build-tools =
           [ pkgs'.buildPackages.buildPackages.gitMinimal ];
 
-        # Required for Spago based `around` tests
-        # purescript-bridge.components.tests.tests.build-tools =
-        #   [
-        #     easy-ps.purs-0_14_5
-        #     easy-ps.spago
-        #     pkgs.nodejs-12_x
-        #   ];
+        # Required for RoundTrip test
+        purescript-bridge.components.tests.roundtrip-test.build-tools =
+          [
+            rtPurs
+          ];
 
         # Don't build in dev
         # TODO: Add purescript-bridge.components.library.configureFlags = [ dev ];
@@ -84,10 +82,12 @@ pkgs'.haskell-nix.cabalProject' {
       easy-ps.purs-tidy
       # JSON
       nodePackages.jsonlint
+      # RoundTrip Purescript app
+      rtPurs
     ];
 
     # Add here so `cabal build` can find them
-    additional = ps: [ ps.plutus-tx ps.plutus-ledger-api ];
+    additional = ps: [ ps.plutus-tx ps.plutus-ledger-api ps.quickcheck-plutus-instances ];
 
     tools = { haskell-language-server = "latest"; };
 

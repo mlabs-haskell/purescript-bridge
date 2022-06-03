@@ -3,19 +3,19 @@ module TestData where
 
 import Prelude
 
+import Aeson (Aeson, aesonNull, class DecodeAeson, class EncodeAeson, decodeAeson, encodeAeson)
+import Aeson.Decode ((</$\>), (</*\>), (</\>), decode, null)
+import Aeson.Encode ((>$<), (>/\<), encode, null)
 import Control.Lazy (defer)
-import Data.Argonaut.Core (jsonNull)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>), decode, null)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Argonaut.Encode.Aeson ((>$<), (>/\<), encode, null)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
+import Data.Op (Op(Op))
 import Data.Tuple.Nested ((/\))
 import Types.Scripts (MintingPolicy, Validator)
-import Data.Argonaut.Decode.Aeson as D
-import Data.Argonaut.Encode.Aeson as E
+import Aeson as Aeson
+import Aeson.Decode as D
+import Aeson.Encode as E
 import Data.Map as Map
 
 newtype RecordWithPlutusScripts = RecordWithPlutusScripts
@@ -23,14 +23,15 @@ newtype RecordWithPlutusScripts = RecordWithPlutusScripts
   , validator :: Validator
   }
 
-instance EncodeJson RecordWithPlutusScripts where
-  encodeJson = defer \_ -> E.encode $ unwrap >$< (E.record
-                                                   { mintingPolicy: E.value :: _ MintingPolicy
-                                                   , validator: E.value :: _ Validator
-                                                   })
+instance EncodeAeson RecordWithPlutusScripts where
+  encodeAeson' x = Aeson.encodeAeson' $ (defer \_ ->  E.encode $ unwrap >$< (E.record
+                                                                           
+                                                                              { mintingPolicy: E.value :: _ MintingPolicy
+                                                                              , validator: E.value :: _ Validator
+                                                                              }) ) x
 
-instance DecodeJson RecordWithPlutusScripts where
-  decodeJson = defer \_ -> D.decode $ (RecordWithPlutusScripts <$> D.record "RecordWithPlutusScripts"
+instance DecodeAeson RecordWithPlutusScripts where
+  decodeAeson = defer \_ -> D.decode $ (RecordWithPlutusScripts <$> D.record "RecordWithPlutusScripts"
       { mintingPolicy: D.value :: _ MintingPolicy
       , validator: D.value :: _ Validator
       })

@@ -6,15 +6,17 @@ current-system := $(shell nix eval --impure --expr builtins.currentSystem)
 
 NIX_BUILD:= nix -L --show-trace build
 NIX_RUN:= nix -L --show-trace run
-NIX_DEV:= nix -L --show-trace develop .#default
-NIX_DEV_RT:= nix -L --show-trace develop .#roundTripTest
+NIX_DEV:= nix -L --show-trace develop .\#default
 
 develop:
 	$(NIX_DEV)
 
 # Tests
 test:
-	$(NIX_BUILD) .#checks.${current-system}."purescript-bridge:test:tests"
+	$(NIX_BUILD) .#test-all.${current-system}
+
+test-rt:
+	$(NIX_BUILD) .#checks.${current-system}.purescript-bridge:test:roundtrip-test
 
 test-all: test
 
@@ -38,29 +40,24 @@ fix-files: clean
 check-files:
 	$(NIX_BUILD) .#$@.${current-system}
 
+update-all:
+	nix -L flake lock --update-input cardano-transaction-lib
+	nix -L --show-trace develop .#typelibNix -c make
+	nix -L --show-trace develop .#default -c make
+
 # Run what CI would
-ci: check-files build-all
-	$(NIX_DEV_RT) -c cabal run test:tests
+ci: check-files build-all test-rt
 
 # Clean local folder.
 clean:
 	@ rm -rf dist-newstyle                  || true
 	@ rm -rf .psc-ide-port                  || true
-	@ rm -rf ./test/RoundTrip/app/dist    || true
-	@ rm -rf ./test/RoundTrip/app/output    || true
-	@ rm -rf ./test/RoundTrip/app/.spago    || true
-	@ rm -rf ./test/RoundTrip/app/.psci_modules    || true
-	@ rm -rf ./test/RoundTrip/app/.spago2nix    || true
-	@ rm -rf ./test/RoundTrip/app/node_modules || true
-	@ rm -rf ./test/RoundTrip/app/generated || true
 	@ rm -rf .spago || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago2nix || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/output || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/.spago || true
-	@ rm -rf ./nix/purescript-bridge-typelib-spago/node_modules || true
+	@ make -C ./roundtrip/RoundTripPurs clean   || true
+	@ make -C ./nix/purescript-bridge-nix-spago clean    || true
 
 generate-plutus-ledger-api-typelib:
 	@ if [ -d plutus-ledger-api-typelib ]; then git rm -r --cached plutus-ledger-api-typelib; else echo "skip"; fi
 	@ if [ -d plutus-ledger-api-typelib ]; then rm -rf plutus-ledger-api-typelib; else echo "skip 1"; fi
-	@ cabal run cli -- generate-plutus-ledger-api-types
-	@ git add plutus-ledger-api-typelib
+	@ cabal run cli -- generate-types
+	@ git add generated
