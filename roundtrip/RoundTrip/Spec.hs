@@ -11,7 +11,7 @@ import ArbitraryLedger (WEq ((@==)))
 import Codec.Serialise qualified as Cbor
 import Control.DeepSeq (deepseq)
 import Control.Exception qualified as E
-import Control.Monad (unless)
+import Control.Monad (unless, when)
 import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Lazy (fromStrict, toStrict)
@@ -21,13 +21,13 @@ import Data.Kind (Constraint, Type)
 import Data.Text.Lazy qualified as T
 import PlutusTx (toData)
 import PlutusTx.IsData.Class (fromData)
-import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
+import System.IO (BufferMode (LineBuffering), hGetContents, hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
   getPid,
   runInteractiveCommand,
   terminateProcess,
  )
-import Test.HUnit (Assertion, assertEqual, assertFailure)
+import Test.HUnit (Assertion, assertFailure)
 import Test.HUnit.Lang (FailureReason (ExpectedButGot), HUnitFailure (HUnitFailure))
 import Test.Hspec (Spec, beforeAll, describe, hspec, it)
 import Test.QuickCheck.Property (Testable (property))
@@ -147,7 +147,10 @@ roundTripSpec = do
       -- IPC
       hPutStrLn hin jsonReq
       err <- hGetLine herr
-      assertEqual "hs> Purescript shouldn't report an error" "" err
+      when (err /= "") $ do
+        err' <- hGetContents herr
+        putStrLn (err <> err')
+        assertFailure "hs> Purescript shouldn't report an error"
       output <- hGetLine hout
       -- Assert response
       resp <-
