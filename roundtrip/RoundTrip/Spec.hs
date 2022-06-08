@@ -98,7 +98,7 @@ roundTripSpec = do
               -- IPC
               resp <- doReq hin herr hout (Req RTJson payload)
               -- Assert response
-              jsonResp <-
+              payload' <-
                 response
                   (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
                   return
@@ -108,8 +108,8 @@ roundTripSpec = do
                 Pretty
                 "hs> Round trip for payload should be ok"
                 (Right testData)
-                (eitherDecode @TestData (fromString jsonResp))
-      it "should be PlutusData compatible" $ \(hin, hout, herr, _hproc) -> do
+                (eitherDecode @TestData (fromString payload'))
+      it "should be PlutusData and Cbor compatible" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testPlutusData ->
             do
@@ -118,17 +118,18 @@ roundTripSpec = do
               -- IPC
               resp <- doReq hin herr hout (Req RTPlutusData payload)
               -- Assert response
-              pdResp <-
+              payload' <-
                 response
                   (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
                   (\json -> assertFailure $ "hs> Wanted RTPlutusData got RTJson " <> json)
                   return
                   resp
+              assertEqualWith @Eq Pretty "Cbor byte encodings should match" payload payload'
               cbor <-
                 either
                   (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
                   return
-                  (decodeBase16 pdResp)
+                  (decodeBase16 payload')
               pd <-
                 either
                   (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
@@ -164,7 +165,7 @@ roundTripSpec = do
 
     waitUntil pred fd = do
       l <- hGetLine fd
-      putStrLn $ "hs > waitUntil> " <> l
+      putStrLn $ "hs> waitUntil> " <> l
       Control.Monad.unless (pred l) (waitUntil pred fd)
 
     startPurescript = do
