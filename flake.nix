@@ -243,7 +243,7 @@
         };
 
         hydraJobs = {
-          inherit build-all checks;
+          inherit build-all checks check-files;
         };
       }
     );
