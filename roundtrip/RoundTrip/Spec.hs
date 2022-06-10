@@ -79,6 +79,9 @@ location = case reverse callStack of
   (_, loc) : _ -> Just loc
   [] -> Nothing
 
+assertFailure' :: forall a. String -> IO a
+assertFailure' err = assertFailure $ "hs> " <> err
+
 roundTripSpec :: Spec
 roundTripSpec = do
   beforeAll startPurescript $
@@ -100,9 +103,9 @@ roundTripSpec = do
               -- Assert response
               payload' <-
                 response
-                  (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
+                  (\err -> assertFailure' $ "Wanted ResSuccess got ResError " <> err)
                   return
-                  (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
+                  (\pd -> assertFailure' $ "Wanted RTJson got RTPlutusData: " <> pd)
                   resp
               assertEqualWith @Eq
                 Pretty
@@ -120,19 +123,19 @@ roundTripSpec = do
               -- Assert response
               payload' <-
                 response
-                  (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
-                  (\json -> assertFailure $ "hs> Wanted RTPlutusData got RTJson " <> json)
+                  (\err -> assertFailure' $ "Wanted ResSuccess got ResError " <> err)
+                  (\json -> assertFailure' $ "Wanted RTPlutusData got RTJson " <> json)
                   return
                   resp
               assertEqualWith @Eq Pretty "Cbor byte encodings should match" payload payload'
               cbor <-
                 either
-                  (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
+                  (\err -> assertFailure' $ "Wanted Base64 got error: " <> err)
                   return
                   (decodeBase16 payload')
               pd <-
                 either
-                  (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
+                  (\err -> assertFailure' $ "Wanted Cbor got error: " <> show err)
                   return
                   (Cbor.deserialiseOrFail cbor)
               assertEqualWith @WEq
@@ -150,12 +153,12 @@ roundTripSpec = do
       when (err /= "") $ do
         err' <- hGetContents herr
         putStrLn (err <> err')
-        assertFailure "hs> Purescript shouldn't report an error"
+        assertFailure' "Purescript shouldn't report an error"
       output <- hGetLine hout
       -- Assert response
       resp <-
         either
-          (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
+          (\err -> assertFailure' $ "Wanted Response got error: " <> err)
           return
           (eitherDecode @Response $ fromString output)
       putStrLn $ "ps> " <> show resp -- DEBUG
