@@ -32,7 +32,7 @@
   };
 
   outputs = inputs@{ self, flake-utils, haskell-nix, ... }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
+    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
         # TODO: Perhaps cleanSource
         src = ./.;
