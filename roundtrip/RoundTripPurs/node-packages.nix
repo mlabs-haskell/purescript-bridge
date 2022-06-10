@@ -4,22 +4,22 @@
 
 let
   sources = {
-    "@ngua/cardano-serialization-lib-browser-9.1.2" = {
-      name = "_at_ngua_slash_cardano-serialization-lib-browser";
-      packageName = "@ngua/cardano-serialization-lib-browser";
-      version = "9.1.2";
+    "@emurgo/cardano-serialization-lib-browser-10.1.0" = {
+      name = "_at_emurgo_slash_cardano-serialization-lib-browser";
+      packageName = "@emurgo/cardano-serialization-lib-browser";
+      version = "10.1.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@ngua/cardano-serialization-lib-browser/-/cardano-serialization-lib-browser-9.1.2.tgz";
-        sha512 = "0KkS3vCwrK8Yxs+yuoFJ05Ou5r0AZJNTWks9otP5h9ODsTUpkgJDb3lVmflJmSB0KnA9JvF3AmcN/swXj/yw+A==";
+        url = "https://registry.npmjs.org/@emurgo/cardano-serialization-lib-browser/-/cardano-serialization-lib-browser-10.1.0.tgz";
+        sha512 = "h4CXsCTDhEISkPaQXub24QX8cQwGpimtjah89941RV1R/JPzATwqbuABqjES3Bf/wAmq0JlfzyIzwcCEF0JLxA==";
       };
     };
-    "@ngua/cardano-serialization-lib-nodejs-9.1.2" = {
-      name = "_at_ngua_slash_cardano-serialization-lib-nodejs";
-      packageName = "@ngua/cardano-serialization-lib-nodejs";
-      version = "9.1.2";
+    "@emurgo/cardano-serialization-lib-nodejs-10.1.0" = {
+      name = "_at_emurgo_slash_cardano-serialization-lib-nodejs";
+      packageName = "@emurgo/cardano-serialization-lib-nodejs";
+      version = "10.1.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@ngua/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-9.1.2.tgz";
-        sha512 = "6xpp5Xjcqm9eHIrKBUmmIeZV6n0OeK6t8vCyQzF8KcHEQiknAcIcoIq/wf7sEcLV3ohwn945QCKkM3rKsKF5FA==";
+        url = "https://registry.npmjs.org/@emurgo/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-10.1.0.tgz";
+        sha512 = "6F8gyYzHE3Bu0IVL6XpMQDUWS0UudkZtp2yr/nXNcQlYYp5l6AJbui2V1iuxjQUN0KwKzyH9tDeer+xj8Cs9dA==";
       };
     };
     "asn1.js-5.4.1" = {
@@ -1127,8 +1127,8 @@ let
     version = "1.0.0";
     src = ./.;
     dependencies = [
-      sources."@ngua/cardano-serialization-lib-browser-9.1.2"
-      sources."@ngua/cardano-serialization-lib-nodejs-9.1.2"
+      sources."@emurgo/cardano-serialization-lib-browser-10.1.0"
+      sources."@emurgo/cardano-serialization-lib-nodejs-10.1.0"
       (sources."asn1.js-5.4.1" // {
         dependencies = [
           sources."bn.js-4.12.0"

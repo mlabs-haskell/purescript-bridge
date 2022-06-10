@@ -11,7 +11,7 @@ import ArbitraryLedger (WEq ((@==)))
 import Codec.Serialise qualified as Cbor
 import Control.DeepSeq (deepseq)
 import Control.Exception qualified as E
-import Control.Monad (unless)
+import Control.Monad (unless, when)
 import Data.Aeson (eitherDecode, encode)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Lazy (fromStrict, toStrict)
@@ -21,13 +21,13 @@ import Data.Kind (Constraint, Type)
 import Data.Text.Lazy qualified as T
 import PlutusTx (toData)
 import PlutusTx.IsData.Class (fromData)
-import System.IO (BufferMode (LineBuffering), hGetLine, hPutStrLn, hSetBuffering)
+import System.IO (BufferMode (LineBuffering), hGetContents, hGetLine, hPutStrLn, hSetBuffering)
 import System.Process (
   getPid,
   runInteractiveCommand,
   terminateProcess,
  )
-import Test.HUnit (Assertion, assertEqual, assertFailure)
+import Test.HUnit (Assertion, assertFailure)
 import Test.HUnit.Lang (FailureReason (ExpectedButGot), HUnitFailure (HUnitFailure))
 import Test.Hspec (Spec, beforeAll, describe, hspec, it)
 import Test.QuickCheck.Property (Testable (property))
@@ -79,6 +79,9 @@ location = case reverse callStack of
   (_, loc) : _ -> Just loc
   [] -> Nothing
 
+assertFailure' :: forall a. String -> IO a
+assertFailure' err = assertFailure $ "hs> " <> err
+
 roundTripSpec :: Spec
 roundTripSpec = do
   beforeAll startPurescript $
@@ -98,18 +101,18 @@ roundTripSpec = do
               -- IPC
               resp <- doReq hin herr hout (Req RTJson payload)
               -- Assert response
-              jsonResp <-
+              payload' <-
                 response
-                  (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
+                  (\err -> assertFailure' $ "Wanted ResSuccess got ResError " <> err)
                   return
-                  (\pd -> assertFailure $ "hs> Wanted RTJson got RTPlutusData: " <> pd)
+                  (\pd -> assertFailure' $ "Wanted RTJson got RTPlutusData: " <> pd)
                   resp
               assertEqualWith @Eq
                 Pretty
                 "hs> Round trip for payload should be ok"
                 (Right testData)
-                (eitherDecode @TestData (fromString jsonResp))
-      it "should be PlutusData compatible" $ \(hin, hout, herr, _hproc) -> do
+                (eitherDecode @TestData (fromString payload'))
+      it "should be PlutusData and Cbor compatible" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testPlutusData ->
             do
@@ -118,20 +121,21 @@ roundTripSpec = do
               -- IPC
               resp <- doReq hin herr hout (Req RTPlutusData payload)
               -- Assert response
-              pdResp <-
+              payload' <-
                 response
-                  (\err -> assertFailure $ "hs> Wanted ResSuccess got ResError " <> err)
-                  (\json -> assertFailure $ "hs> Wanted RTPlutusData got RTJson " <> json)
+                  (\err -> assertFailure' $ "Wanted ResSuccess got ResError " <> err)
+                  (\json -> assertFailure' $ "Wanted RTPlutusData got RTJson " <> json)
                   return
                   resp
+              assertEqualWith @Eq Pretty "Cbor byte encodings should match" payload payload'
               cbor <-
                 either
-                  (\err -> assertFailure $ "hs> Wanted Base64 got error: " <> err)
+                  (\err -> assertFailure' $ "Wanted Base64 got error: " <> err)
                   return
-                  (decodeBase16 pdResp)
+                  (decodeBase16 payload')
               pd <-
                 either
-                  (\err -> assertFailure $ "hs> Wanted Cbor got error: " <> show err)
+                  (\err -> assertFailure' $ "Wanted Cbor got error: " <> show err)
                   return
                   (Cbor.deserialiseOrFail cbor)
               assertEqualWith @WEq
@@ -146,12 +150,15 @@ roundTripSpec = do
       -- IPC
       hPutStrLn hin jsonReq
       err <- hGetLine herr
-      assertEqual "hs> Purescript shouldn't report an error" "" err
+      when (err /= "") $ do
+        err' <- hGetContents herr
+        putStrLn (err <> err')
+        assertFailure' "Purescript shouldn't report an error"
       output <- hGetLine hout
       -- Assert response
       resp <-
         either
-          (\err -> assertFailure $ "hs> Wanted Response got error: " <> err)
+          (\err -> assertFailure' $ "Wanted Response got error: " <> err)
           return
           (eitherDecode @Response $ fromString output)
       putStrLn $ "ps> " <> show resp -- DEBUG
@@ -164,7 +171,7 @@ roundTripSpec = do
 
     waitUntil pred fd = do
       l <- hGetLine fd
-      putStrLn $ "hs > waitUntil> " <> l
+      putStrLn $ "hs> waitUntil> " <> l
       Control.Monad.unless (pred l) (waitUntil pred fd)
 
     startPurescript = do
