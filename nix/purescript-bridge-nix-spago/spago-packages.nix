@@ -197,7 +197,7 @@ let
       installPhase = "ln -s $src $out";
     };
 
-    # cardano-transaction-lib is a Local package in (Local "/nix/store/3mbwrrzsm7d3xck580jdgbygf6v13lh7-source")
+    # cardano-transaction-lib is a Local package in (Local "/nix/store/s8h0qm9h44q9bai0zvi9xb904k8db1gj-source")
 
     "catenable-lists" = pkgs.stdenv.mkDerivation {
       name = "catenable-lists";
