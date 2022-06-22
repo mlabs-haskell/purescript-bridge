@@ -86,13 +86,13 @@ roundTripSpec :: Spec
 roundTripSpec = do
   beforeAll startPurescript $
     describe "With plutus-ledger-api bridge" do
-      it "should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
+      it "Should have a Purescript process running" $ \(_hin, _hout, _herr, hproc) -> do
         mayPid <- getPid hproc
         maybe
           (assertFailure "No process running")
           (\_ -> return ())
           mayPid
-      it "should be Aeson compatible" $ \(hin, hout, herr, _hproc) -> do
+      it "Should be Aeson compatible" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testData ->
             do
@@ -112,7 +112,7 @@ roundTripSpec = do
                 "hs> Round trip for payload should be ok"
                 (Right testData)
                 (eitherDecode @TestData (fromString payload'))
-      it "should be PlutusData and Cbor compatible" $ \(hin, hout, herr, _hproc) -> do
+      it "Should be PlutusData and Cbor compatible" $ \(hin, hout, herr, _hproc) -> do
         property $
           \testPlutusData ->
             do
