@@ -240,6 +240,7 @@
           bridgeTypelib = (import ./nix/purescript-bridge.nix) inputs.cardano-transaction-lib;
           pursFlake = import ./nix/purescript-flake.nix;
           pursLib = import ./nix/purescript-lib.nix;
+          codeQualityLib = import ./nix/code-quality.nix;
         };
 
         hydraJobs = {

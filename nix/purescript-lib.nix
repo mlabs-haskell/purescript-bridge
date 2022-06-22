@@ -3,6 +3,7 @@
 , spago
 , spagoPkgs
 , spagoLocalPkgs ? [ ]
+, resourceDirs ? [ ]
 , nodejs
 , purs
 , nodeModules
@@ -51,7 +52,7 @@ rec {
       outputs = [ "out" "compilationOut" ];
       pursDirs = (builtins.map (sd: projectDir + sd) pursSubDirs);
       src = pursFilterSource pursDirs;
-      inherit spagoLocalPkgs;
+      inherit spagoLocalPkgs resourceDirs;
       buildInputs = with spagoPkgs; [
         installSpagoStyle
         buildFromNixStore
@@ -66,6 +67,9 @@ rec {
       buildPhase = ''
         set -vox
         mkdir $out
+        for resDir in $resourceDirs; do
+          cp -r $resDir $out/
+        done
         cp -r ${projectDir}/* $out
         ln -s ${localsDhall} $out/locals.dhall
 
@@ -142,6 +146,7 @@ rec {
       buildInputs = [ nodejs ];
       checkPhase = ''
         export NODE_PATH=${nodeModules}/lib/node_modules
+        cp -r ${pursProject.out} .
         node -e 'require("${pursProject.compilationOut}/output/${testModule}").main()' > out.log
       '';
       installPhase = ''

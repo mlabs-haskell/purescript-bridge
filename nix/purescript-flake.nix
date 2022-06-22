@@ -2,6 +2,7 @@
 , src
 , pursSubDirs ? [ "/src" ]
 , pursSubDirsTest ? [ "/test" ]
+, resourceDirs ? [ ]
 , workDir # FIXME: This is awkward; to cd into and attach a locals.dhall link
 , pkgs
 , system
@@ -24,7 +25,7 @@ let
   };
   nodeModules = nodePkgs'.shell.nodeDependencies;
   ps-lib = import ./purescript-lib.nix {
-    inherit pkgs projectName spagoPkgs spagoLocalPkgs nodejs nodeModules purs mainModule testModule;
+    inherit pkgs projectName spagoPkgs spagoLocalPkgs nodejs nodeModules purs mainModule testModule resourceDirs;
     spago = easy-ps.spago;
   };
   projectDir = src;
