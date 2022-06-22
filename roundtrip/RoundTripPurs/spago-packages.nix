@@ -197,7 +197,7 @@ let
       installPhase = "ln -s $src $out";
     };
 
-    # cardano-transaction-lib is a Local package in (Local "/nix/store/s8h0qm9h44q9bai0zvi9xb904k8db1gj-source")
+    # cardano-transaction-lib is a Local package in (Local "/nix/store/0vqwx65jswvb31y1gqnqsfbw3lfy2b1z-source")
 
     "catenable-lists" = pkgs.stdenv.mkDerivation {
       name = "catenable-lists";
@@ -1027,7 +1027,7 @@ let
       installPhase = "ln -s $src $out";
     };
 
-    # purescript-bridge-typelib is a Local package in (Local "/nix/store/fllaqrnw01jp4sl3bmqwndj032g4k38j-roundtrip-test-typelib-build-purs-project")
+    # purescript-bridge-typelib is a Local package in (Local "/nix/store/vhyk0hkpcsfa4kfrykzq2rwf01ipl380-roundtrip-test-typelib-build-purs-project")
 
     "quickcheck" = pkgs.stdenv.mkDerivation {
       name = "quickcheck";

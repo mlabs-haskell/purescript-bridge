@@ -15,7 +15,7 @@
       flake = false;
     };
 
-    cardano-transaction-lib.url = github:Plutonomicon/cardano-transaction-lib?rev=f3ba2534690c2dc126e94a9a598d97cd715a1a5f; # path:/home/bladyjoker/Desktop/cardano-transaction-lib;
+    cardano-transaction-lib.url = github:Plutonomicon/cardano-transaction-lib/develop; # path:/<some_local_path>/cardano-transaction-lib;
     # We're reusing inputs from bot-plutus-interface as it's currently the source of nix truth.
     bot-plutus-interface.url = "github:mlabs-haskell/bot-plutus-interface";
 
