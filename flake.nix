@@ -32,219 +32,255 @@
   };
 
   outputs = inputs@{ self, flake-utils, haskell-nix, ... }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
-      let
-        # TODO: Perhaps cleanSource
-        src = ./.;
+    let
+      # Nixpkgs from bot-plutus-interface
+      inherit (inputs.bot-plutus-interface.inputs) nixpkgs;
+      supportedSystems = [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+      perSystem = nixpkgs.lib.genAttrs supportedSystems;
+      # TODO: Perhaps cleanSource
+      src = ./.;
+      # Reliably cached
+      nixpkgsFor = system: import nixpkgs { inherit system; };
+      # Poor caching due to overlay
+      nixpkgsFor' = system: import nixpkgs {
+        overlays =
+          [ haskell-nix.overlay (import "${inputs.iohk-nix}/overlays/crypto") ];
+        inherit system;
+        inherit (haskell-nix) config;
+      };
+      easyPsFor = system: import inputs.easy-ps { pkgs = nixpkgsFor system; };
+      pursVersion = "purs-0_14_5";
 
-        # Nixpkgs from bot-plutus-interface
-        inherit (inputs.bot-plutus-interface.inputs) nixpkgs;
+      haskellProjectFor = system:
+        let
+          pkgs = nixpkgsFor system;
+          pkgs' = nixpkgsFor' system;
+          easy-ps = easyPsFor system;
+          # Haskell.nix project and flake
+          # Filter out purescript-bridge
+          extraSources' = builtins.filter
+            (e:
+              e.src.rev != "47a1f11825a0f9445e0f98792f79172efef66c00"
+            )
+            inputs.bot-plutus-interface.extraSources;
+          # Use our servant-purescript fork
+          extraSources'' = builtins.map
+            (e:
+              if e.src.rev == "44e7cacf109f84984cd99cd3faf185d161826963"
+              then { src = inputs.servant-purescript; subdirs = e.subdirs; }
+              else e
+            )
+            extraSources';
 
-        # Reliably cached
-        pkgs = import nixpkgs { inherit system; };
-
-        # # Poor caching due to overlay
-        pkgs' = import nixpkgs {
-          overlays =
-            [ haskell-nix.overlay (import "${inputs.iohk-nix}/overlays/crypto") ];
-          inherit system;
-          inherit (haskell-nix) config;
-        };
-
-        easy-ps = import inputs.easy-ps { inherit pkgs; };
-
-        # Haskell.nix project and flake
-        # Filter out purescript-bridge
-        extraSources' = builtins.filter (e: e.src.rev != "47a1f11825a0f9445e0f98792f79172efef66c00") inputs.bot-plutus-interface.extraSources;
-        # Use our servant-purescript fork
-        extraSources'' = builtins.map
-          (e:
-            if e.src.rev == "44e7cacf109f84984cd99cd3faf185d161826963"
-            then { src = inputs.servant-purescript; subdirs = e.subdirs; }
-            else e)
-          extraSources';
-
-        extraSources =
-          [
-            {
-              src = inputs.plutus-extra;
-              subdirs = [
-                "quickcheck-plutus-instances"
-              ];
-            }
-          ]
-          ++ extraSources'';
-        haskellProject = import ./nix/haskell.nix {
+          extraSources =
+            [
+              {
+                src = inputs.plutus-extra;
+                subdirs = [
+                  "quickcheck-plutus-instances"
+                ];
+              }
+            ] ++ extraSources'';
+        in
+        import ./nix/haskell.nix {
           inherit src system pkgs pkgs' easy-ps extraSources;
-          rtPurs = roundTripTestPursFlake.packages.roundtrip-test-run-with-node;
+          rtPurs =
+            (roundTripTestPursFlakeFor system).packages.roundtrip-test-run-with-node;
         };
 
-        haskellFlake = haskellProject.flake { };
+      # Code quality
+      cqFor = system: import ./nix/code-quality.nix {
+        pkgs = nixpkgsFor system;
+        easy-ps = easyPsFor system;
+      };
 
-        # Code quality
-        cq = import ./nix/code-quality.nix { inherit pkgs easy-ps; };
-        fileCheckers = cq.checkers pkgs;
-        fileFixers = cq.fixers pkgs;
+      fileCheckersFor = system: (cqFor system).checkers (nixpkgsFor system);
 
-        pursVersion = "purs-0_14_5";
+      fileFixersFor = system: (cqFor system).fixers (nixpkgsFor system);
 
-        # Generated plutus-ledger-api Purescript typelib
-        generatedLedgerPursFiles = pkgs.runCommand "generate-plutus-ledger-api-purs-files"
-          {
-            cli = haskellProject.getComponent "purescript-bridge:exe:cli";
-          }
-          ''
-            mkdir $out
-            $cli/bin/cli generate-types --generated-dir $out
-          '';
+      generatedLedgerPursFilesFor = system: (nixpkgsFor system).runCommand
+        "generate-plutus-ledger-api-purs-files"
+        {
+          cli = (haskellProjectFor system).getComponent
+            "purescript-bridge:exe:cli";
+        }
+        ''
+          mkdir $out
+          $cli/bin/cli generate-types --generated-dir $out
+        '';
 
-        generatedLedgerTypelib =
-          let
-            spago = easy-ps.spago;
-            ctl = inputs.cardano-transaction-lib;
-            purs = easy-ps.${pursVersion};
-            typelibName = "generated-ledger";
-          in
-          import ./nix/purescript-bridge.nix ctl {
-            inherit pkgs purs spago typelibName;
-            generatedPursFiles = generatedLedgerPursFiles;
+      # Generated plutus-ledger-api Purescript typelib
+      generatedLedgerTypelibFor = system:
+        let
+          pkgs = nixpkgsFor system;
+          spago = (easyPsFor system).spago;
+          ctl = inputs.cardano-transaction-lib;
+          purs = (easyPsFor system).${pursVersion};
+          typelibName = "generated-ledger";
+        in
+        import ./nix/purescript-bridge.nix ctl {
+          inherit pkgs purs spago typelibName;
+          generatedPursFiles = generatedLedgerPursFilesFor system;
+        };
+
+      sampleLedgerTypelibFor = system:
+        let
+          pkgs = nixpkgsFor system;
+          spago = (easyPsFor system).spago;
+          ctl = inputs.cardano-transaction-lib;
+          purs = (easyPsFor system).${pursVersion};
+          typelibName = "sample-ledger";
+        in
+        import ./nix/purescript-bridge.nix ctl {
+          inherit pkgs purs spago typelibName;
+          generatedPursFiles = ./generated;
+        };
+
+      # Purescript - Haskell round trip generated typelib
+      generatedRoundTripPursFilesFor = system: (nixpkgsFor system).runCommand
+        "generate-roundtrip-test-purescript-files"
+        {
+          cli = (haskellProjectFor system).getComponent
+            "purescript-bridge:exe:roundtrip";
+        }
+        ''
+          mkdir $out
+          $cli/bin/roundtrip generate-types --generated-dir $out
+        '';
+
+      generatedRoundTripTypelibFor = system:
+        let
+          pkgs = nixpkgsFor system;
+          spago = (easyPsFor system).spago;
+          ctl = inputs.cardano-transaction-lib;
+          purs = (easyPsFor system).${pursVersion};
+          typelibName = "roundtrip-test";
+        in
+        import ./nix/purescript-bridge.nix ctl {
+          inherit pkgs purs spago typelibName;
+          generatedPursFiles = generatedRoundTripPursFilesFor system;
+        };
+
+      # Purescript - Haskell round trip test purs flake
+      roundTripTestPursFlakeFor = system:
+        let
+          pkgs = nixpkgsFor system;
+          easy-ps = easyPsFor system;
+          src = ./roundtrip/RoundTripPurs;
+          workDir = "./roundtrip/RoundTripPurs";
+          pursSubDirs = [ "/src" ];
+          pursSubDirsTest = [ "/test" ];
+          nodejs = pkgs.nodejs-14_x;
+          spagoLocalPkgs = [
+            inputs.cardano-transaction-lib
+            (generatedRoundTripTypelibFor system)
+          ];
+          purs = easy-ps.${pursVersion};
+          projectName = "roundtrip-test";
+        in
+        import ./nix/purescript-flake.nix {
+          inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps
+            spagoLocalPkgs nodejs purs projectName;
+        };
+
+      # purescript-bridge.nix flake
+      purescriptBridgeNixFlakeFor = system:
+        let
+          pkgs = nixpkgsFor system;
+          easy-ps = easyPsFor system;
+          src = ./nix/purescript-bridge-nix-spago;
+          workDir = "./nix/purescript-bridge-nix-spago";
+          pursSubDirs = [ "/src" ];
+          pursSubDirsTest = [ "/test" ];
+          nodejs = pkgs.nodejs-14_x;
+          spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
+          purs = easy-ps.${pursVersion};
+          mainModule = "PureScriptBridge.Main";
+          projectName = "purescript-bridge-nix";
+        in
+        import ./nix/purescript-flake.nix {
+          inherit src workDir pursSubDirs pursSubDirsTest pkgs system
+            easy-ps spagoLocalPkgs nodejs purs mainModule projectName;
+        };
+    in
+    rec {
+      haskellFlake = perSystem (system: (haskellProjectFor system).flake { });
+      purescriptBridgeNixFlake = perSystem purescriptBridgeNixFlakeFor;
+      roundTripTestPursFlake = perSystem roundTripTestPursFlakeFor;
+
+      packages = perSystem (system:
+        self.haskellFlake.${system}.packages
+        // self.purescriptBridgeNixFlake.${system}.packages
+        // self.roundTripTestPursFlake.${system}.packages
+        // {
+          sample-plutus-ledger-api-typelib = sampleLedgerTypelibFor system;
+          plutus-ledger-api-typelib = generatedLedgerTypelibFor system;
+        }
+      );
+
+      devShells = perSystem (system: {
+        default = self.roundTripTestPursFlake.${system}.devShellComposeWith
+          self.haskellFlake.${system}.devShell;
+        typelibNix = self.purescriptBridgeNixFlake.${system}.devShell;
+      });
+
+      # Flake standard attributes
+      checks = perSystem (system:
+        self.haskellFlake.${system}.checks
+        // self.purescriptBridgeNixFlake.${system}.checks
+        // self.roundTripTestPursFlake.${system}.checks
+      );
+
+      hydraJobs = perSystem (system:
+        let
+          pkgs = nixpkgsFor system;
+          build-all = pkgs.runCommand "build-all"
+            (self.packages.${system} // self.devShells.${system})
+            "touch $out";
+          fileCheckers = fileCheckersFor system;
+          fileFixers = fileFixersFor system;
+          test-all = pkgs.runCommand "check-all"
+            {
+              nativeBuildInputs = builtins.attrValues self.checks.${system};
+            } "touch $out";
+          check-files =
+            let
+            in
+            pkgs.runCommand "check-files"
+              ({
+                checks = [
+                  (fileCheckers.checkNixFiles src)
+                  (fileCheckers.checkHaskellFiles src)
+                  (fileCheckers.checkCabalFiles src)
+                  (fileCheckers.checkShellFiles src)
+                  (fileCheckers.checkDhallFiles src)
+                  (fileCheckers.checkPurescriptFiles ./generated)
+                  (fileCheckers.checkPurescriptFiles ./roundtrip/RoundTripPurs)
+                ];
+              })
+              "touch $out";
+
+          # Fix files
+          fix-files = (cqFor system).makeBundle {
+            myScriptName = "fix-files";
+            myScript = ''
+              ${fileFixers.fixNixFiles}/bin/fix-nix-files-bundle $@
+              ${fileFixers.fixHaskellFiles}/bin/fix-haskell-files-bundle $@
+              ${fileFixers.fixCabalFiles}/bin/fix-cabal-files-bundle $@
+              ${fileFixers.fixShellFiles}/bin/fix-shell-files-bundle $@
+              ${fileFixers.fixDhallFiles}/bin/fix-dhall-files-bundle $@
+              ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/generated
+              ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/roundtrip/RoundTripPurs
+            '';
           };
-
-        sampleLedgerTypelib =
-          let
-            spago = easy-ps.spago;
-            ctl = inputs.cardano-transaction-lib;
-            purs = easy-ps.${pursVersion};
-            typelibName = "sample-ledger";
-          in
-          import ./nix/purescript-bridge.nix ctl {
-            inherit pkgs purs spago typelibName;
-            generatedPursFiles = ./generated;
-          };
-
-        # Purescript - Haskell round trip generated typelib
-        generatedRoundTripPursFiles = pkgs.runCommand "generate-roundtrip-test-purescript-files"
-          {
-            cli = haskellProject.getComponent "purescript-bridge:exe:roundtrip";
-          }
-          ''
-            mkdir $out
-            $cli/bin/roundtrip generate-types --generated-dir $out
-          '';
-
-        generatedRoundTripTypelib =
-          let
-            spago = easy-ps.spago;
-            ctl = inputs.cardano-transaction-lib;
-            purs = easy-ps.${pursVersion};
-            typelibName = "roundtrip-test";
-          in
-          import ./nix/purescript-bridge.nix ctl {
-            inherit pkgs purs spago typelibName;
-            generatedPursFiles = generatedRoundTripPursFiles;
-          };
-
-        # Purescript - Haskell round trip test purs flake
-        roundTripTestPursFlake =
-          let
-            inherit pkgs easy-ps;
-            src = ./roundtrip/RoundTripPurs;
-            workDir = "./roundtrip/RoundTripPurs";
-            pursSubDirs = [ "/src" ];
-            pursSubDirsTest = [ "/test" ];
-            nodejs = pkgs.nodejs-14_x;
-            spagoLocalPkgs = [ inputs.cardano-transaction-lib generatedRoundTripTypelib ];
-            purs = easy-ps.${pursVersion};
-            projectName = "roundtrip-test";
-          in
-          import ./nix/purescript-flake.nix {
-            inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
-              nodejs purs projectName;
-          };
-        # purescript-bridge.nix flake
-        purescriptBridgeNixFlake =
-          let
-            inherit pkgs easy-ps;
-            src = ./nix/purescript-bridge-nix-spago;
-            workDir = "./nix/purescript-bridge-nix-spago";
-            pursSubDirs = [ "/src" ];
-            pursSubDirsTest = [ "/test" ];
-            nodejs = pkgs.nodejs-14_x;
-            spagoLocalPkgs = [ inputs.cardano-transaction-lib ];
-            purs = easy-ps.${pursVersion};
-            mainModule = "PureScriptBridge.Main";
-            projectName = "purescript-bridge-nix";
-          in
-          import ./nix/purescript-flake.nix {
-            inherit src workDir pursSubDirs pursSubDirsTest pkgs system easy-ps spagoLocalPkgs
-              nodejs purs mainModule projectName;
-          };
-      in
-      rec
-      {
-        # Useful attributes
-        inherit pkgs easy-ps haskellProject haskellFlake;
-
-        # Flake standard attributes
-        packages = haskellFlake.packages // purescriptBridgeNixFlake.packages // roundTripTestPursFlake.packages // {
-          sample-plutus-ledger-api-typelib = sampleLedgerTypelib;
-          plutus-ledger-api-typelib = generatedLedgerTypelib;
-        };
-        checks = haskellFlake.checks // purescriptBridgeNixFlake.checks // roundTripTestPursFlake.checks;
-        devShells = {
-          default = roundTripTestPursFlake.devShellComposeWith haskellFlake.devShell;
-          typelibNix = purescriptBridgeNixFlake.devShell;
-        };
-
-        # Used by CI
-        build-all = pkgs.runCommand "build-all"
-          (self.packages.${system} // self.devShells.${system})
-          "touch $out";
-
-        test-all = pkgs.runCommand "check-all"
-          {
-            nativeBuildInputs = builtins.attrValues self.checks.${system};
-          } "touch $out";
-
-        # Check files
-        check-files = pkgs.runCommand "check-files"
-          ({
-            checks = [
-              (fileCheckers.checkNixFiles src)
-              (fileCheckers.checkHaskellFiles src)
-              (fileCheckers.checkCabalFiles src)
-              (fileCheckers.checkShellFiles src)
-              (fileCheckers.checkDhallFiles src)
-              (fileCheckers.checkPurescriptFiles ./generated)
-              (fileCheckers.checkPurescriptFiles ./roundtrip/RoundTripPurs)
-            ];
-          })
-          "touch $out";
-
-        # Fix files
-        fix-files = cq.makeBundle {
-          myScriptName = "fix-files";
-          myScript = ''
-            ${fileFixers.fixNixFiles}/bin/fix-nix-files-bundle $@
-            ${fileFixers.fixHaskellFiles}/bin/fix-haskell-files-bundle $@
-            ${fileFixers.fixCabalFiles}/bin/fix-cabal-files-bundle $@
-            ${fileFixers.fixShellFiles}/bin/fix-shell-files-bundle $@
-            ${fileFixers.fixDhallFiles}/bin/fix-dhall-files-bundle $@
-            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/generated
-            ${fileFixers.fixPurescriptFiles}/bin/fix-purescript-files-bundle $@/roundtrip/RoundTripPurs
-          '';
-        };
-
-        # Purescript and bridge Nix libs
-        lib = {
-          bridgeTypelib = (import ./nix/purescript-bridge.nix) inputs.cardano-transaction-lib;
-          pursFlake = import ./nix/purescript-flake.nix;
-          pursLib = import ./nix/purescript-lib.nix;
-        };
-
-        hydraJobs = {
-          inherit build-all checks check-files;
-        };
-      }
-    );
+        in
+        {
+          inherit checks fix-files check-files test-all;
+        });
+    };
 }
