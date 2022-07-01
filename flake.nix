@@ -248,22 +248,19 @@
             {
               nativeBuildInputs = builtins.attrValues self.checks.${system};
             } "touch $out";
-          check-files =
-            let
-            in
-            pkgs.runCommand "check-files"
-              ({
-                checks = [
-                  (fileCheckers.checkNixFiles src)
-                  (fileCheckers.checkHaskellFiles src)
-                  (fileCheckers.checkCabalFiles src)
-                  (fileCheckers.checkShellFiles src)
-                  (fileCheckers.checkDhallFiles src)
-                  (fileCheckers.checkPurescriptFiles ./generated)
-                  (fileCheckers.checkPurescriptFiles ./roundtrip/RoundTripPurs)
-                ];
-              })
-              "touch $out";
+          check-files = pkgs.runCommand "check-files"
+            ({
+              checks = [
+                (fileCheckers.checkNixFiles src)
+                (fileCheckers.checkHaskellFiles src)
+                (fileCheckers.checkCabalFiles src)
+                (fileCheckers.checkShellFiles src)
+                (fileCheckers.checkDhallFiles src)
+                (fileCheckers.checkPurescriptFiles ./generated)
+                (fileCheckers.checkPurescriptFiles ./roundtrip/RoundTripPurs)
+              ];
+            })
+            "touch $out";
 
           # Fix files
           fix-files = (cqFor system).makeBundle {
