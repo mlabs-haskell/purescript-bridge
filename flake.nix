@@ -32,6 +32,7 @@
   };
 
   outputs = inputs@{ self, flake-utils, haskell-nix, ... }:
+    { herculesCI.ciSystems = [ "x86_64-linux" ]; } //
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
         # TODO: Perhaps cleanSource
